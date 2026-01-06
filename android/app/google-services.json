@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "408693349922",
+    "project_id": "saidurs-portfolio",
+    "storage_bucket": "saidurs-portfolio.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:408693349922:android:1e27c4a726978d949b347b",
+        "android_client_info": {
+          "package_name": "com.saidurs_portfolio.futter_portfileo_website"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAEySgElsyQ7xLf5TfV8B-QQgXTkKWKT9s"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
