@@ -15,19 +15,20 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MultiProvider(providers: [
-
-    ],
-      child: MaterialApp(
-        title: 'Saidur Rahman - Flutter Developer',
-        debugShowCheckedModeBanner: false,
-        theme: ThemeData(
-          primarySwatch: Colors.blue,
-          brightness: Brightness.dark,
-          useMaterial3: true,
-        ),
-        home: HomeScreen(),
+    return MaterialApp(
+      title: 'Saidur Rahman - Flutter Developer',
+      debugShowCheckedModeBanner: false,
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+        brightness: Brightness.dark,
+        useMaterial3: true,
       ),
+      home: HomeScreen(),
     );
   }
 }
+
+// MultiProvider(providers: [
+//
+// ],
+// child:
