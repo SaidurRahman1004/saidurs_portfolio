@@ -17,7 +17,7 @@ class SkillModel {
   });
 
 //json to dart model Map<String, dynamic> formet,Receved Data from Firebase
-  factory SkillModel.fromJson(String id, Map<String, dynamic> data){
+  factory SkillModel.fromFirestore(String id, Map<String, dynamic> data){
     return SkillModel(
       id: id,
       name: data['name'] ?? '',
