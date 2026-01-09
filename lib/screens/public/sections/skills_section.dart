@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:futter_portfileo_website/widgets/comon/section_title.dart';
 import '../../../config/theme.dart';
 import '../../../widgets/comon/responsive_wrapper.dart';
+import 'package:provider/provider.dart';
+import '../../../providers/portfolio_provider.dart';
 
 class SkillsSection extends StatelessWidget {
   const SkillsSection({super.key});
@@ -28,65 +30,89 @@ class SkillsSection extends StatelessWidget {
             subtitle: 'Technical expertise and tools I use',
           ),
           const SizedBox(height: 60),
-          _buildSkillsGrid(context),
+          Consumer<PortfolioProvider>(
+            builder: (context, provider, child) {
+              //loading
+              if (provider.isLoadingSkills) {
+                return const Center(
+                  child: Padding(
+                    padding: EdgeInsets.all(40.0),
+                    child: CircularProgressIndicator(),
+                  ),
+                );
+              }
+              //error state
+              if (provider.errorSkills != null) {
+                return Center(
+                  child: Padding(
+                    padding: const EdgeInsets.all(40.0),
+                    child: Column(
+                      children: [
+                        Icon(
+                          Icons.error_outline,
+                          size: 48,
+                          color: AppTheme.accentColor,
+                        ),
+                        const SizedBox(height: 16),
+                        Text(
+                          provider.errorSkills!,
+                          style: Theme.of(context).textTheme.bodyLarge,
+                          textAlign: TextAlign.center,
+                        ),
+                        const SizedBox(height: 16),
+                        ElevatedButton(
+                          onPressed: () => provider.loadSkills(),
+                          child: const Text('Retry'),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              }
+              // Empty State
+              if (provider.skillsByCategory.isEmpty) {
+                return Center(
+                  child: Padding(
+                    padding: const EdgeInsets.all(40.0),
+                    child: Text(
+                      'No skills available',
+                      style: Theme.of(context).textTheme.bodyLarge,
+                    ),
+                  ),
+                );
+              }
+              return _buildSkillsGrid(context, provider.skillsByCategory);
+            },
+          ),
         ],
       ),
     );
   }
 
   //Skill Cards Grids
-  _buildSkillsGrid(BuildContext context) {
+  _buildSkillsGrid(
+    BuildContext context,
+    Map<String, List<dynamic>> skillsByCategory,
+  ) {
     //List Of Skills
-    final skillCategories = [
-      {
-        'category': 'Mobile Development',
-        'icon': Icons.phone_android,
-        'skills': ['Flutter', 'Dart', 'Kotlin (Basic)', 'Android'],
-      },
-      {
-        'category': 'Backend & APIs',
-        'icon': Icons.dns_outlined,
-        'skills': ['Django (Learning)', 'REST API', 'Firebase', 'JWT Auth'],
-      },
-      {
-        'category': 'State Management',
-        'icon': Icons.settings_outlined,
-        'skills': ['Provider', 'GetX', 'Riverpod', 'Cubit'],
-      },
-      {
-        'category': 'Database',
-        'icon': Icons.storage_outlined,
-        'skills': ['Firestore', 'Hive', 'Shared Preferences', 'SQLite'],
-      },
-      {
-        'category': 'Programming',
-        'icon': Icons.code,
-        'skills': ['Python', 'Java', 'JavaScript', 'HTML/CSS'],
-      },
-      {
-        'category': 'Tools & Others',
-        'icon': Icons.build_outlined,
-        'skills': ['Git/GitHub', 'VS Code', 'Android Studio', 'Postman'],
-      },
-    ];
+    final categories = skillsByCategory.entries.toList();
     return ResponsiveWrapper(
-      mobile: _buildMobileGrid(context, skillCategories),
-      tablet: _buildTabletGrid(context, skillCategories),
-      desktop: _buildDesktopGrid(context, skillCategories),
+      mobile: _buildMobileGrid(context, categories),
+      tablet: _buildTabletGrid(context, categories),
+      desktop: _buildDesktopGrid(context, categories),
     );
   }
 
   //Mobile Card show
   Widget _buildMobileGrid(
-    BuildContext context,
-    List<Map<String, dynamic>> categories,
+      BuildContext context, List<MapEntry<String, List<dynamic>>> categories
   ) {
     return Column(
       children: categories
           .map(
             (cat) => Padding(
               padding: const EdgeInsets.only(bottom: 16),
-              child: _buildSkillCard(context, cat),
+              child: _buildSkillCard(context,cat.key, cat.value),
             ),
           )
           .toList(),
@@ -96,7 +122,7 @@ class SkillsSection extends StatelessWidget {
   //tablet Card show
   Widget? _buildTabletGrid(
     BuildContext context,
-    List<Map<String, dynamic>> categories,
+    List<MapEntry<String, List<dynamic>>> categories,
   ) {
     return GridView.builder(
       shrinkWrap: true,
@@ -108,14 +134,17 @@ class SkillsSection extends StatelessWidget {
         childAspectRatio: 1.3,
       ),
       itemCount: categories.length,
-      itemBuilder: (context, index) =>
-          _buildSkillCard(context, categories[index]),
+      itemBuilder: (context, index){
+        final category = categories[index];
+        return _buildSkillCard(context, category.key, category.value);
+      }
+
     );
   }
 
   Widget? _buildDesktopGrid(
     BuildContext context,
-    List<Map<String, dynamic>> categories,
+    List<MapEntry<String, List<dynamic>>> categories,
   ) {
     return GridView.builder(
       shrinkWrap: true,
@@ -127,12 +156,18 @@ class SkillsSection extends StatelessWidget {
         childAspectRatio: 1.2,
       ),
       itemCount: categories.length,
-      itemBuilder: (context, index) =>
-          _buildSkillCard(context, categories[index]),
+      itemBuilder: (context, index) {
+        final category = categories[index];
+        return _buildSkillCard(context, category.key, category.value);
+      }
+
     );
   }
 
-  Widget _buildSkillCard(BuildContext context, Map<String, dynamic> category) {
+  Widget _buildSkillCard(BuildContext context, String categoryName, List<dynamic> skills) {
+    final firstSkill = skills.first;
+    final iconCode = firstSkill.iconCode;
+    final icon = IconData(iconCode, fontFamily:  'MaterialIcons');
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
@@ -158,7 +193,7 @@ class SkillsSection extends StatelessWidget {
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Icon(
-                  category['icon'] as IconData,
+                  icon,
                   color: AppTheme.primaryColor,
                   size: 28,
                 ),
@@ -166,17 +201,19 @@ class SkillsSection extends StatelessWidget {
               const SizedBox(width: 16),
               Expanded(
                 child: Text(
-                  category['category'] as String,
+                  categoryName,
                   style: Theme.of(context).textTheme.titleLarge,
                 ),
               ),
             ],
           ),
           const SizedBox(height: 20),
+
+          //Expended
           Wrap(
             spacing: 10,
             runSpacing: 10,
-            children: (category['skills'] as List<String>).map((skill) {
+            children: skills.map((skill) {
               return Container(
                 padding: const EdgeInsets.symmetric(
                   horizontal: 12,
@@ -192,9 +229,9 @@ class SkillsSection extends StatelessWidget {
                 ),
                 child: Text(
                   skill,
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: AppTheme.textPrimary,
-                  ),
+                  style: Theme.of(
+                    context,
+                  ).textTheme.bodyMedium?.copyWith(color: AppTheme.textPrimary),
                 ),
               );
             }).toList(),
