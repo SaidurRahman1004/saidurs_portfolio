@@ -1,6 +1,6 @@
 class AppConstants {
   // Personal Info
-  static const String name = 'MD Saidur Rahman Bhuyan';
+  static const String name = 'Saidur Rahman';
   static const String role = 'Flutter App Developer';
   static const String tagline = 'Building Cross-Platform Mobile Apps with Flutter & Firebase';
   static const imgUrl = 'https://i.postimg.cc/d3yXKM4r/profile-pic-(4).png';

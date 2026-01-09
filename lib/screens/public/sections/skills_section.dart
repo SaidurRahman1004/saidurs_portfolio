@@ -24,8 +24,8 @@ class SkillsSection extends StatelessWidget {
       child: Column(
         children: [
           SectionTitle(
-            title: 'About Me',
-            subtitle: 'Learn more about my journey and expertise',
+            title: 'My Skills',
+            subtitle: 'Technical expertise and tools I use',
           ),
           const SizedBox(height: 60),
           _buildSkillsGrid(context),
@@ -145,6 +145,7 @@ class SkillsSection extends StatelessWidget {
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
         children: [
           //Icon And Cat
           //Icon and Catagory
@@ -172,33 +173,31 @@ class SkillsSection extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 20),
-          Expanded(
-            child: Wrap(
-              spacing: 10,
-              runSpacing: 10,
-              children: (category['skills'] as List<String>).map((skill) {
-                return Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 6,
+          Wrap(
+            spacing: 10,
+            runSpacing: 10,
+            children: (category['skills'] as List<String>).map((skill) {
+              return Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 6,
+                ),
+                decoration: BoxDecoration(
+                  color: AppTheme.darkBackground.withOpacity(0.5),
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(
+                    color: AppTheme.secondaryColor.withOpacity(0.3),
+                    width: 1,
                   ),
-                  decoration: BoxDecoration(
-                    color: AppTheme.darkBackground.withOpacity(0.5),
-                    borderRadius: BorderRadius.circular(8),
-                    border: Border.all(
-                      color: AppTheme.secondaryColor.withOpacity(0.3),
-                      width: 1,
-                    ),
+                ),
+                child: Text(
+                  skill,
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: AppTheme.textPrimary,
                   ),
-                  child: Text(
-                    skill,
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: AppTheme.textPrimary,
-                    ),
-                  ),
-                );
-              }).toList(),
-            ),
+                ),
+              );
+            }).toList(),
           ),
         ],
       ),

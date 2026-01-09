@@ -29,20 +29,20 @@ class ProjectsSection extends StatelessWidget {
             subtitle: 'Showcasing my best work and achievements',
           ),
           const SizedBox(height: 60),
-          _buildProjectsGrid(BuildContext, context),
+          _buildProjectsGrid(context),
         ],
       ),
     );
   }
 
-  Widget _buildProjectsGrid(BuildContext, context) {
+  Widget _buildProjectsGrid(BuildContext context) {
     final projects = [
       {
         'name': 'TravelSnap',
         'description':
             'Full-featured travel app with Firebase integration, GPS location, Camera, and real-time data sync.',
         'tech': ['Flutter', 'Firebase', 'GPS', 'Camera'],
-        'github': 'https://github.com/SaidurRahman1004/my_trips. git',
+        'github': 'https://github.com/SaidurRahman1004/my_trips.git',
         'featured': true,
       },
       {
@@ -184,58 +184,57 @@ class ProjectsSection extends StatelessWidget {
               ),
             ),
           ],
-          Expanded(
-            child: Padding(
-              padding: const EdgeInsets.all(20),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  //Project Name
-                  Text(
-                    project['name'] as String,
-                    style: Theme.of(context).textTheme.titleLarge,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  const SizedBox(height: 12),
-                  // Description
-                  Expanded(
-                    child: Text(
-                      project['description'] as String,
-                      style: Theme.of(context).textTheme.bodyMedium,
-                      maxLines: 4,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-                  //Tech Stack
-                  Wrap(
-                    spacing: 10,
-                    runSpacing: 10,
-                    children: (project['tech'] as List<String>).map((tech) {
-                      return Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 10,
-                          vertical: 4,
+
+          Padding(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                //Project Name
+                Text(
+                  project['name'] as String,
+                  style: Theme.of(context).textTheme.titleLarge,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: 12),
+                // Description
+                Text(
+                  project['description'] as String,
+                  style: Theme.of(context).textTheme.bodyMedium,
+                  maxLines: 4,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                //Tech Stack
+                Wrap(
+                  spacing: 10,
+                  runSpacing: 10,
+                  children: (project['tech'] as List<String>).map((tech) {
+                    return Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 4,
+                      ),
+                      decoration: BoxDecoration(
+                        color: AppTheme.secondaryColor.withOpacity(0.2),
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                      child: Text(
+                        tech,
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: AppTheme.secondaryColor,
+                          fontSize: 11,
                         ),
-                        decoration: BoxDecoration(
-                          color: AppTheme.secondaryColor.withOpacity(0.2),
-                          borderRadius: BorderRadius.circular(6),
-                        ),
-                        child: Text(
-                          tech,
-                          style: Theme.of(context).textTheme.bodySmall
-                              ?.copyWith(
-                                color: AppTheme.secondaryColor,
-                                fontSize: 11,
-                              ),
-                        ),
-                      );
-                    }).toList(),
-                  ),
-                ],
-              ),
+                      ),
+                    );
+                  }).toList(),
+                ),
+              ],
             ),
           ),
+
+
           // Github Buttons
           Padding(
             padding: const EdgeInsets.all(20),

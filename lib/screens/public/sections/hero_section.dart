@@ -39,11 +39,12 @@ class HeroSection extends StatelessWidget {
   //_buildMobileLayout for mobile View
 
   Widget _buildMobileLayout(BuildContext context) {
-    return Row(
+    return Column(
       children: [
-        _buildContent(context),
-        const SizedBox(width: 40),
         _buildIllustration(),
+        const SizedBox(width: 40),
+        _buildContent(context),
+
       ],
     );
   }
@@ -90,9 +91,11 @@ class HeroSection extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 16),
-        Row(
+        Wrap(
+          crossAxisAlignment: WrapCrossAlignment.center,
           children: [
-            Text('A', style: TxtTheme.headlineMedium),
+            Text('A' , style: TxtTheme.headlineMedium),
+            const SizedBox(width: 8),
             //Animated Textkit
             AnimatedTextKit(
               repeatForever: true,
@@ -156,7 +159,8 @@ class HeroSection extends StatelessWidget {
 
   Widget _buildIllustration() {
     return Container(
-      height: 400,
+      height: 300,
+      width: double.infinity,
       decoration: BoxDecoration(
         gradient: AppTheme.primaryGradient.scale(0.3),
         borderRadius: BorderRadius.circular(16),
@@ -164,11 +168,10 @@ class HeroSection extends StatelessWidget {
       child: Center(
         child: Image.network(
           AppConstants.imgUrl,
-          height: 300,
+          height: 250,
           fit: BoxFit.contain,
         ),
       ),
-
     );
   }
 }

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:futter_portfileo_website/widgets/comon/responsive_wrapper.dart';
 import '../../config/theme.dart';
 
-class CustomAppBar extends StatelessWidget {
+class CustomAppBar extends StatelessWidget  implements PreferredSizeWidget{
   final GlobalKey herokey;
   final GlobalKey aboutkey;
   final GlobalKey skillskey;
@@ -76,7 +76,9 @@ class CustomAppBar extends StatelessWidget {
               ],
             ),
           ] else ...[
-            IconButton(onPressed: () {}, icon: const Icon(Icons.menu)),
+            IconButton(onPressed: () {
+              Scaffold.of(context).openDrawer();
+            }, icon: const Icon(Icons.menu)),
           ],
         ],
       ),
