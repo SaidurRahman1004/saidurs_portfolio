@@ -13,6 +13,11 @@ class PortfolioProvider with ChangeNotifier {
   List<ProjectModel> _projects = [];
   ContactModel? _contactInfo;
 
+  //getter
+  List<SkillModel> get skills => _skills;
+  List<ProjectModel> get projects => _projects;
+  ContactModel?  get contactInfo => _contactInfo;
+
   ///Loading states
   bool _isLoadingSkills = true;
   bool _isLoadingProjects = true;

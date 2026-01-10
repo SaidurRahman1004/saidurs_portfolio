@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:futter_portfileo_website/models/project_model.dart';
 import 'package:futter_portfileo_website/widgets/comon/section_title.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../../config/theme.dart';
 import '../../../widgets/comon/responsive_wrapper.dart';
+import 'package:provider/provider.dart';
+import '../../../providers/portfolio_provider.dart';
 
 class ProjectsSection extends StatelessWidget {
   const ProjectsSection({super.key});
@@ -29,65 +32,97 @@ class ProjectsSection extends StatelessWidget {
             subtitle: 'Showcasing my best work and achievements',
           ),
           const SizedBox(height: 60),
-          _buildProjectsGrid(context),
+          Consumer<PortfolioProvider>(
+            builder: (context, provider, child) {
+              //loading State
+              if (provider.isLoadingProjects) {
+                return const Center(
+                  child: Padding(
+                    padding: EdgeInsets.all(60.0),
+                    child: Column(
+                      children: [
+                        CircularProgressIndicator(),
+                        SizedBox(height: 16),
+                        Text('Loading projects... '),
+                      ],
+                    ),
+                  ),
+                );
+              }
+              //Error State
+              if (provider.errorProjects != null) {
+                return Center(
+                  child: Padding(
+                    padding: const EdgeInsets.all(60.0),
+                    child: Column(
+                      children: [
+                        Icon(
+                          Icons.error_outline,
+                          size: 64,
+                          color: AppTheme.accentColor,
+                        ),
+                        const SizedBox(height: 24),
+                        Text(
+                          'Failed to load projects',
+                          style: Theme.of(context).textTheme.headlineSmall,
+                        ),
+                        const SizedBox(height: 12),
+                        Text(
+                          provider.errorProjects!,
+                          style: Theme.of(context).textTheme.bodyMedium,
+                          textAlign: TextAlign.center,
+                        ),
+                        const SizedBox(height: 24),
+                        ElevatedButton.icon(
+                          onPressed: () => provider.loadProjects(),
+                          icon: const Icon(Icons.refresh),
+                          label: const Text('Retry'),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              }
+              //Emty State
+              if (provider.projects.isEmpty) {
+                return Center(
+                  child: Padding(
+                    padding: const EdgeInsets.all(60.0),
+                    child: Column(
+                      children: [
+                        Icon(
+                          Icons.work_outline,
+                          size: 64,
+                          color: AppTheme.textHint,
+                        ),
+                        const SizedBox(height: 16),
+                        Text(
+                          'No projects yet',
+                          style: Theme.of(context).textTheme.headlineSmall,
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          'Projects will appear here once added',
+                          style: Theme.of(context).textTheme.bodyMedium
+                              ?.copyWith(color: AppTheme.textHint),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              }
+              return _buildProjectsGrid(
+                context,
+                provider.projects,
+              ); //data loaded success
+            },
+          ),
         ],
       ),
     );
   }
 
-  Widget _buildProjectsGrid(BuildContext context) {
-    final projects = [
-      {
-        'name': 'TravelSnap',
-        'description':
-            'Full-featured travel app with Firebase integration, GPS location, Camera, and real-time data sync.',
-        'tech': ['Flutter', 'Firebase', 'GPS', 'Camera'],
-        'github': 'https://github.com/SaidurRahman1004/my_trips.git',
-        'featured': true,
-      },
-      {
-        'name': 'Task Manager',
-        'description':
-            'Complete task management application with user authentication and CRUD operations.',
-        'tech': ['Flutter', 'REST API', 'Provider'],
-        'github': 'https://github.com/SaidurRahman1004/Task-Manager.git',
-        'featured': true,
-      },
-      {
-        'name': 'Smart Home Controller',
-        'description':
-            'IoT-integrated Flutter app for controlling smart home devices (Ongoing Project).',
-        'tech': ['Flutter', 'IoT', 'Firebase', 'MQTT'],
-        'github':
-            'https://github.com/SaidurRahman1004/smart_home_controller.git',
-        'featured': true,
-      },
-      {
-        'name': 'Blog App with Firebase',
-        'description':
-            'Real-time blogging platform with Firebase backend and rich text editing.',
-        'tech': ['Flutter', 'Firebase', 'Firestore'],
-        'github': 'https://github.com/SaidurRahman1004/FlutterFireBlog.git',
-        'featured': false,
-      },
-      {
-        'name': 'Fency Todo App',
-        'description':
-            'Offline-first todo application using local database with beautiful UI.',
-        'tech': ['Flutter', 'Hive', 'Provider'],
-        'github': 'https://github.com/SaidurRahman1004/fency_todo_app.git',
-        'featured': false,
-      },
-      {
-        'name': 'Weather App',
-        'description':
-            'Real-time weather application using REST API integration.',
-        'tech': ['Flutter', 'REST API', 'JSON'],
-        'github': 'https://github.com/SaidurRahman1004/weather_app_ostad.git',
-        'featured': false,
-      },
-    ];
-
+  Widget _buildProjectsGrid(BuildContext context, List<ProjectModel> projects) {
     return ResponsiveWrapper(
       mobile: _buildMobileGrid(context, projects),
       tablet: _buildTabletGrid(context, projects),
@@ -96,7 +131,7 @@ class ProjectsSection extends StatelessWidget {
   }
 
   //Phobe Grid
-  Widget _buildMobileGrid(context, List<Map<String, dynamic>> projects) {
+  Widget _buildMobileGrid(context, List<ProjectModel> projects) {
     return Column(
       children: projects
           .map(
@@ -110,7 +145,7 @@ class ProjectsSection extends StatelessWidget {
   }
 
   //Tablet Grid
-  Widget _buildTabletGrid(context, List<Map<String, dynamic>> projects) {
+  Widget _buildTabletGrid(context, List<ProjectModel> projects) {
     return GridView.builder(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
@@ -127,7 +162,7 @@ class ProjectsSection extends StatelessWidget {
   }
 
   //Deskto[ Grid
-  Widget _buildDesktopGrid(context, List<Map<String, dynamic>> projects) {
+  Widget _buildDesktopGrid(context, List<ProjectModel> projects) {
     return GridView.builder(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
@@ -144,23 +179,23 @@ class ProjectsSection extends StatelessWidget {
   }
 
   //Projects Card
-  Widget _buildProjectCard(BuildContext context, Map<String, dynamic> project) {
+  Widget _buildProjectCard(BuildContext context, ProjectModel project) {
     return Container(
       decoration: BoxDecoration(
         gradient: AppTheme.cardGradient,
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
-          color: project['featured'] == true
+          color: project.isFeatured
               ? AppTheme.primaryColor.withOpacity(0.5)
               : AppTheme.primaryColor.withOpacity(0.2),
-          width: project['featured'] == true ? 2 : 1,
+          width: project.isFeatured ? 2 : 1, // Featured badge
         ),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Featured Badge
-          if (project['featured'] == true) ...[
+          if (project.isFeatured == true) ...[
             Container(
               margin: const EdgeInsets.all(16),
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
@@ -184,16 +219,16 @@ class ProjectsSection extends StatelessWidget {
               ),
             ),
           ],
-
+          //Expanded
           Padding(
             padding: const EdgeInsets.all(20),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisSize: MainAxisSize.min,
               children: [
-                //Project Name
+                //Project Name frpm Firebase
                 Text(
-                  project['name'] as String,
+                  project.name,
                   style: Theme.of(context).textTheme.titleLarge,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
@@ -201,7 +236,7 @@ class ProjectsSection extends StatelessWidget {
                 const SizedBox(height: 12),
                 // Description
                 Text(
-                  project['description'] as String,
+                  project.description,
                   style: Theme.of(context).textTheme.bodyMedium,
                   maxLines: 4,
                   overflow: TextOverflow.ellipsis,
@@ -210,7 +245,7 @@ class ProjectsSection extends StatelessWidget {
                 Wrap(
                   spacing: 10,
                   runSpacing: 10,
-                  children: (project['tech'] as List<String>).map((tech) {
+                  children: project.techStack.map((tech) {
                     return Container(
                       padding: const EdgeInsets.symmetric(
                         horizontal: 10,
@@ -234,14 +269,13 @@ class ProjectsSection extends StatelessWidget {
             ),
           ),
 
-
           // Github Buttons
           Padding(
             padding: const EdgeInsets.all(20),
             child: SizedBox(
               width: double.infinity,
               child: ElevatedButton.icon(
-                onPressed: () => _launchURL(project['github'] as String),
+                onPressed: () => _launchURL(project.githubUrl),
                 icon: const Icon(Icons.code, size: 18),
                 label: const Text('View Project'),
                 style: ElevatedButton.styleFrom(
@@ -252,6 +286,18 @@ class ProjectsSection extends StatelessWidget {
               ),
             ),
           ),
+          if (project.liveUrl != null) ...[
+            const SizedBox(width: 12),
+            ElevatedButton.icon(
+              onPressed: () => _launchURL(project.liveUrl!),
+              label: const Text('Live Demo'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppTheme.secondaryColor.withOpacity(0.1),
+                foregroundColor: AppTheme.secondaryColor,
+                padding: const EdgeInsets.symmetric(vertical: 12),
+              ),
+            ),
+          ],
         ],
       ),
     );
@@ -259,9 +305,15 @@ class ProjectsSection extends StatelessWidget {
 
   //LaunchUrl Functions
   Future<void> _launchURL(String url) async {
-    final uri = Uri.parse(url);
-    if (await canLaunchUrl(uri)) {
-      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    try {
+      final uri = Uri.parse(url);
+      if (await canLaunchUrl(uri)) {
+        await launchUrl(uri, mode: LaunchMode.externalApplication);
+      } else {
+        throw 'Could not launch $url';
+      }
+    } catch (e) {
+      debugPrint('Error launching URL: $e');
     }
   }
 }
