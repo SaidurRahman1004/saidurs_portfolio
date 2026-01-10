@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:futter_portfileo_website/widgets/comon/section_title.dart';
+import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../../config/constants.dart';
 import '../../../config/theme.dart';
 import '../../../widgets/comon/responsive_wrapper.dart';
-
+import '../../../providers/portfolio_provider.dart';
+import '../../../models/contact_model.dart';
 class ContactSection extends StatelessWidget {
   const ContactSection({super.key});
 
@@ -30,96 +32,149 @@ class ContactSection extends StatelessWidget {
             subtitle: "Have a project in mind? Let's collaborate!",
           ),
           const SizedBox(height: 60),
-          ResponsiveWrapper(
-            mobile: _buildMobileLayout(context),
-            desktop: _buildDesktopLayout(context),
+          Consumer<PortfolioProvider>(
+            builder: (context, provider, child) {
+              //loading State
+              if (provider.isLoadingContact) {
+                return const Center(
+                  child: Padding(
+                    padding: EdgeInsets.all(40.0),
+                    child: CircularProgressIndicator(),
+                  ),
+                );
+              }
+              //Error State
+              if (provider.errorContact != null) {
+                return Center(
+                  child: Padding(
+                    padding: const EdgeInsets.all(60.0),
+                    child: Column(
+                      children: [
+                        Icon(
+                          Icons.error_outline,
+                          size: 64,
+                          color: AppTheme.accentColor,
+                        ),
+                        const SizedBox(height: 24),
+                        Text(
+                          'Failed to load contact information',
+                          style: Theme.of(context).textTheme.headlineSmall,
+                        ),
+                        const SizedBox(height: 12),
+                        Text(
+                          provider.errorProjects!,
+                          style: Theme.of(context).textTheme.bodyMedium,
+                          textAlign: TextAlign.center,
+                        ),
+                        const SizedBox(height: 24),
+                        ElevatedButton.icon(
+                          onPressed: () => provider.loadContactInfo(),
+                          icon: const Icon(Icons.refresh),
+                          label: const Text('Retry'),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              }
+              //Null State
+              if (provider.contactInfo == null) {
+                return Center(
+                  child: Padding(
+                    padding: const EdgeInsets.all(40.0),
+                    child: Text(
+                      'Contact information not available',
+                      style: Theme.of(context).textTheme.bodyLarge,
+                    ),
+                  ),
+                );
+              }
+              final contact = provider.contactInfo!;
+              return Column(
+                children: [
+                  ResponsiveWrapper(
+                    mobile: _buildMobileLayout(context, contact),
+                    desktop: _buildDesktopLayout(context, contact),
+                  ),
+                  const SizedBox(height: 60),
+                  _buildFooter(context),
+                ],
+              ); //data loaded success
+            },
           ),
-
-          const SizedBox(height: 60),
-
-          _buildFooter(context),
         ],
       ),
     );
   }
 
-
-//Contact Dektop laout
-  Widget _buildDesktopLayout(BuildContext context) {
+  //Contact Dektop laout
+  Widget _buildDesktopLayout(BuildContext context, ContactModel contact) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Expanded(child: _buildContactInfo(context)),
+        Expanded(child: _buildContactInfo(context, contact)),
         const SizedBox(width: 60),
-        Expanded(child: _buildSocialLinks(context)),
+        Expanded(child: _buildSocialLinks(context, contact)),
       ],
     );
   }
 
-  Widget _buildMobileLayout(BuildContext context) {
+  Widget _buildMobileLayout(BuildContext context, ContactModel contact) {
     return Column(
       children: [
-        _buildContactInfo(context),
+        _buildContactInfo(context, contact),
         const SizedBox(height: 40),
-        _buildSocialLinks(context),
+        _buildSocialLinks(context, contact),
       ],
     );
   }
 
-  Widget _buildContactInfo(BuildContext context) {
+  Widget _buildContactInfo(BuildContext context, ContactModel contact) {
     return Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'Contact Information',
-            style: Theme
-                .of(context)
-                .textTheme
-                .titleLarge,
-          ),
-          const SizedBox(height: 32),
-          _buildContactItem(
-            context,
-            icon: Icons.email_outlined,
-            title: 'Email',
-            value: AppConstants.email,
-            onTap: () => _launchEmail(),
-          ),
-          const SizedBox(height: 20),
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Contact Information',
+          style: Theme.of(context).textTheme.titleLarge,
+        ),
+        const SizedBox(height: 32),
+        _buildContactItem(
+          context,
+          icon: Icons.email_outlined,
+          title: 'Email',
+          value: contact.email,
+          onTap: () => _launchEmail(contact.email),
+        ),
+        const SizedBox(height: 20),
 
-          _buildContactItem(
-            context,
-            icon: Icons.phone_outlined,
-            title: 'WhatsApp',
-            value: AppConstants.phone,
-            onTap: () => _launchWhatsApp(),
-          ),
+        _buildContactItem(
+          context,
+          icon: Icons.phone_outlined,
+          title: 'WhatsApp',
+          value: contact.whatsappNumber,
+          onTap: () => _launchWhatsApp(contact.whatsappNumber),
+        ),
 
-          const SizedBox(height: 20),
+        const SizedBox(height: 20),
 
-          _buildContactItem(
-            context,
-            icon: Icons.location_on_outlined,
-            title: 'Location',
-            value: 'Bangladesh',
-            onTap: null,
-          ),
-
-
-        ]
+        _buildContactItem(
+          context,
+          icon: Icons.location_on_outlined,
+          title: 'Location',
+          value: contact.location,
+          onTap: null,
+        ),
+      ],
     );
   }
 
-  Widget _buildSocialLinks(BuildContext context) {
+  Widget _buildSocialLinks(BuildContext context, ContactModel contact) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           'Connect With Me',
-          style: Theme
-              .of(context)
-              .textTheme
-              .headlineMedium,
+          style: Theme.of(context).textTheme.headlineMedium,
         ),
 
         const SizedBox(height: 32),
@@ -128,7 +183,7 @@ class ContactSection extends StatelessWidget {
           icon: Icons.code,
           label: 'GitHub',
           color: Colors.white,
-          onTap: () => _launchURL(AppConstants.github),
+          onTap: () => _launchURL(contact.githubUrl),
         ),
 
         const SizedBox(height: 16),
@@ -138,30 +193,33 @@ class ContactSection extends StatelessWidget {
           icon: Icons.work_outline,
           label: 'LinkedIn',
           color: const Color(0xFF0A66C2),
-          onTap: () {
-            // Add LinkedIn when available
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('LinkedIn coming soon!')),
-            );
-          },
+          onTap: contact.linkedinUrl != null
+              ? () => _launchURL(contact.linkedinUrl!)
+              : null,
         ),
 
         const SizedBox(height: 16),
 
-         _buildSocialButton(
+        _buildSocialButton(
           context,
           icon: Icons.picture_as_pdf,
           label: 'Download Resume',
           color: AppTheme.accentColor,
-          onTap: () => _launchURL(AppConstants.resumeUrl),
+          onTap: contact.resumeUrl != null
+              ? () => _launchURL(contact.resumeUrl!)
+              : () {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Resume not available yet')),
+                  );
+                },
         ),
-
       ],
     );
   }
 
   //Contact Contents
-  Widget _buildContactItem(BuildContext context, {
+  Widget _buildContactItem(
+    BuildContext context, {
     required IconData icon,
     required String title,
     required String value,
@@ -175,9 +233,7 @@ class ContactSection extends StatelessWidget {
         decoration: BoxDecoration(
           gradient: AppTheme.cardGradient,
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-            color: AppTheme.primaryColor.withOpacity(0.2),
-          ),
+          border: Border.all(color: AppTheme.primaryColor.withOpacity(0.2)),
         ),
         child: Row(
           children: [
@@ -190,52 +246,60 @@ class ContactSection extends StatelessWidget {
               child: Icon(icon, color: AppTheme.primaryColor),
             ),
             const SizedBox(width: 16),
-            Expanded(child: Column(
+            Expanded(
+              child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
                     title,
-                    style: Theme
-                        .of(context)
-                        .textTheme
-                        .bodyMedium
-                        ?.copyWith(
-                      color: AppTheme.textHint,
-                    ),
+                    style: Theme.of(
+                      context,
+                    ).textTheme.bodyMedium?.copyWith(color: AppTheme.textHint),
                   ),
                   const SizedBox(height: 4),
-                  Text(
-                    value,
-                    style: Theme
-                        .of(context)
-                        .textTheme
-                        .titleMedium,
-                  ),
-                ]
-            ),),
-            if(onTap != null)
+                  Text(value, style: Theme.of(context).textTheme.titleMedium),
+                ],
+              ),
+            ),
+            if (onTap != null)
               Icon(
                 Icons.arrow_forward_ios,
                 size: 16,
                 color: AppTheme.primaryColor,
               ),
-
-
           ],
         ),
       ),
     );
   }
 
-  Widget _buildSocialButton(BuildContext context,
-      {required IconData icon,
-        required String label, required Color color, required onTap}) {
+  Widget _buildSocialButton(
+    BuildContext context, {
+    required IconData icon,
+    required String label,
+    required Color color,
+    required onTap,
+  }) {
+    final isDisabled = onTap == null; //Disible State HAndling
     return SizedBox(
       width: double.infinity,
       child: ElevatedButton.icon(
         onPressed: onTap,
         icon: Icon(icon, color: color),
-        label: Text(label),
+        label: Row(
+          children: [
+            Text(label),
+            if (isDisabled) ...[
+              const SizedBox(width: 8),
+              Text(
+                '(Coming soon)',
+                style: Theme.of(context).textTheme.bodySmall?. copyWith(
+                  color:  AppTheme.textHint,
+                ),
+              ),
+            ],
+          ],
+        ),
         style: ElevatedButton.styleFrom(
           backgroundColor: color.withOpacity(0.1),
           foregroundColor: color,
@@ -255,13 +319,9 @@ class ContactSection extends StatelessWidget {
 
         Text(
           '© 2026 ${AppConstants.name}. All rights reserved. 💙',
-          style: Theme
-              .of(context)
-              .textTheme
-              .bodyMedium
-              ?.copyWith(
-            color: AppTheme.textHint,
-          ),
+          style: Theme.of(
+            context,
+          ).textTheme.bodyMedium?.copyWith(color: AppTheme.textHint),
           textAlign: TextAlign.center,
         ),
 
@@ -269,20 +329,16 @@ class ContactSection extends StatelessWidget {
 
         Text(
           'Made with ❤️ in Bangladesh',
-          style: Theme
-              .of(context)
-              .textTheme
-              .bodySmall
-              ?.copyWith(
-            color: AppTheme.textHint,
-          ),
+          style: Theme.of(
+            context,
+          ).textTheme.bodySmall?.copyWith(color: AppTheme.textHint),
         ),
       ],
     );
   }
 
   //Lanch Url
-  void _launchEmail() async {
+  void _launchEmail(String email) async {
     final uri = Uri(
       scheme: 'mailto',
       path: AppConstants.email,
@@ -293,9 +349,10 @@ class ContactSection extends StatelessWidget {
     }
   }
 
-  void _launchWhatsApp() async {
+  void _launchWhatsApp(String phone) async {
     final uri = Uri.parse(
-        'https://wa.me/${AppConstants.phone.replaceAll('+', '')}');
+      'https://wa.me/${AppConstants.phone.replaceAll('+', '')}',
+    );
     if (await canLaunchUrl(uri)) {
       await launchUrl(uri, mode: LaunchMode.externalApplication);
     }
