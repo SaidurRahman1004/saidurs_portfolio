@@ -70,7 +70,7 @@ class SkillsSection extends StatelessWidget {
                 );
               }
               // Empty State
-              if (provider.skillsByCategory.isEmpty) {
+              if (provider.skills.isEmpty) {
                 return Center(
                   child: Padding(
                     padding: const EdgeInsets.all(40.0),
