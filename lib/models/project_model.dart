@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 class ProjectModel{
   final String id;
   final String name;
@@ -26,6 +27,17 @@ class ProjectModel{
 
   ////json to dart model Map<String, dynamic> formet,Receved Data from Firebase
   factory ProjectModel.fromFirestore(String id, Map<String, dynamic> data){
+    //Dynamic Logics for CreatedAt
+
+    DateTime parsedDate;
+    if (data['createdAt'] is Timestamp) {
+      parsedDate = (data['createdAt'] as Timestamp).toDate();
+    } else if (data['createdAt'] is String) {
+      parsedDate = DateTime.parse(data['createdAt']);
+    } else {
+      parsedDate = DateTime.now();
+    }
+
     return ProjectModel(
       id: id,
       name: data['name'] ??  '',
@@ -39,9 +51,7 @@ class ProjectModel{
       isVisible:  data['isVisible'] ?? true,
       order: data['order'] ?? 0,
 
-      createdAt: data['createdAt'] != null
-          ? DateTime.parse(data['createdAt'])
-          : DateTime.now(),
+      createdAt: parsedDate,
     );
   }
 //dart to json Sent Data to Firebase //admin panel modification functions

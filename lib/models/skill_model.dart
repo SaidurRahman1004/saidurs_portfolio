@@ -1,3 +1,4 @@
+
 class SkillModel {
   final String id;
   final String name;
@@ -22,7 +23,7 @@ class SkillModel {
       id: id,
       name: data['name'] ?? '',
       category: data['category'] ?? '',
-      iconCode: data['iconCode'] ?? 58240,
+      iconCode: data['iconCode'] is int ? data['iconCode'] : (int.tryParse(data['iconCode']?.toString() ?? '58240') ?? 58240),
       // Default icon code
       order: data['order'] ?? 0,
       isVisible: data['isVisible'] ?? true,

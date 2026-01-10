@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:futter_portfileo_website/models/skill_model.dart';
 import 'package:futter_portfileo_website/widgets/comon/section_title.dart';
 import '../../../config/theme.dart';
 import '../../../widgets/comon/responsive_wrapper.dart';
@@ -228,7 +229,7 @@ class SkillsSection extends StatelessWidget {
                   ),
                 ),
                 child: Text(
-                  skill,
+                  (skill as SkillModel).name,
                   style: Theme.of(
                     context,
                   ).textTheme.bodyMedium?.copyWith(color: AppTheme.textPrimary),

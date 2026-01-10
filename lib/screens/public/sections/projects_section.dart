@@ -286,7 +286,7 @@ class ProjectsSection extends StatelessWidget {
               ),
             ),
           ),
-          if (project.liveUrl != null) ...[
+          if (project.liveUrl != null && project.liveUrl!.isNotEmpty) ...[
             const SizedBox(width: 12),
             ElevatedButton.icon(
               onPressed: () => _launchURL(project.liveUrl!),

@@ -62,7 +62,7 @@ class ContactSection extends StatelessWidget {
                         ),
                         const SizedBox(height: 12),
                         Text(
-                          provider.errorProjects!,
+                          provider.errorContact!,
                           style: Theme.of(context).textTheme.bodyMedium,
                           textAlign: TextAlign.center,
                         ),

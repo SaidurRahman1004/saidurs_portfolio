@@ -29,7 +29,7 @@ class ContactModel {
       linkedinUrl: data['linkedinUrl'],
       resumeUrl: data['resumeUrl'],
       location: data['location'] ?? 'Bangladesh',
-      whatsappNumber:  data['whatsappNumber'] ??  '',
+      whatsappNumber:  data['whatsappNumber'] ?? data['phone'] ?? '',
     );
   }
 
