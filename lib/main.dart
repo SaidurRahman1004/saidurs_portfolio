@@ -5,6 +5,7 @@ import 'config/theme.dart';
 import 'screens/public/home_screen.dart';
 import 'providers/portfolio_provider.dart';
 import 'package:provider/provider.dart';
+import 'providers/admin_provider.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -20,17 +21,22 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
-      create: (context) {
-        final provider = PortfolioProvider();
-        provider.loadAllData(); //Provider data initial load
-        return provider;
-      },
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider(
+          create: (_) {
+            final provider = PortfolioProvider();
+            provider.loadAllData();
+            return provider;
+          },
+        ),
+        ChangeNotifierProvider(create: (_) => AdminProvider()),
+      ],
       child: MaterialApp(
-        title: 'Saidur Rahman - Flutter Developer',
+        title: 'Saidur- Flutter Developer',
         debugShowCheckedModeBanner: false,
         theme: AppTheme.darkTheme(),
-        home: HomeScreen(),
+        home: const HomeScreen(),
       ),
     );
   }
