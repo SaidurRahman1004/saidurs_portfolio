@@ -197,7 +197,7 @@ class AdminSidebar extends StatelessWidget {
   }) {
     final isSelected = selectedIndex == index;
     return InkWell(
-      onTap: onItemSelected(index),
+      onTap: () => onItemSelected(index),
       borderRadius: BorderRadius.circular(12),
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),

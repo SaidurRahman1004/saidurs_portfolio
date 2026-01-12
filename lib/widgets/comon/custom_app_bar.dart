@@ -73,6 +73,7 @@ class CustomAppBar extends StatelessWidget  implements PreferredSizeWidget{
                 _NavButton(text: 'Skills', onTap: ()=>_scrollToSection(skillskey)),
                 _NavButton(text: 'Projects', onTap: ()=>_scrollToSection(projectskey)),
                 _NavButton(text: 'Contact', onTap: ()=>_scrollToSection(contactkey)),
+
               ],
             ),
           ] else ...[

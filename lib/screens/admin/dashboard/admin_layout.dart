@@ -12,10 +12,12 @@ class AdminLayout extends StatefulWidget {
 
 class _AdminLayoutState extends State<AdminLayout> {
   int _selectedIndex = 0;
+
   //Drawer Controller For Mobile
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+
   //Page Title List Dynamically Show in Appbar
-  final List<String> _pageTitles =[
+  final List<String> _pageTitles = [
     'Dashboard',
     'Skills Management',
     'Projects Management',
@@ -23,13 +25,14 @@ class _AdminLayoutState extends State<AdminLayout> {
     'Analytics',
     'Settings',
   ];
+
   //  Get current page widget based on selected index
-  Widget _getCurrentPage(){
-    switch(_selectedIndex){
+  Widget _getCurrentPage() {
+    switch (_selectedIndex) {
       case 0:
         return const DashboardHome();
       case 1:
-        return const SkillsManagement();
+        return const Center(child: Text('Skill Sections - Coming Soon'));
       case 2:
         return const Center(child: Text('Projects Management - Coming Soon'));
       case 3:
@@ -40,45 +43,69 @@ class _AdminLayoutState extends State<AdminLayout> {
         return const Center(child: Text('Settings - Coming Soon'));
       default:
         return const DashboardHome();
-
     }
   }
+
   // Handle menu item selection
-  void _onMenuItemSelected(int index){
+
+  void _onMenuItemSelected(int index) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        setState(() {
+          _selectedIndex = index;
+        });
+        if (_scaffoldKey.currentState?.isDrawerOpen ?? false) {
+          Navigator.pop(context);
+        }
+      }
+    });
+  }
+
+  /*
+  void _onMenuItemSelected(int index) {
     setState(() {
       _selectedIndex = index;
     });
     // Close drawer if open For Mobile
-    if(_scaffoldKey.currentState?.isDrawerOpen ?? false){
+    if (_scaffoldKey.currentState?.isDrawerOpen ?? false) {
       Navigator.pop(context);
     }
-
   }
+
+ */
+
   @override
   Widget build(BuildContext context) {
     final isDesktop = MediaQuery.of(context).size.width >= 900;
     return Scaffold(
       key: _scaffoldKey,
-      appBar: AdminAppBar(title: _pageTitles[_selectedIndex],
-        onMenuPressed: isDesktop ? null : (){
-          _scaffoldKey.currentState?.openDrawer();
-        },
+      appBar: AdminAppBar(
+        title: _pageTitles[_selectedIndex],
+        onMenuPressed: isDesktop
+            ? null
+            : () {
+                _scaffoldKey.currentState?.openDrawer();
+              },
       ),
-      drawer: !isDesktop ? Drawer(
-        child: AdminSidebar(selectedIndex: _selectedIndex, onItemSelected: _onMenuItemSelected),
-      ): null,
+      drawer: !isDesktop
+          ? Drawer(
+              child: AdminSidebar(
+                selectedIndex: _selectedIndex,
+                onItemSelected: _onMenuItemSelected,
+              ),
+            )
+          : null,
       body: Row(
         children: [
           //Desktop Sidebar always Open
-          if(isDesktop)...[
-            AdminSidebar(selectedIndex: _selectedIndex, onItemSelected: _onMenuItemSelected),
-            Expanded(
-              child: _getCurrentPage(),
-            )
-          ],
+          if (isDesktop)
+            AdminSidebar(
+              selectedIndex: _selectedIndex,
+              onItemSelected: _onMenuItemSelected,
+            ),
+          Expanded(child: _getCurrentPage()),
         ],
       ),
-
     );
   }
 }

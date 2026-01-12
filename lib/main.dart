@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:futter_portfileo_website/screens/admin/auth/login_screen.dart';
 import 'firebase_options.dart';
 import 'config/theme.dart';
 import 'screens/public/home_screen.dart';
@@ -36,7 +37,7 @@ class MyApp extends StatelessWidget {
         title: 'Saidur- Flutter Developer',
         debugShowCheckedModeBanner: false,
         theme: AppTheme.darkTheme(),
-        home: const HomeScreen(),
+        home: const LoginScreen(), //HomeScreen
       ),
     );
   }

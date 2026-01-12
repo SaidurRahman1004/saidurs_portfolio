@@ -88,6 +88,7 @@ class AboutSection extends StatelessWidget {
           AppConstants.aboutMe,
           style: Theme.of(context).textTheme.bodyLarge?.copyWith(height: 1.8),
         ),
+
         const SizedBox(height: 32),
         // Quick Facts
         _buildFactItem(

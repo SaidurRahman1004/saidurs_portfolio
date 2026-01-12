@@ -122,18 +122,19 @@ class AdminProvider extends ChangeNotifier {
   }
 
   /// Profile initials (Avatar SR)
-  String get userInitials{
-    final name = userDisplayName;
-    final parts = name.split(' '); // Split the name into parts
-    if (parts.length >= 2){
+  String get userInitials {
+    final name = userDisplayName.trim();
+    if (name.isEmpty) return 'AD';
+    final parts = name.split(' ');
+    if (parts.length >= 2) {
       return '${parts[0][0]}${parts[1][0]}'.toUpperCase();
-    }else if(parts.isNotEmpty){
-      return '${parts[0][0]}${parts[1][0]}'.toUpperCase();
+    } else if (parts.isNotEmpty && parts[0].length >= 2) {
+      return parts[0].substring(0, 2).toUpperCase();
+    } else if (parts.isNotEmpty) {
+      return parts[0][0].toUpperCase();
     }
-    return 'AD'; //AD Default Admin
-
+    return 'AD';
   }
-
 
 
 
