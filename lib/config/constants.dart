@@ -36,4 +36,14 @@ class AppConstants {
   static const double tabletBreakpoint = 900;
   static const double desktopBreakpoint = 1200;
 
+  //Api EndPoint
+  static const String imgbbApiKey = '87f8708f92a158ed045b4746a14c0ab6';
+
+  // ImgBB API Endpoint
+  static const String imgbbUploadEndpoint = 'https://api.imgbb.com/1/upload';
+
+  // Image Upload Limits
+  static const int maxImageSizeMB = 5;
+  static const int maxImagesPerUpload = 10;
+
 }
