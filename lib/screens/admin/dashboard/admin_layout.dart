@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:futter_portfileo_website/screens/admin/dashboard/skills/skills_management.dart';
 import '../../../widgets/admin/admin_sidebar.dart';
 import '../../../widgets/admin/admin_app_bar.dart';
 import 'dashboard_home.dart';
+import 'projects/projects_management.dart';
 
 class AdminLayout extends StatefulWidget {
   const AdminLayout({super.key});
@@ -32,9 +34,9 @@ class _AdminLayoutState extends State<AdminLayout> {
       case 0:
         return const DashboardHome();
       case 1:
-        return const Center(child: Text('Skill Sections - Coming Soon'));
+        return const SkillsManagement();
       case 2:
-        return const Center(child: Text('Projects Management - Coming Soon'));
+        return const ProjectsManagement();
       case 3:
         return const Center(child: Text('Contact Info - Coming Soon'));
       case 4:
@@ -60,7 +62,6 @@ class _AdminLayoutState extends State<AdminLayout> {
       }
     });
   }
-
 
   @override
   Widget build(BuildContext context) {
