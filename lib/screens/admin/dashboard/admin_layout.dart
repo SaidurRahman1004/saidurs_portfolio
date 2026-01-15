@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:futter_portfileo_website/screens/admin/dashboard/settings/admin_settings.dart';
 import 'package:futter_portfileo_website/screens/admin/dashboard/skills/skills_management.dart';
 import '../../../widgets/admin/admin_sidebar.dart';
 import '../../../widgets/admin/admin_app_bar.dart';
+import 'analytics/analytics_screen.dart';
+import 'contact/contact_management.dart';
 import 'dashboard_home.dart';
 import 'projects/projects_management.dart';
 
@@ -38,11 +41,11 @@ class _AdminLayoutState extends State<AdminLayout> {
       case 2:
         return const ProjectsManagement();
       case 3:
-        return const Center(child: Text('Contact Info - Coming Soon'));
+        return const ContactManagement();
       case 4:
-        return const Center(child: Text('Analytics - Coming Soon'));
+        return const AnalyticsScreen();
       case 5:
-        return const Center(child: Text('Settings - Coming Soon'));
+        return const AdminSettings();
       default:
         return const DashboardHome();
     }
