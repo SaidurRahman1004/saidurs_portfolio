@@ -3,6 +3,8 @@ import 'package:futter_portfileo_website/config/constants.dart';
 import 'package:futter_portfileo_website/widgets/comon/section_title.dart';
 import '../../../config/theme.dart';
 import '../../../widgets/comon/responsive_wrapper.dart';
+import 'package:provider/provider.dart';
+import '../../../providers/portfolio_provider.dart';
 
 class AboutSection extends StatelessWidget {
   const AboutSection({super.key});
@@ -26,7 +28,10 @@ class AboutSection extends StatelessWidget {
             subtitle: 'Learn more about my journey and expertise',
           ),
           const SizedBox(height: 60),
-          ResponsiveWrapper(mobile: _buildMobileLayout(context),desktop: _buildDesktopLayout(context),),
+          ResponsiveWrapper(
+            mobile: _buildMobileLayout(context),
+            desktop: _buildDesktopLayout(context),
+          ),
         ],
       ),
     );
@@ -58,22 +63,49 @@ class AboutSection extends StatelessWidget {
   }
 
   Widget _buildAvatar(BuildContext context) {
-    return Container(
-      height: 350,
-      decoration: BoxDecoration(
-        gradient: AppTheme.cardGradient,
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(
-          color: AppTheme.primaryColor.withOpacity(0.3),
-          width: 2,
-        ),
-      ),
-      child: Center(
-        child: Icon(
-          Icons.person_outline,
-          size: 120,
-          color: AppTheme.primaryColor.withOpacity(0.5),
-        ),
+    return Consumer<PortfolioProvider>(
+      builder: (context, provider, child) {
+        final profileImageUrl = provider.contactInfo?.profileImageUrl;
+
+        return Container(
+          height: 350,
+          decoration: BoxDecoration(
+            gradient: AppTheme.cardGradient,
+            borderRadius: BorderRadius.circular(24),
+            border: Border.all(
+              color: AppTheme.primaryColor.withOpacity(0.3),
+              width: 2,
+            ),
+          ),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(24),
+            child: profileImageUrl != null && profileImageUrl.isNotEmpty
+                ? Image.network(
+                    profileImageUrl,
+                    height: 350,
+                    width: double.infinity,
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) {
+                      return _buildFallbackAvatar();
+                    },
+                    loadingBuilder: (context, child, loadingProgress) {
+                      if (loadingProgress == null) return child;
+                      return const Center(child: CircularProgressIndicator());
+                    },
+                  )
+                : _buildFallbackAvatar(),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildFallbackAvatar() {
+    return Center(
+      child: Icon(
+        Icons.person_outline,
+        size: 120,
+        color: AppTheme.primaryColor.withOpacity(0.5),
       ),
     );
   }

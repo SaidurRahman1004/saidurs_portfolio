@@ -4,6 +4,9 @@ import 'package:futter_portfileo_website/widgets/comon/custom_button.dart';
 import '../../../config/constants.dart';
 import '../../../config/theme.dart';
 import '../../../widgets/comon/responsive_wrapper.dart';
+import 'package:provider/provider.dart';
+import 'package:url_launcher/url_launcher.dart';
+import '../../../providers/portfolio_provider.dart';
 
 class HeroSection extends StatelessWidget {
   final VoidCallback onProjectClick;
@@ -41,10 +44,9 @@ class HeroSection extends StatelessWidget {
   Widget _buildMobileLayout(BuildContext context) {
     return Column(
       children: [
-        _buildIllustration(),
+        _buildIllustration(context),
         const SizedBox(width: 40),
         _buildContent(context),
-
       ],
     );
   }
@@ -55,7 +57,7 @@ class HeroSection extends StatelessWidget {
       children: [
         Expanded(child: _buildContent(context)),
         const SizedBox(width: 80),
-        Expanded(child: _buildIllustration()),
+        Expanded(child: _buildIllustration(context)),
       ],
     );
   }
@@ -94,7 +96,7 @@ class HeroSection extends StatelessWidget {
         Wrap(
           crossAxisAlignment: WrapCrossAlignment.center,
           children: [
-            Text('A' , style: TxtTheme.headlineMedium),
+            Text('A', style: TxtTheme.headlineMedium),
             const SizedBox(width: 8),
             //Animated Textkit
             AnimatedTextKit(
@@ -146,10 +148,31 @@ class HeroSection extends StatelessWidget {
               icon: Icons.work_outline,
             ),
             GradientButton(
-              text:  'Contact Me',
+              text: 'Contact Me',
               icon: Icons.email_outlined,
               isOutlined: true,
               onPressed: onContentClick,
+            ),
+            //Resume Button
+            Consumer<PortfolioProvider>(
+              builder: (context, provider, child) {
+                final resumeUrl = provider.contactInfo?.resumeUrl;
+
+                return GradientButton(
+                  text: 'View Resume',
+                  icon: Icons.description_outlined,
+                  isOutlined: true,
+                  onPressed: resumeUrl != null && resumeUrl.isNotEmpty
+                      ? () => _launchURL(resumeUrl)
+                      : () {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text('Resume not available yet'),
+                            ),
+                          );
+                        },
+                );
+              },
             ),
           ],
         ),
@@ -157,21 +180,67 @@ class HeroSection extends StatelessWidget {
     );
   }
 
-  Widget _buildIllustration() {
-    return Container(
-      height: 300,
-      width: double.infinity,
-      decoration: BoxDecoration(
-        gradient: AppTheme.primaryGradient.scale(0.3),
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: Center(
-        child: Image.network(
-          AppConstants.imgUrl,
-          height: 250,
-          fit: BoxFit.contain,
-        ),
+  //  Dynamic Hero Image from Firebase
+  Widget _buildIllustration(BuildContext context) {
+    return Consumer<PortfolioProvider>(
+      builder: (context, provider, child) {
+        final heroImageUrl = provider.contactInfo?.heroImageUrl;
+
+        return Container(
+          height: 300,
+          width: double.infinity,
+          decoration: BoxDecoration(
+            gradient: AppTheme.primaryGradient.scale(0.3),
+            borderRadius: BorderRadius.circular(16),
+          ),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(16),
+            child: heroImageUrl != null && heroImageUrl.isNotEmpty
+                ? Image.network(
+                    heroImageUrl,
+                    height: 300,
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) {
+                      return _buildFallbackImage();
+                    },
+                    loadingBuilder: (context, child, loadingProgress) {
+                      if (loadingProgress == null) return child;
+                      return const Center(child: CircularProgressIndicator());
+                    },
+                  )
+                : _buildFallbackImage(),
+          ),
+        );
+      },
+    );
+  }
+
+  //FAllback Image
+  Widget _buildFallbackImage() {
+    return Center(
+      child: Image.network(
+        AppConstants.imgUrl,
+        height: 250,
+        fit: BoxFit.contain,
+        errorBuilder: (context, error, stackTrace) {
+          return Icon(
+            Icons.code,
+            size: 120,
+            color: Colors.white.withOpacity(0.3),
+          );
+        },
       ),
     );
+  }
+  //  Launch URL helper
+  Future<void> _launchURL(String url) async {
+    try {
+      final uri = Uri.parse(url);
+      if (await canLaunchUrl(uri)) {
+        await launchUrl(uri, mode: LaunchMode.externalApplication);
+      }
+    } catch (e) {
+      debugPrint('Error launching URL: $e');
+    }
   }
 }

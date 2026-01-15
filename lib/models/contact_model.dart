@@ -3,20 +3,24 @@ class ContactModel {
   final String email;
   final String phone;
   final String githubUrl;
-  final String?  linkedinUrl;    // Optional
-  final String? resumeUrl;      // Optional
+  final String? linkedinUrl; // Optional
+  final String? resumeUrl; // Optional
   final String location;
   final String whatsappNumber;
+  final String? profileImageUrl;
+  final String? heroImageUrl;
 
   ContactModel({
     required this.id,
-    required this. email,
+    required this.email,
     required this.phone,
     required this.githubUrl,
     this.linkedinUrl,
     this.resumeUrl,
     required this.location,
     required this.whatsappNumber,
+    this.profileImageUrl,
+    this.heroImageUrl,
   });
 
   ////json to dart model Map<String, dynamic> formet,Receved Data from Firebase
@@ -29,7 +33,9 @@ class ContactModel {
       linkedinUrl: data['linkedinUrl'],
       resumeUrl: data['resumeUrl'],
       location: data['location'] ?? 'Bangladesh',
-      whatsappNumber:  data['whatsappNumber'] ?? data['phone'] ?? '',
+      whatsappNumber: data['whatsappNumber'] ?? data['phone'] ?? '',
+      profileImageUrl: data['profileImageUrl'],
+      heroImageUrl: data['heroImageUrl'],
     );
   }
 
@@ -44,6 +50,8 @@ class ContactModel {
       'location': location,
       'whatsappNumber': whatsappNumber,
       'updatedAt': DateTime.now().toIso8601String(),
+      'profileImageUrl': profileImageUrl,
+      'heroImageUrl': heroImageUrl,
     };
   }
 
@@ -57,16 +65,20 @@ class ContactModel {
     String? resumeUrl,
     String? location,
     String? whatsappNumber,
+    String? profileImageUrl,
+    String? heroImageUrl,
   }) {
     return ContactModel(
-      id: id ??  this.id,
+      id: id ?? this.id,
       email: email ?? this.email,
       phone: phone ?? this.phone,
       githubUrl: githubUrl ?? this.githubUrl,
       linkedinUrl: linkedinUrl ?? this.linkedinUrl,
       resumeUrl: resumeUrl ?? this.resumeUrl,
-      location: location ?? this. location,
-      whatsappNumber: whatsappNumber ?? this. whatsappNumber,
+      location: location ?? this.location,
+      whatsappNumber: whatsappNumber ?? this.whatsappNumber,
+      profileImageUrl: profileImageUrl ?? this.profileImageUrl,
+      heroImageUrl: heroImageUrl ?? this.heroImageUrl,
     );
   }
 }
