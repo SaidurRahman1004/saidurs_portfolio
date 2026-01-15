@@ -72,37 +72,34 @@ class AdminProvider extends ChangeNotifier {
       _setLoading(false);
       _errorMessage = e.toString().replaceAll('Exception: ', '');
       return false; //login failed
-
-
     }
   }
 
   ///Log Out Methode handle Provider //Current Session end and Go to Login Page
   Future<void> logout() async {
-    try{
+    try {
       _setLoading(true);
       await _authService.signOut();
       _currentUser = null;
       _successMessage = 'Logged out successfully';
       _setLoading(false);
       //Auth state listener automatically update UI
-    }catch(e){
+    } catch (e) {
       _setLoading(false);
       _errorMessage = e.toString().replaceAll('Exception: ', '');
     }
-
   }
 
   ///ResetPassword MEthode
-  Future<bool> sendPasswordReset(String email) async{
-    try{
+  Future<bool> sendPasswordReset(String email) async {
+    try {
       _setLoading(true);
       _clearMassege();
       await _authService.sendPasswordResetEmail(email);
       _successMessage = 'Password reset email sent';
       _setLoading(false);
       return true;
-    }catch(e){
+    } catch (e) {
       _errorMessage = e.toString().replaceAll('Exception: ', '');
       _setLoading(false);
       return false;
@@ -112,10 +109,12 @@ class AdminProvider extends ChangeNotifier {
   ///USER INFO GETTERS
   String get userEmail => _currentUser?.email ?? ""; //current User Email
   String? get userId => _currentUser?.uid; //current User Id
-  bool get isEmailVerified => _currentUser?.emailVerified ?? false; //current User Email Verified
+  bool get isEmailVerified =>
+      _currentUser?.emailVerified ?? false; //current User Email Verified
   //current User Display Name
-  String get userDisplayName{
-    if(_currentUser?.displayName != null && _currentUser!.displayName!.isNotEmpty){
+  String get userDisplayName {
+    if (_currentUser?.displayName != null &&
+        _currentUser!.displayName!.isNotEmpty) {
       return _currentUser!.displayName!;
     }
     return _currentUser?.email?.split('@').first ?? 'Admin';
@@ -125,18 +124,18 @@ class AdminProvider extends ChangeNotifier {
   String get userInitials {
     final name = userDisplayName.trim();
     if (name.isEmpty) return 'AD';
+
     final parts = name.split(' ');
-    if (parts.length >= 2) {
+    if (parts.length >= 2 && parts[0].isNotEmpty && parts[1].isNotEmpty) {
       return '${parts[0][0]}${parts[1][0]}'.toUpperCase();
-    } else if (parts.isNotEmpty && parts[0].length >= 2) {
-      return parts[0].substring(0, 2).toUpperCase();
-    } else if (parts.isNotEmpty) {
+    } else if (parts.isNotEmpty && parts[0].isNotEmpty) {
+      if (parts[0].length >= 2) {
+        return parts[0].substring(0, 2).toUpperCase();
+      }
       return parts[0][0].toUpperCase();
     }
     return 'AD';
   }
-
-
 
   ///HElper Methode
   //helper Methode Set Loading state and Notify Ui
