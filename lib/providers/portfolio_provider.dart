@@ -15,8 +15,10 @@ class PortfolioProvider with ChangeNotifier {
 
   //getter
   List<SkillModel> get skills => _skills;
+
   List<ProjectModel> get projects => _projects;
-  ContactModel?  get contactInfo => _contactInfo;
+
+  ContactModel? get contactInfo => _contactInfo;
 
   ///Loading states
   bool _isLoadingSkills = true;
@@ -146,8 +148,107 @@ class PortfolioProvider with ChangeNotifier {
     }
     return grouped;
   }
+
   /// Show Featured Projects highlight in Publicly from Firebase
   List<ProjectModel> get featuredProjects {
-    return _projects.where((project)=>project.isFeatured).toList();
+    return _projects.where((project) => project.isFeatured).toList();
+  }
+
+  /// ADMIN OPERATIONS - SKILLS CRUD
+  // Add New Skill
+  Future<void> addSkill(SkillModel skill) async {
+    try {
+      await _firebaseService.addSkill(skill);
+    } catch (e) {
+      throw Exception('Failed to add skill: $e');
+    }
+  }
+
+  //Update Skill
+  Future<void> updateSkill(String skillId, SkillModel skill) async {
+    try {
+      await _firebaseService.updateSkill(skillId, skill);
+    } catch (e) {
+      throw Exception('Failed to update skill: $e');
+    }
+  }
+  //DEllet Screen
+  Future<void> deleteSkill(String skillId) async {
+    try {
+      await _firebaseService.deleteSkill(skillId);
+    } catch (e) {
+      throw Exception('Failed to delete skill: $e');
+    }
+  }
+  //Skill visibility toggle
+  Future<void> toggleSkillVisibility(SkillModel skill) async {
+    try{
+      //cheak Current Visiability
+      final updateSkill = skill.copyWith(
+        isVisible: !skill.isVisible,
+      );
+      await _firebaseService.updateSkill(skill.id, updateSkill);
+    }catch(e){
+      throw Exception('Failed to toggle skill visibility: $e');
+    }
+  }
+  /// ADMIN OPERATIONS - PROJECTS CRUD
+  // Project add
+  Future<void> addProject(ProjectModel project) async {
+    try {
+      await _firebaseService. addProject(project);
+    } catch (e) {
+      throw Exception('Failed to add project:  $e');
+    }
+  }
+
+  //Project update
+  Future<void> updateProject(String projectId, ProjectModel project) async {
+    try {
+      await _firebaseService.updateProject(projectId, project);
+    } catch (e) {
+      throw Exception('Failed to update project: $e');
+    }
+  }
+
+  //Project delete
+  Future<void> deleteProject(String projectId) async {
+    try {
+      await _firebaseService.deleteProject(projectId);
+    } catch (e) {
+      throw Exception('Failed to delete project: $e');
+    }
+  }
+  //Project visibility toggle
+  Future<void> toggleProjectVisibility(ProjectModel project) async{
+    try{
+      final updateProject = project.copyWith(
+        isVisible: !project.isVisible,
+      );
+      await _firebaseService.updateProject(project.id, updateProject);
+    }catch(e){
+      throw Exception('Failed to toggle project visibility: $e');
+    }
+  }
+  // Toggle featured status
+  Future<void> toggleProjectFeatured(ProjectModel project) async {
+    try {
+      final updatedProject = project.copyWith(
+        isFeatured: !project.isFeatured,
+      );
+
+      await _firebaseService.updateProject(project.id, updatedProject);
+    } catch (e) {
+      throw Exception('Failed to toggle featured:  $e');
+    }
+  }
+  /// ADMIN OPERATIONS - CONTACT INFO CRUD
+  //Update Contact Info
+  Future<void> updateContactInfo(ContactModel contact) async {
+    try {
+      await _firebaseService.updateContactInfo(contact);
+    } catch (e) {
+      throw Exception('Failed to update contact info: $e');
+    }
   }
 }

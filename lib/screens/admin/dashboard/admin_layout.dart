@@ -61,18 +61,6 @@ class _AdminLayoutState extends State<AdminLayout> {
     });
   }
 
-  /*
-  void _onMenuItemSelected(int index) {
-    setState(() {
-      _selectedIndex = index;
-    });
-    // Close drawer if open For Mobile
-    if (_scaffoldKey.currentState?.isDrawerOpen ?? false) {
-      Navigator.pop(context);
-    }
-  }
-
- */
 
   @override
   Widget build(BuildContext context) {
