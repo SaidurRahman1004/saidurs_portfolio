@@ -55,11 +55,19 @@ class _SkillsManagementState extends State<SkillsManagement> {
   }
 
   @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      Provider.of<PortfolioProvider>(context, listen: false).loadAllSkills();
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Consumer<PortfolioProvider>(
       builder: (context, portfolioProvider, child) {
         // Loading State
-        if (portfolioProvider.isLoadingSkills) {
+        if (portfolioProvider.isLoadingAllSkills) {
           return const Center(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -73,7 +81,7 @@ class _SkillsManagementState extends State<SkillsManagement> {
         }
 
         //Error State
-        if (portfolioProvider.errorSkills != null) {
+        if (portfolioProvider.errorAllSkills != null) {
           return Center(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -92,7 +100,7 @@ class _SkillsManagementState extends State<SkillsManagement> {
                 Text(portfolioProvider.errorSkills!),
                 const SizedBox(height: 24),
                 ElevatedButton.icon(
-                  onPressed: () => portfolioProvider.loadSkills(),
+                  onPressed: () => portfolioProvider.loadAllSkills(),
                   icon: const Icon(Icons.refresh),
                   label: const Text('Retry'),
                 ),
@@ -101,7 +109,7 @@ class _SkillsManagementState extends State<SkillsManagement> {
           );
         }
         //Seccess
-        final allSkills = portfolioProvider.skills;
+        final allSkills = portfolioProvider.allSkills;
         final filteredSkills = _filteredSkills(allSkills);
         final categories = _getCategories(allSkills);
         return SingleChildScrollView(

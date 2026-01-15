@@ -13,6 +13,10 @@ class PortfolioProvider with ChangeNotifier {
   List<ProjectModel> _projects = [];
   ContactModel? _contactInfo;
 
+  //For Admin
+  List<SkillModel> _allSkills = [];
+  List<ProjectModel> _allProjects = [];
+
   //getter
   List<SkillModel> get skills => _skills;
 
@@ -20,10 +24,24 @@ class PortfolioProvider with ChangeNotifier {
 
   ContactModel? get contactInfo => _contactInfo;
 
+  //Admin gretter
+  List<SkillModel> get allSkills => _allSkills;
+
+  List<ProjectModel> get allProjects => _allProjects;
+
   ///Loading states
   bool _isLoadingSkills = true;
   bool _isLoadingProjects = true;
   bool _isLoadingContact = true;
+
+  //Admin Loaders
+  bool _isLoadingAllSkills = false;
+  bool _isLoadingAllProjects = false;
+
+  //get Admin loaders
+  bool get isLoadingAllSkills => _isLoadingAllSkills;
+
+  bool get isLoadingAllProjects => _isLoadingAllProjects;
 
   bool get isLoadingSkills => _isLoadingSkills;
 
@@ -39,6 +57,15 @@ class PortfolioProvider with ChangeNotifier {
   String? _errorSkills;
   String? _errorProjects;
   String? _errorContact;
+
+  //  Admin error states
+  String? _errorAllSkills;
+  String? _errorAllProjects;
+
+  // Admin error getters
+  String? get errorAllSkills => _errorAllSkills;
+
+  String? get errorAllProjects => _errorAllProjects;
 
   String? get errorSkills => _errorSkills;
 
@@ -73,6 +100,33 @@ class PortfolioProvider with ChangeNotifier {
     }
   }
 
+  //Load All Skills For Admin
+  Future<void> loadAllSkills() async {
+    try {
+      _isLoadingAllSkills = true;
+      _errorAllSkills = null;
+      notifyListeners();
+
+      _firebaseService.getAllSkills().listen(
+        (skillsList) {
+          _allSkills = skillsList;
+          _isLoadingAllSkills = false;
+          _errorAllSkills = null;
+          notifyListeners();
+        },
+        onError: (error) {
+          _errorAllSkills = 'Failed to load all skills: $error';
+          _isLoadingAllSkills = false;
+          notifyListeners();
+        },
+      );
+    } catch (e) {
+      _errorAllSkills = 'Unexpected error: $e';
+      _isLoadingAllSkills = false;
+      notifyListeners();
+    }
+  }
+
   //Load All Project
   Future<void> loadProjects() async {
     try {
@@ -96,6 +150,33 @@ class PortfolioProvider with ChangeNotifier {
     } catch (e) {
       _errorProjects = 'Unexpected error: $e';
       _isLoadingProjects = false;
+      notifyListeners();
+    }
+  }
+
+  //Load All Projects For Admin
+  Future<void> loadAllProjects() async {
+    try {
+      _isLoadingAllProjects = true;
+      _errorAllProjects = null;
+      notifyListeners();
+
+      _firebaseService.getAllProjects().listen(
+        (projectsList) {
+          _allProjects = projectsList;
+          _isLoadingAllProjects = false;
+          _errorAllProjects = null;
+          notifyListeners();
+        },
+        onError: (error) {
+          _errorAllProjects = 'Failed to load all projects: $error';
+          _isLoadingAllProjects = false;
+          notifyListeners();
+        },
+      );
+    } catch (e) {
+      _errorAllProjects = 'Unexpected error: $e';
+      _isLoadingAllProjects = false;
       notifyListeners();
     }
   }
@@ -172,6 +253,7 @@ class PortfolioProvider with ChangeNotifier {
       throw Exception('Failed to update skill: $e');
     }
   }
+
   //DEllet Screen
   Future<void> deleteSkill(String skillId) async {
     try {
@@ -180,23 +262,23 @@ class PortfolioProvider with ChangeNotifier {
       throw Exception('Failed to delete skill: $e');
     }
   }
+
   //Skill visibility toggle
   Future<void> toggleSkillVisibility(SkillModel skill) async {
-    try{
+    try {
       //cheak Current Visiability
-      final updateSkill = skill.copyWith(
-        isVisible: !skill.isVisible,
-      );
+      final updateSkill = skill.copyWith(isVisible: !skill.isVisible);
       await _firebaseService.updateSkill(skill.id, updateSkill);
-    }catch(e){
+    } catch (e) {
       throw Exception('Failed to toggle skill visibility: $e');
     }
   }
+
   /// ADMIN OPERATIONS - PROJECTS CRUD
   // Project add
   Future<void> addProject(ProjectModel project) async {
     try {
-      await _firebaseService. addProject(project);
+      await _firebaseService.addProject(project);
     } catch (e) {
       throw Exception('Failed to add project:  $e');
     }
@@ -219,29 +301,28 @@ class PortfolioProvider with ChangeNotifier {
       throw Exception('Failed to delete project: $e');
     }
   }
+
   //Project visibility toggle
-  Future<void> toggleProjectVisibility(ProjectModel project) async{
-    try{
-      final updateProject = project.copyWith(
-        isVisible: !project.isVisible,
-      );
+  Future<void> toggleProjectVisibility(ProjectModel project) async {
+    try {
+      final updateProject = project.copyWith(isVisible: !project.isVisible);
       await _firebaseService.updateProject(project.id, updateProject);
-    }catch(e){
+    } catch (e) {
       throw Exception('Failed to toggle project visibility: $e');
     }
   }
+
   // Toggle featured status
   Future<void> toggleProjectFeatured(ProjectModel project) async {
     try {
-      final updatedProject = project.copyWith(
-        isFeatured: !project.isFeatured,
-      );
+      final updatedProject = project.copyWith(isFeatured: !project.isFeatured);
 
       await _firebaseService.updateProject(project.id, updatedProject);
     } catch (e) {
       throw Exception('Failed to toggle featured:  $e');
     }
   }
+
   /// ADMIN OPERATIONS - CONTACT INFO CRUD
   //Update Contact Info
   Future<void> updateContactInfo(ContactModel contact) async {

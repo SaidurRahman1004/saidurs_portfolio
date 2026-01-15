@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-
 import '../../../../config/theme.dart';
 import '../../../../models/project_model.dart';
 import '../../../../providers/portfolio_provider.dart';
@@ -52,12 +51,19 @@ class _ProjectsManagementState extends State<ProjectsManagement> {
 
     return filtered;
   }
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      Provider.of<PortfolioProvider>(context, listen: false).loadAllProjects();
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     return Consumer<PortfolioProvider>(
       builder: (context, portfolioProvider, child) {
-        if (portfolioProvider.isLoadingProjects) {
+        if (portfolioProvider.isLoadingAllProjects) {
           return const Center(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -70,7 +76,7 @@ class _ProjectsManagementState extends State<ProjectsManagement> {
           );
         }
 
-        if (portfolioProvider.errorProjects != null) {
+        if (portfolioProvider.errorAllProjects != null) {
           return Center(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -87,7 +93,7 @@ class _ProjectsManagementState extends State<ProjectsManagement> {
                 Text(portfolioProvider.errorProjects!),
                 const SizedBox(height: 24),
                 ElevatedButton.icon(
-                  onPressed: () => portfolioProvider.loadProjects(),
+                  onPressed: () => portfolioProvider.loadAllProjects(),
                   icon: const Icon(Icons.refresh),
                   label: const Text('Retry'),
                 ),
@@ -96,7 +102,7 @@ class _ProjectsManagementState extends State<ProjectsManagement> {
           );
         }
 
-        final allProjects = portfolioProvider.projects;
+        final allProjects = portfolioProvider.allProjects;
         final filteredProjects = _filterProjects(allProjects);
 
         return SingleChildScrollView(
