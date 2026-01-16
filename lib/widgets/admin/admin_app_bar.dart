@@ -53,7 +53,12 @@ class AdminAppBar extends StatelessWidget implements PreferredSizeWidget {
               ),
               // View public site button
               TextButton.icon(
-                onPressed: () {},
+                onPressed: () {
+                  //Home Page
+                  Navigator.of(context).pushReplacement(
+                    MaterialPageRoute(builder: (_) => const HomeScreen()),
+                  );
+                },
                 label: Text(isMobile ? 'Site' : 'View Public Site'),
                 icon: const Icon(Icons.launch, size: 18),
                 style: TextButton.styleFrom(

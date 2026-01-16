@@ -61,51 +61,98 @@ class AboutSection extends StatelessWidget {
       ],
     );
   }
-
+//Avatar Image
   Widget _buildAvatar(BuildContext context) {
     return Consumer<PortfolioProvider>(
       builder: (context, provider, child) {
         final profileImageUrl = provider.contactInfo?.profileImageUrl;
+        final isMobile = MediaQuery.of(context).size.width < 600;
 
         return Container(
-          height: 350,
-          decoration: BoxDecoration(
-            gradient: AppTheme.cardGradient,
-            borderRadius: BorderRadius.circular(24),
-            border: Border.all(
-              color: AppTheme.primaryColor.withOpacity(0.3),
-              width: 2,
-            ),
+          constraints: BoxConstraints(
+            maxHeight: isMobile ? 300 : 400,
+            maxWidth: isMobile ? 300 : 400,
           ),
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(24),
-            child: profileImageUrl != null && profileImageUrl.isNotEmpty
-                ? Image.network(
-                    profileImageUrl,
-                    height: 350,
-                    width: double.infinity,
-                    fit: BoxFit.cover,
-                    errorBuilder: (context, error, stackTrace) {
-                      return _buildFallbackAvatar();
-                    },
-                    loadingBuilder: (context, child, loadingProgress) {
-                      if (loadingProgress == null) return child;
-                      return const Center(child: CircularProgressIndicator());
-                    },
-                  )
-                : _buildFallbackAvatar(),
+          child: Stack(
+            children: [
+              Container(
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  gradient: AppTheme.primaryGradient.scale(0.3),
+                  boxShadow: [
+                    BoxShadow(
+                      color: AppTheme.primaryColor.withOpacity(0.3),
+                      blurRadius: 40,
+                      spreadRadius: 10,
+                    ),
+                  ],
+                ),
+              ),
+
+              Center(
+                child: Container(
+                  width: isMobile ? 280 : 380,
+                  height: isMobile ? 280 : 380,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: AppTheme.primaryColor.withOpacity(0.5),
+                      width: 3,
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.3),
+                        blurRadius: 20,
+                        offset: const Offset(0, 10),
+                      ),
+                    ],
+                  ),
+                  child: ClipOval(
+                    child: profileImageUrl != null && profileImageUrl.isNotEmpty
+                        ? Image.network(
+                            profileImageUrl,
+                            fit:
+                                BoxFit.cover,
+                            loadingBuilder: (context, child, loadingProgress) {
+                              if (loadingProgress == null) return child;
+                              return Center(
+                                child: CircularProgressIndicator(
+                                  value:
+                                      loadingProgress.expectedTotalBytes != null
+                                      ? loadingProgress.cumulativeBytesLoaded /
+                                            loadingProgress.expectedTotalBytes!
+                                      : null,
+                                ),
+                              );
+                            },
+                            errorBuilder: (context, error, stackTrace) {
+                              return _buildFallbackAvatar();
+                            },
+                          )
+                        : _buildFallbackAvatar(),
+                  ),
+                ),
+              ),
+            ],
           ),
         );
       },
     );
   }
 
+  // fallback Avatar
   Widget _buildFallbackAvatar() {
-    return Center(
-      child: Icon(
-        Icons.person_outline,
-        size: 120,
-        color: AppTheme.primaryColor.withOpacity(0.5),
+    return Container(
+      decoration: BoxDecoration(
+        gradient: AppTheme.cardGradient,
+        shape: BoxShape.circle,
+      ),
+      child: Center(
+        child: Icon(
+          Icons.person_outline,
+          size: 100,
+          color: AppTheme.primaryColor.withOpacity(0.5),
+        ),
       ),
     );
   }

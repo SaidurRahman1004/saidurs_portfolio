@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:futter_portfileo_website/widgets/comon/responsive_wrapper.dart';
 import '../../config/theme.dart';
 
-class CustomAppBar extends StatelessWidget  implements PreferredSizeWidget{
+class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
   final GlobalKey herokey;
   final GlobalKey aboutkey;
   final GlobalKey skillskey;
@@ -68,18 +68,38 @@ class CustomAppBar extends StatelessWidget  implements PreferredSizeWidget{
             Row(
               children: [
                 //All Of NAbigation
-                _NavButton(text: 'Home', onTap: ()=>_scrollToSection(herokey)),
-                _NavButton(text: 'About', onTap: ()=>_scrollToSection(aboutkey)),
-                _NavButton(text: 'Skills', onTap: ()=>_scrollToSection(skillskey)),
-                _NavButton(text: 'Projects', onTap: ()=>_scrollToSection(projectskey)),
-                _NavButton(text: 'Contact', onTap: ()=>_scrollToSection(contactkey)),
-
+                _NavButton(
+                  text: 'Home',
+                  onTap: () => _scrollToSection(herokey),
+                ),
+                _NavButton(
+                  text: 'About',
+                  onTap: () => _scrollToSection(aboutkey),
+                ),
+                _NavButton(
+                  text: 'Skills',
+                  onTap: () => _scrollToSection(skillskey),
+                ),
+                _NavButton(
+                  text: 'Projects',
+                  onTap: () => _scrollToSection(projectskey),
+                ),
+                _NavButton(
+                  text: 'Contact',
+                  onTap: () => _scrollToSection(contactkey),
+                ),
               ],
             ),
           ] else ...[
-            IconButton(onPressed: () {
-              Scaffold.of(context).openDrawer();
-            }, icon: const Icon(Icons.menu)),
+            Builder(
+              builder: (context) => IconButton(
+                onPressed: () {
+                  Scaffold.of(context).openDrawer();
+                },
+                icon: const Icon(Icons.menu, color: AppTheme.primaryColor),
+                tooltip: 'Menu',
+              ),
+            ),
           ],
         ],
       ),
@@ -89,6 +109,7 @@ class CustomAppBar extends StatelessWidget  implements PreferredSizeWidget{
   @override
   Size get preferredSize => const Size.fromHeight(80);
 }
+
 //_NavButton Used For show button For All Navigations..and shroll effect _scrollToSection
 class _NavButton extends StatelessWidget {
   final String text;

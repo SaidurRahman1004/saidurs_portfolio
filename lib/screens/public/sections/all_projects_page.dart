@@ -99,7 +99,9 @@ class AllProjectsPage extends StatelessWidget {
                           : 3,
                       crossAxisSpacing: 20,
                       mainAxisSpacing: 20,
-                      childAspectRatio: 0.85,
+                      childAspectRatio: ResponsiveWrapper.isMobile(context)
+                          ? 0.85
+                          : (ResponsiveWrapper.isTablet(context) ? 0.9 : 1.5),
                     ),
                     delegate: SliverChildBuilderDelegate((context, index) {
                       return _buildProjectCard(context, projects[index]);

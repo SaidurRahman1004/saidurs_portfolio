@@ -120,7 +120,7 @@ class ProjectsSection extends StatelessWidget {
               return Column(
                 children: [
                   _buildProjectsGrid(context, featuredProjects),
-                  if (provider.projects.length > featuredProjects.length) ...[
+                  if (provider.projects.isNotEmpty) ...[
                     const SizedBox(height: 40),
                     _buildViewAllButton(context, provider.projects.length),
                   ],
@@ -167,15 +167,16 @@ class ProjectsSection extends StatelessWidget {
 
   //Phobe Grid
   Widget _buildMobileGrid(context, List<ProjectModel> projects) {
-    return Column(
-      children: projects
-          .map(
-            (project) => Padding(
-              padding: const EdgeInsets.only(bottom: 20),
-              child: _buildProjectCard(context, project),
-            ),
-          )
-          .toList(),
+    return ListView.builder(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      itemCount: projects.length,
+      itemBuilder: (context, index) {
+        return Padding(
+          padding: const EdgeInsets.only(bottom: 20),
+          child: _buildProjectCard(context, projects[index]),
+        );
+      },
     );
   }
 
@@ -205,7 +206,7 @@ class ProjectsSection extends StatelessWidget {
         crossAxisCount: 3,
         crossAxisSpacing: 24,
         mainAxisSpacing: 24,
-        childAspectRatio: 0.85,
+        childAspectRatio: 1.2,
       ),
       itemCount: projects.length,
       itemBuilder: (context, index) =>
@@ -215,7 +216,13 @@ class ProjectsSection extends StatelessWidget {
 
   //Projects Card
   Widget _buildProjectCard(BuildContext context, ProjectModel project) {
+    final isMobile = MediaQuery.of(context).size.width < 600;
+
     return Container(
+      constraints: BoxConstraints(
+        minHeight: isMobile ? 0 : 320,
+        maxHeight: isMobile ? double.infinity : 380,
+      ),
       decoration: BoxDecoration(
         gradient: AppTheme.cardGradient,
         borderRadius: BorderRadius.circular(20),
@@ -223,17 +230,18 @@ class ProjectsSection extends StatelessWidget {
           color: project.isFeatured
               ? AppTheme.primaryColor.withOpacity(0.5)
               : AppTheme.primaryColor.withOpacity(0.2),
-          width: project.isFeatured ? 2 : 1, // Featured badge
+          width: project.isFeatured ? 2 : 1,
         ),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
         children: [
           // Featured Badge
-          if (project.isFeatured == true) ...[
+          if (project.isFeatured)
             Container(
-              margin: const EdgeInsets.all(16),
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+              margin: const EdgeInsets.all(12),
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
               decoration: BoxDecoration(
                 gradient: AppTheme.primaryGradient,
                 borderRadius: BorderRadius.circular(20),
@@ -241,50 +249,60 @@ class ProjectsSection extends StatelessWidget {
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Icon(Icons.star, size: 14, color: Colors.white),
+                  const Icon(Icons.star, size: 12, color: Colors.white),
                   const SizedBox(width: 4),
                   Text(
                     'FEATURED',
-                    style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                      fontSize: 10,
+                    style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                      fontSize: 9,
                       color: Colors.white,
+                      fontWeight: FontWeight.bold,
                     ),
                   ),
                 ],
               ),
             ),
-          ],
-          //Expanded
+
           Padding(
-            padding: const EdgeInsets.all(20),
+            padding: const EdgeInsets.all(16),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisSize: MainAxisSize.min,
               children: [
-                //Project Name frpm Firebase
+                // Title
                 Text(
                   project.name,
-                  style: Theme.of(context).textTheme.titleLarge,
+                  style: Theme.of(
+                    context,
+                  ).textTheme.titleLarge?.copyWith(fontSize: 18),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
-                const SizedBox(height: 12),
-                // Description
-                Text(
-                  project.description,
-                  style: Theme.of(context).textTheme.bodyMedium,
-                  maxLines: 4,
-                  overflow: TextOverflow.ellipsis,
+                const SizedBox(height: 8),
+
+                SizedBox(
+                  height: isMobile ? 60 : 50,
+                  child: Text(
+                    project.description,
+                    style: Theme.of(
+                      context,
+                    ).textTheme.bodyMedium?.copyWith(fontSize: 13),
+                    maxLines: isMobile ? 3 : 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
                 ),
-                //Tech Stack
+
+                const SizedBox(height: 12),
+
+                // Tech Stack
                 Wrap(
-                  spacing: 10,
-                  runSpacing: 10,
-                  children: project.techStack.map((tech) {
+                  spacing: 6,
+                  runSpacing: 6,
+                  children: project.techStack.take(3).map((tech) {
                     return Container(
                       padding: const EdgeInsets.symmetric(
-                        horizontal: 10,
-                        vertical: 4,
+                        horizontal: 8,
+                        vertical: 3,
                       ),
                       decoration: BoxDecoration(
                         color: AppTheme.secondaryColor.withOpacity(0.2),
@@ -294,7 +312,7 @@ class ProjectsSection extends StatelessWidget {
                         tech,
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
                           color: AppTheme.secondaryColor,
-                          fontSize: 11,
+                          fontSize: 10,
                         ),
                       ),
                     );
@@ -303,36 +321,52 @@ class ProjectsSection extends StatelessWidget {
               ],
             ),
           ),
+          //const Spacer(),
+          isMobile ? const SizedBox(height: 20) : const Spacer(),
 
-          // Github Buttons
+          // Buttons
           Padding(
-            padding: const EdgeInsets.all(20),
-            child: SizedBox(
-              width: double.infinity,
-              child: ElevatedButton.icon(
-                onPressed: () => _launchURL(project.githubUrl),
-                icon: const Icon(Icons.code, size: 18),
-                label: const Text('View Project'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppTheme.primaryColor.withOpacity(0.1),
-                  foregroundColor: AppTheme.primaryColor,
-                  padding: const EdgeInsets.symmetric(vertical: 12),
+            padding: const EdgeInsets.all(16),
+            child: Row(
+              children: [
+                Expanded(
+                  child: ElevatedButton.icon(
+                    onPressed: () => _launchURL(project.githubUrl),
+                    icon: const Icon(Icons.code, size: 16),
+                    label: Text(
+                      'Code',
+                      style: TextStyle(fontSize: isMobile ? 12 : 13),
+                    ),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppTheme.primaryColor.withOpacity(0.1),
+                      foregroundColor: AppTheme.primaryColor,
+                      padding: const EdgeInsets.symmetric(vertical: 10),
+                    ),
+                  ),
                 ),
-              ),
+                if (project.liveUrl != null && project.liveUrl!.isNotEmpty) ...[
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: ElevatedButton.icon(
+                      onPressed: () => _launchURL(project.liveUrl!),
+                      icon: const Icon(Icons.launch, size: 16),
+                      label: Text(
+                        'Live',
+                        style: TextStyle(fontSize: isMobile ? 12 : 13),
+                      ),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppTheme.secondaryColor.withOpacity(
+                          0.1,
+                        ),
+                        foregroundColor: AppTheme.secondaryColor,
+                        padding: const EdgeInsets.symmetric(vertical: 10),
+                      ),
+                    ),
+                  ),
+                ],
+              ],
             ),
           ),
-          if (project.liveUrl != null && project.liveUrl!.isNotEmpty) ...[
-            const SizedBox(width: 12),
-            ElevatedButton.icon(
-              onPressed: () => _launchURL(project.liveUrl!),
-              label: const Text('Live Demo'),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppTheme.secondaryColor.withOpacity(0.1),
-                foregroundColor: AppTheme.secondaryColor,
-                padding: const EdgeInsets.symmetric(vertical: 12),
-              ),
-            ),
-          ],
         ],
       ),
     );

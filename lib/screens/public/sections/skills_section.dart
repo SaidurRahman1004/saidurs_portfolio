@@ -132,7 +132,7 @@ class SkillsSection extends StatelessWidget {
         crossAxisCount: 2,
         crossAxisSpacing: 20,
         mainAxisSpacing: 20,
-        childAspectRatio: 1.3,
+        childAspectRatio: 1.8,
       ),
       itemCount: categories.length,
       itemBuilder: (context, index){
@@ -154,7 +154,7 @@ class SkillsSection extends StatelessWidget {
         crossAxisCount: 3,
         crossAxisSpacing: 24,
         mainAxisSpacing: 24,
-        childAspectRatio: 1.2,
+        childAspectRatio: 1.6,
       ),
       itemCount: categories.length,
       itemBuilder: (context, index) {
@@ -188,7 +188,7 @@ class SkillsSection extends StatelessWidget {
           Row(
             children: [
               Container(
-                padding: const EdgeInsets.all(12),
+                padding: const EdgeInsets.all(10),
                 decoration: BoxDecoration(
                   gradient: AppTheme.primaryGradient.scale(0.3),
                   borderRadius: BorderRadius.circular(12),
@@ -196,7 +196,7 @@ class SkillsSection extends StatelessWidget {
                 child: Icon(
                   icon,
                   color: AppTheme.primaryColor,
-                  size: 28,
+                  size: 24,
                 ),
               ),
               const SizedBox(width: 16),
@@ -212,13 +212,13 @@ class SkillsSection extends StatelessWidget {
 
           //Expended
           Wrap(
-            spacing: 10,
-            runSpacing: 10,
+            spacing: 8,
+            runSpacing: 8,
             children: skills.map((skill) {
               return Container(
                 padding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 6,
+                  horizontal: 10,
+                  vertical: 5,
                 ),
                 decoration: BoxDecoration(
                   color: AppTheme.darkBackground.withOpacity(0.5),

@@ -68,7 +68,7 @@ class _AddProjectDialogState extends State<AddProjectDialog> {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
-              content: Text('❌ Image size too large!  Max 5 MB allowed.'),
+              content: Text(' Image size too large!  Max 5 MB allowed.'),
               backgroundColor: Colors.red,
             ),
           );
@@ -376,6 +376,7 @@ class _AddProjectDialogState extends State<AddProjectDialog> {
         //Image Preview or Placeholder
         Container(
           height: 200,
+          width: double.infinity,
           decoration: BoxDecoration(
             color: AppTheme.darkBackground.withOpacity(0.5),
             borderRadius: BorderRadius.circular(12),

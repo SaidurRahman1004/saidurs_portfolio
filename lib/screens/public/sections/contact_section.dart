@@ -287,10 +287,22 @@ class ContactSection extends StatelessWidget {
       width: double.infinity,
       child: ElevatedButton.icon(
         onPressed: onTap,
-        icon: Icon(icon, color: color),
+        icon: Icon(
+          icon,
+          color: label == 'GitHub'
+              ? (isDisabled ? Colors.grey : Colors.white)
+              : (isDisabled ? color.withOpacity(0.3) : color),
+        ),
         label: Row(
           children: [
-            Text(label),
+            Text(
+              label,
+              style: TextStyle(
+                color: label == 'GitHub'
+                    ? (isDisabled ? Colors.grey : Colors.white)
+                    : null,
+              ),
+            ),
             if (isDisabled) ...[
               const SizedBox(width: 8),
               Text(
@@ -303,10 +315,20 @@ class ContactSection extends StatelessWidget {
           ],
         ),
         style: ElevatedButton.styleFrom(
-          backgroundColor: color.withOpacity(0.1),
-          foregroundColor: color,
+          backgroundColor: label == 'GitHub'
+              ? (isDisabled ? Colors.grey.shade800 : const Color(0xFF181717))
+              : color.withOpacity(isDisabled ? 0.05 : 0.1),
+          foregroundColor: label == 'GitHub'
+              ? Colors.white
+              : (isDisabled ? color.withOpacity(0.3) : color),
           padding: const EdgeInsets.all(20),
           alignment: Alignment.centerLeft,
+          side: BorderSide(
+            color: label == 'GitHub'
+                ? Colors.grey.shade700
+                : color.withOpacity(0.3),
+            width: 1,
+          ),
         ),
       ),
     );
@@ -314,27 +336,59 @@ class ContactSection extends StatelessWidget {
 
   //Footer Sections
   Widget _buildFooter(BuildContext context) {
+    final currentYear = DateTime.now().year;
+
     return Column(
       children: [
-        const Divider(color: AppTheme.surfaceColor),
-        const SizedBox(height: 24),
+        const Divider(color: AppTheme.surfaceColor, thickness: 1),
+        const SizedBox(height: 32),
 
+        // Main footer text
         Text(
-          '© 2026 ${AppConstants.name}. All rights reserved. 💙',
+          '© $currentYear Saidur Rahman.  All rights reserved.',
           style: Theme.of(
             context,
-          ).textTheme.bodyMedium?.copyWith(color: AppTheme.textHint),
+          ).textTheme.bodyMedium?.copyWith(color: AppTheme.textSecondary),
           textAlign: TextAlign.center,
         ),
 
         const SizedBox(height: 8),
 
+        // Tagline
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(
+              'Crafted with ',
+              style: Theme.of(
+                context,
+              ).textTheme.bodySmall?.copyWith(color: AppTheme.textHint),
+            ),
+            ShaderMask(
+              shaderCallback: (bounds) =>
+                  AppTheme.primaryGradient.createShader(bounds),
+              child: const Icon(Icons.favorite, size: 16, color: Colors.white),
+            ),
+            Text(
+              ' using Flutter & Firebase',
+              style: Theme.of(
+                context,
+              ).textTheme.bodySmall?.copyWith(color: AppTheme.textHint),
+            ),
+          ],
+        ),
+
+        const SizedBox(height: 8),
+
+        // Location
         Text(
-          'Made with ❤️ in Bangladesh',
+          'Dhaka, Bangladesh',
           style: Theme.of(
             context,
           ).textTheme.bodySmall?.copyWith(color: AppTheme.textHint),
         ),
+
+        const SizedBox(height: 24),
       ],
     );
   }

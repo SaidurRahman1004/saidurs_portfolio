@@ -33,9 +33,11 @@ class _ProjectsManagementState extends State<ProjectsManagement> {
     if (_searchQuery.isNotEmpty) {
       filtered = filtered.where((project) {
         return project.name.toLowerCase().contains(
-            _searchQuery.toLowerCase()) ||
+              _searchQuery.toLowerCase(),
+            ) ||
             project.description.toLowerCase().contains(
-                _searchQuery.toLowerCase());
+              _searchQuery.toLowerCase(),
+            );
       }).toList();
     }
 
@@ -51,6 +53,7 @@ class _ProjectsManagementState extends State<ProjectsManagement> {
 
     return filtered;
   }
+
   @override
   void initState() {
     super.initState();
@@ -82,13 +85,15 @@ class _ProjectsManagementState extends State<ProjectsManagement> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Icon(
-                    Icons.error_outline, size: 64, color: AppTheme.accentColor),
+                  Icons.error_outline,
+                  size: 64,
+                  color: AppTheme.accentColor,
+                ),
                 const SizedBox(height: 16),
-                Text('Failed to load projects',
-                    style: Theme
-                        .of(context)
-                        .textTheme
-                        .titleLarge),
+                Text(
+                  'Failed to load projects',
+                  style: Theme.of(context).textTheme.titleLarge,
+                ),
                 const SizedBox(height: 8),
                 Text(portfolioProvider.errorProjects!),
                 const SizedBox(height: 24),
@@ -137,24 +142,16 @@ class _ProjectsManagementState extends State<ProjectsManagement> {
             children: [
               Text(
                 'Projects Management',
-                style: Theme
-                    .of(context)
-                    .textTheme
-                    .headlineSmall
-                    ?.copyWith(
+                style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                   fontWeight: FontWeight.bold,
                 ),
               ),
               const SizedBox(height: 4),
               Text(
                 '$totalCount total projects',
-                style: Theme
-                    .of(context)
-                    .textTheme
-                    .bodyMedium
-                    ?.copyWith(
-                  color: AppTheme.textSecondary,
-                ),
+                style: Theme.of(
+                  context,
+                ).textTheme.bodyMedium?.copyWith(color: AppTheme.textSecondary),
               ),
             ],
           ),
@@ -203,14 +200,14 @@ class _ProjectsManagementState extends State<ProjectsManagement> {
         prefixIcon: const Icon(Icons.search),
         suffixIcon: _searchQuery.isNotEmpty
             ? IconButton(
-          icon: const Icon(Icons.clear),
-          onPressed: () {
-            setState(() {
-              _searchController.clear();
-              _searchQuery = '';
-            });
-          },
-        )
+                icon: const Icon(Icons.clear),
+                onPressed: () {
+                  setState(() {
+                    _searchController.clear();
+                    _searchQuery = '';
+                  });
+                },
+              )
             : null,
         filled: true,
         fillColor: AppTheme.cardBackground,
@@ -258,35 +255,27 @@ class _ProjectsManagementState extends State<ProjectsManagement> {
     );
   }
 
-  Widget _buildProjectsGridView(List<ProjectModel> projects) {
-    return GridView.builder(
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 2,
-        crossAxisSpacing: 20,
-        mainAxisSpacing: 20,
-        childAspectRatio: 1.2,
-      ),
-      itemCount: projects.length,
-      itemBuilder: (context, index) =>
-          _buildProjectCard(context, projects[index]),
-    );
-  }
-
   Widget _buildProjectsList(List<ProjectModel> projects) {
     return Column(
-      children: projects.map((project) =>
-          Padding(
-            padding: const EdgeInsets.only(bottom: 16),
-            child: _buildProjectCard(context, project),
-          )).toList(),
+      children: projects
+          .map(
+            (project) => Padding(
+              padding: const EdgeInsets.only(bottom: 16),
+              child: _buildProjectCard(context, project),
+            ),
+          )
+          .toList(),
     );
   }
 
   /// Project Card
   Widget _buildProjectCard(BuildContext context, ProjectModel project) {
+    bool isMobile = ResponsiveWrapper.isMobile(context);
     return Container(
+      constraints: BoxConstraints(
+        minHeight: 400,
+        maxHeight: isMobile ? 500 : 450,
+      ), // Desktop: no constraint
       decoration: BoxDecoration(
         gradient: AppTheme.cardGradient,
         borderRadius: BorderRadius.circular(16),
@@ -299,13 +288,14 @@ class _ProjectsManagementState extends State<ProjectsManagement> {
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
         children: [
-
-          /// Image Section
+          // Image Section
           if (project.imageUrl != null)
             ClipRRect(
               borderRadius: const BorderRadius.vertical(
-                  top: Radius.circular(16)),
+                top: Radius.circular(16),
+              ),
               child: Image.network(
                 project.imageUrl!,
                 height: 150,
@@ -316,7 +306,10 @@ class _ProjectsManagementState extends State<ProjectsManagement> {
                     height: 150,
                     color: AppTheme.surfaceColor,
                     child: Icon(
-                        Icons.broken_image, size: 48, color: AppTheme.textHint),
+                      Icons.broken_image,
+                      size: 48,
+                      color: AppTheme.textHint,
+                    ),
                   );
                 },
               ),
@@ -327,112 +320,114 @@ class _ProjectsManagementState extends State<ProjectsManagement> {
               decoration: BoxDecoration(
                 color: AppTheme.surfaceColor,
                 borderRadius: const BorderRadius.vertical(
-                    top: Radius.circular(16)),
+                  top: Radius.circular(16),
+                ),
               ),
               child: Center(
-                child: Icon(Icons.image_not_supported, size: 48,
-                    color: AppTheme.textHint),
+                child: Icon(
+                  Icons.image_not_supported,
+                  size: 48,
+                  color: AppTheme.textHint,
+                ),
               ),
             ),
 
-          /// Content
-          Expanded(
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-
-                  /// Badges
-                  Row(
-                    children: [
-                      if (project.isFeatured)
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 8, vertical: 4),
-                          decoration: BoxDecoration(
-                            gradient: AppTheme.primaryGradient,
-                            borderRadius: BorderRadius.circular(6),
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              const Icon(
-                                  Icons.star, size: 12, color: Colors.white),
-                              const SizedBox(width: 4),
-                              Text('FEATURED',
-                                  style: TextStyle(
-                                      fontSize: 10, color: Colors.white)),
-                            ],
-                          ),
-                        ),
-                      const SizedBox(width: 8),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 8, vertical: 4),
-                        decoration: BoxDecoration(
-                          color: project.isVisible
-                              ? Colors.green.withOpacity(0.2)
-                              : Colors.orange.withOpacity(0.2),
-                          borderRadius: BorderRadius.circular(6),
-                        ),
-                        child: Text(
-                          project.isVisible ? 'VISIBLE' : 'HIDDEN',
+          // Badges
+          Padding(
+            padding: const EdgeInsets.all(16),
+            child: Row(
+              children: [
+                if (project.isFeatured)
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 4,
+                    ),
+                    decoration: BoxDecoration(
+                      gradient: AppTheme.primaryGradient,
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(Icons.star, size: 12, color: Colors.white),
+                        const SizedBox(width: 4),
+                        const Text(
+                          'FEATURED',
                           style: TextStyle(
                             fontSize: 10,
-                            color: project.isVisible ? Colors.green : Colors
-                                .orange,
-                            fontWeight: FontWeight.w600,
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
                           ),
                         ),
-                      ),
-                    ],
-                  ),
-
-                  const SizedBox(height: 12),
-
-                  /// Title
-                  Text(
-                    project.name,
-                    style: Theme
-                        .of(context)
-                        .textTheme
-                        .titleLarge
-                        ?.copyWith(
-                      fontWeight: FontWeight.bold,
+                      ],
                     ),
-                    maxLines: 1,
+                  ),
+                const SizedBox(width: 8),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 4,
+                  ),
+                  decoration: BoxDecoration(
+                    color: project.isVisible
+                        ? Colors.green.withOpacity(0.2)
+                        : Colors.orange.withOpacity(0.2),
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                  child: Text(
+                    project.isVisible ? 'VISIBLE' : 'HIDDEN',
+                    style: TextStyle(
+                      fontSize: 10,
+                      color: project.isVisible ? Colors.green : Colors.orange,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Title
+                Text(
+                  project.name,
+                  style: Theme.of(
+                    context,
+                  ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: 8),
+
+                SizedBox(
+                  height: 60,
+                  child: Text(
+                    project.description,
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      color: AppTheme.textSecondary,
+                    ),
+                    maxLines: 3,
                     overflow: TextOverflow.ellipsis,
                   ),
-
-                  const SizedBox(height: 8),
-
-                  /// Description
-                  Expanded(
-                    child: Text(
-                      project.description,
-                      style: Theme
-                          .of(context)
-                          .textTheme
-                          .bodyMedium
-                          ?.copyWith(
-                        color: AppTheme.textSecondary,
-                      ),
-                      maxLines: 3,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-
-                  const SizedBox(height: 12),
-
-                  /// Tech Stack
-                  Wrap(
+                ),
+                const SizedBox(height: 12),
+                SizedBox(
+                  height: 30,
+                  child: Wrap(
                     spacing: 6,
                     runSpacing: 6,
                     children: project.techStack.take(4).map((tech) {
                       return Container(
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 8, vertical: 4),
+                          horizontal: 8,
+                          vertical: 4,
+                        ),
                         decoration: BoxDecoration(
                           color: AppTheme.secondaryColor.withOpacity(0.2),
                           borderRadius: BorderRadius.circular(6),
@@ -440,17 +435,21 @@ class _ProjectsManagementState extends State<ProjectsManagement> {
                         child: Text(
                           tech,
                           style: TextStyle(
-                              fontSize: 11, color: AppTheme.secondaryColor),
+                            fontSize: 11,
+                            color: AppTheme.secondaryColor,
+                          ),
                         ),
                       );
                     }).toList(),
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
           ),
 
-          /// Actions
+          const SizedBox(height: 12),
+
+          // Actions
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
@@ -502,6 +501,23 @@ class _ProjectsManagementState extends State<ProjectsManagement> {
     );
   }
 
+  Widget _buildProjectsGridView(List<ProjectModel> projects) {
+    double width = MediaQuery.of(context).size.width;
+    int crossAxisCount = width > 1200 ? 3 : 2;
+    return GridView.builder(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: crossAxisCount,
+        crossAxisSpacing: 20,
+        mainAxisSpacing: 20,
+      ),
+      itemCount: projects.length,
+      itemBuilder: (context, index) =>
+          _buildProjectCard(context, projects[index]),
+    );
+  }
+
   /// Empty State
   Widget _buildEmptyState() {
     return Center(
@@ -511,22 +527,18 @@ class _ProjectsManagementState extends State<ProjectsManagement> {
           children: [
             Icon(Icons.work_off, size: 64, color: AppTheme.textHint),
             const SizedBox(height: 16),
-            Text('No projects found', style: Theme
-                .of(context)
-                .textTheme
-                .titleLarge),
+            Text(
+              'No projects found',
+              style: Theme.of(context).textTheme.titleLarge,
+            ),
             const SizedBox(height: 8),
             Text(
               _searchQuery.isNotEmpty
                   ? 'Try adjusting your search or filters'
                   : 'Click "Add Project" to create your first project',
-              style: Theme
-                  .of(context)
-                  .textTheme
-                  .bodyMedium
-                  ?.copyWith(
-                color: AppTheme.textSecondary,
-              ),
+              style: Theme.of(
+                context,
+              ).textTheme.bodyMedium?.copyWith(color: AppTheme.textSecondary),
               textAlign: TextAlign.center,
             ),
           ],
@@ -550,8 +562,10 @@ class _ProjectsManagementState extends State<ProjectsManagement> {
     );
   }
 
-  Future<void> _toggleVisibility(BuildContext context,
-      ProjectModel project) async {
+  Future<void> _toggleVisibility(
+    BuildContext context,
+    ProjectModel project,
+  ) async {
     try {
       final provider = Provider.of<PortfolioProvider>(context, listen: false);
       await provider.toggleProjectVisibility(project);
@@ -559,9 +573,11 @@ class _ProjectsManagementState extends State<ProjectsManagement> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(project.isVisible
-                ? 'Project hidden from public view'
-                : 'Project now visible on public site'),
+            content: Text(
+              project.isVisible
+                  ? 'Project hidden from public view'
+                  : 'Project now visible on public site',
+            ),
             backgroundColor: Colors.green,
           ),
         );
@@ -569,15 +585,19 @@ class _ProjectsManagementState extends State<ProjectsManagement> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error:  $e'),
-              backgroundColor: AppTheme.accentColor),
+          SnackBar(
+            content: Text('Error:  $e'),
+            backgroundColor: AppTheme.accentColor,
+          ),
         );
       }
     }
   }
 
-  Future<void> _toggleFeatured(BuildContext context,
-      ProjectModel project) async {
+  Future<void> _toggleFeatured(
+    BuildContext context,
+    ProjectModel project,
+  ) async {
     try {
       final provider = Provider.of<PortfolioProvider>(context, listen: false);
       await provider.toggleProjectFeatured(project);
@@ -585,9 +605,11 @@ class _ProjectsManagementState extends State<ProjectsManagement> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(project.isFeatured
-                ? 'Project removed from featured'
-                : 'Project marked as featured'),
+            content: Text(
+              project.isFeatured
+                  ? 'Project removed from featured'
+                  : 'Project marked as featured',
+            ),
             backgroundColor: Colors.green,
           ),
         );
@@ -595,8 +617,10 @@ class _ProjectsManagementState extends State<ProjectsManagement> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error: $e'),
-              backgroundColor: AppTheme.accentColor),
+          SnackBar(
+            content: Text('Error: $e'),
+            backgroundColor: AppTheme.accentColor,
+          ),
         );
       }
     }
@@ -605,43 +629,43 @@ class _ProjectsManagementState extends State<ProjectsManagement> {
   void _confirmDelete(BuildContext context, ProjectModel project) {
     showDialog(
       context: context,
-      builder: (context) =>
-          AlertDialog(
-            backgroundColor: AppTheme.cardBackground,
-            shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16)),
-            title: Row(
-              children: [
-                Icon(Icons.warning_amber, color: AppTheme.accentColor),
-                const SizedBox(width: 12),
-                const Text('Delete Project? '),
-              ],
-            ),
-            content: Text(
-              'Are you sure you want to delete "${project
-                  .name}"?\nThis action cannot be undone.',
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: const Text('Cancel'),
-              ),
-              ElevatedButton(
-                onPressed: () async {
-                  Navigator.pop(context);
-                  await _deleteProject(context, project);
-                },
-                style: ElevatedButton.styleFrom(
-                    backgroundColor: AppTheme.accentColor),
-                child: const Text('Delete'),
-              ),
-            ],
+      builder: (context) => AlertDialog(
+        backgroundColor: AppTheme.cardBackground,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Row(
+          children: [
+            Icon(Icons.warning_amber, color: AppTheme.accentColor),
+            const SizedBox(width: 12),
+            const Text('Delete Project? '),
+          ],
+        ),
+        content: Text(
+          'Are you sure you want to delete "${project.name}"?\nThis action cannot be undone.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
           ),
+          ElevatedButton(
+            onPressed: () async {
+              Navigator.pop(context);
+              await _deleteProject(context, project);
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppTheme.accentColor,
+            ),
+            child: const Text('Delete'),
+          ),
+        ],
+      ),
     );
   }
 
-  Future<void> _deleteProject(BuildContext context,
-      ProjectModel project) async {
+  Future<void> _deleteProject(
+    BuildContext context,
+    ProjectModel project,
+  ) async {
     try {
       final provider = Provider.of<PortfolioProvider>(context, listen: false);
       await provider.deleteProject(project.id);

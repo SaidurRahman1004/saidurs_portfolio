@@ -82,21 +82,33 @@ class _ContactManagementState extends State<ContactManagement> {
     });
 
     try {
+      //  Upload images if selected
+      String? finalProfileUrl = _profileImageUrl;
+      String? finalHeroUrl = _heroImageUrl;
+
+      if (_selectedProfileImage != null) {
+        finalProfileUrl = await _uploadProfileImage();
+      }
+
+      if (_selectedHeroImage != null) {
+        finalHeroUrl = await _uploadHeroImage();
+      }
+
       final updatedContact = ContactModel(
         id: 'info',
-        email: _emailController.text.trim(),
+        email: _emailController.text. trim(),
         phone: _phoneController.text.trim(),
         whatsappNumber: _whatsappController.text.trim(),
-        githubUrl: _githubController.text.trim(),
-        linkedinUrl: _linkedinController.text.trim().isEmpty
+        githubUrl: _githubController.text. trim(),
+        linkedinUrl:  _linkedinController.text.trim().isEmpty
             ? null
             : _linkedinController.text.trim(),
-        resumeUrl: _resumeController.text.trim().isEmpty
-            ? null
+        resumeUrl: _resumeController. text.trim().isEmpty
+            ?  null
             : _resumeController.text.trim(),
         location: _locationController.text.trim(),
-         // profileImageUrl: finalProfileUrl,
-         // heroImageUrl: finalHeroUrl,
+        profileImageUrl: finalProfileUrl,
+        heroImageUrl: finalHeroUrl,
       );
 
       final portfolioProvider = Provider.of<PortfolioProvider>(
@@ -324,7 +336,9 @@ class _ContactManagementState extends State<ContactManagement> {
               children: [
                 /// Header
                 _buildHeader(context),
-
+                const SizedBox(height: 32),
+                _buildImageUploadSection(),
+                //Image Upload
                 const SizedBox(height: 32),
 
                 /// Form

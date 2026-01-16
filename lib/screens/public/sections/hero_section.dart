@@ -144,7 +144,7 @@ class HeroSection extends StatelessWidget {
           children: [
             GradientButton(
               onPressed: onProjectClick,
-              text: 'ViewProject',
+              text: 'View Project',
               icon: Icons.work_outline,
             ),
             GradientButton(
