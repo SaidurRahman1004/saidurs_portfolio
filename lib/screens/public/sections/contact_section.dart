@@ -7,6 +7,8 @@ import '../../../config/theme.dart';
 import '../../../widgets/comon/responsive_wrapper.dart';
 import '../../../providers/portfolio_provider.dart';
 import '../../../models/contact_model.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+
 class ContactSection extends StatelessWidget {
   const ContactSection({super.key});
 
@@ -180,9 +182,9 @@ class ContactSection extends StatelessWidget {
         const SizedBox(height: 32),
         _buildSocialButton(
           context,
-          icon: Icons.code,
+          icon: FontAwesomeIcons.github,
           label: 'GitHub',
-          color: Colors.white,
+          color: const Color(0xFF181717),
           onTap: () => _launchURL(contact.githubUrl),
         ),
 
@@ -190,7 +192,7 @@ class ContactSection extends StatelessWidget {
 
         _buildSocialButton(
           context,
-          icon: Icons.work_outline,
+          icon: FontAwesomeIcons.linkedin,
           label: 'LinkedIn',
           color: const Color(0xFF0A66C2),
           onTap: contact.linkedinUrl != null
@@ -293,9 +295,9 @@ class ContactSection extends StatelessWidget {
               const SizedBox(width: 8),
               Text(
                 '(Coming soon)',
-                style: Theme.of(context).textTheme.bodySmall?. copyWith(
-                  color:  AppTheme.textHint,
-                ),
+                style: Theme.of(
+                  context,
+                ).textTheme.bodySmall?.copyWith(color: AppTheme.textHint),
               ),
             ],
           ],

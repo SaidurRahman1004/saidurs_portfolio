@@ -1,9 +1,13 @@
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../../config/theme.dart';
 import '../../../../providers/portfolio_provider.dart';
 import '../../../../models/contact_model.dart';
 import '../../../../widgets/comon/responsive_wrapper.dart';
+import 'package:image_picker/image_picker.dart';
+import '../../../../services/image_upload_service.dart';
 
 class ContactManagement extends StatefulWidget {
   const ContactManagement({super.key});
@@ -26,6 +30,16 @@ class _ContactManagementState extends State<ContactManagement> {
   bool _isLoading = false;
   bool _isInitialized = false;
 
+  //Image Upload
+  Uint8List? _selectedProfileImage;
+  Uint8List? _selectedHeroImage;
+  String? _profileImageUrl;
+  String? _heroImageUrl;
+  bool _isUploadingProfile = false;
+  bool _isUploadingHero = false;
+  final ImagePicker _picker = ImagePicker();
+  final ImageUploadService _uploadService = ImageUploadService.instance;
+
   @override
   void dispose() {
     _emailController.dispose();
@@ -46,9 +60,13 @@ class _ContactManagementState extends State<ContactManagement> {
     _phoneController.text = contact.phone;
     _whatsappController.text = contact.whatsappNumber;
     _githubController.text = contact.githubUrl;
-    _linkedinController.text = contact.linkedinUrl ?? '';
-    _resumeController.text = contact.resumeUrl ?? '';
+    _linkedinController. text = contact.linkedinUrl ??  '';
+    _resumeController. text = contact.resumeUrl ??  '';
     _locationController.text = contact.location;
+
+    //  Initialize image URLs
+    _profileImageUrl = contact.profileImageUrl;
+    _heroImageUrl = contact.heroImageUrl;
 
     _isInitialized = true;
   }
@@ -77,6 +95,8 @@ class _ContactManagementState extends State<ContactManagement> {
             ? null
             : _resumeController.text.trim(),
         location: _locationController.text.trim(),
+         // profileImageUrl: finalProfileUrl,
+         // heroImageUrl: finalHeroUrl,
       );
 
       final portfolioProvider = Provider.of<PortfolioProvider>(
@@ -115,6 +135,129 @@ class _ContactManagementState extends State<ContactManagement> {
           ),
         );
       }
+    }
+  }
+
+  //  Pick Profile Image
+  Future<void> _pickProfileImage() async {
+    try {
+      final XFile? image = await _picker.pickImage(
+        source: ImageSource.gallery,
+        maxWidth: 800,
+        maxHeight: 800,
+        imageQuality: 85,
+      );
+
+      if (image == null) return;
+
+      final imageBytes = await image.readAsBytes();
+
+      if (! _uploadService.validateImageSize(imageBytes)) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Image size too large!  Max 5 MB'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+        return;
+      }
+
+      setState(() {
+        _selectedProfileImage = imageBytes;
+      });
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger. of(context).showSnackBar(
+          SnackBar(content: Text('Error:  $e')),
+        );
+      }
+    }
+  }
+
+  //  Pick Hero Image
+  Future<void> _pickHeroImage() async {
+    try {
+      final XFile? image = await _picker. pickImage(
+        source: ImageSource.gallery,
+        maxWidth: 1920,
+        maxHeight: 1080,
+        imageQuality: 85,
+      );
+
+      if (image == null) return;
+
+      final imageBytes = await image. readAsBytes();
+
+      if (!_uploadService.validateImageSize(imageBytes)) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content:  Text('Image size too large! Max 5 MB'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+        return;
+      }
+
+      setState(() {
+        _selectedHeroImage = imageBytes;
+      });
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error: $e')),
+        );
+      }
+    }
+  }
+
+  //  Upload Images
+  Future<String? > _uploadProfileImage() async {
+    if (_selectedProfileImage == null) return _profileImageUrl;
+
+    try {
+      setState(() => _isUploadingProfile = true);
+
+      final url = await _uploadService.uploadImage(
+        imageBytes: _selectedProfileImage!,
+        fileName: 'profile_${DateTime.now().millisecondsSinceEpoch}',
+      );
+
+      setState(() {
+        _isUploadingProfile = false;
+        _profileImageUrl = url;
+      });
+
+      return url;
+    } catch (e) {
+      setState(() => _isUploadingProfile = false);
+      throw Exception('Profile image upload failed');
+    }
+  }
+
+  Future<String?> _uploadHeroImage() async {
+    if (_selectedHeroImage == null) return _heroImageUrl;
+
+    try {
+      setState(() => _isUploadingHero = true);
+
+      final url = await _uploadService.uploadImage(
+        imageBytes: _selectedHeroImage!,
+        fileName: 'hero_${DateTime.now().millisecondsSinceEpoch}',
+      );
+
+      setState(() {
+        _isUploadingHero = false;
+        _heroImageUrl = url;
+      });
+
+      return url;
+    } catch (e) {
+      setState(() => _isUploadingHero = false);
+      throw Exception('Hero image upload failed');
     }
   }
 
@@ -236,6 +379,235 @@ class _ContactManagementState extends State<ContactManagement> {
     );
   }
 
+  // Image Upload Section
+  Widget _buildImageUploadSection() {
+    return Container(
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        gradient: AppTheme.cardGradient,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppTheme.primaryColor. withOpacity(0.2)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Profile Images',
+            style: Theme.of(context).textTheme.titleLarge?.copyWith(
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          const SizedBox(height: 20),
+
+          ResponsiveWrapper(
+            mobile: Column(
+              children: [
+                _buildImageUpload(
+                  title: 'Profile Picture (About Section)',
+                  currentUrl: _profileImageUrl,
+                  selectedBytes: _selectedProfileImage,
+                  isUploading: _isUploadingProfile,
+                  onPick: _pickProfileImage,
+                  onRemove: () => setState(() {
+                    _selectedProfileImage = null;
+                    _profileImageUrl = null;
+                  }),
+                ),
+                const SizedBox(height: 20),
+                _buildImageUpload(
+                  title: 'Hero Image (Home Section)',
+                  currentUrl:  _heroImageUrl,
+                  selectedBytes: _selectedHeroImage,
+                  isUploading: _isUploadingHero,
+                  onPick:  _pickHeroImage,
+                  onRemove: () => setState(() {
+                    _selectedHeroImage = null;
+                    _heroImageUrl = null;
+                  }),
+                ),
+              ],
+            ),
+            desktop:  Row(
+              children: [
+                Expanded(
+                  child: _buildImageUpload(
+                    title: 'Profile Picture (About Section)',
+                    currentUrl:  _profileImageUrl,
+                    selectedBytes: _selectedProfileImage,
+                    isUploading:  _isUploadingProfile,
+                    onPick: _pickProfileImage,
+                    onRemove: () => setState(() {
+                      _selectedProfileImage = null;
+                      _profileImageUrl = null;
+                    }),
+                  ),
+                ),
+                const SizedBox(width: 20),
+                Expanded(
+                  child: _buildImageUpload(
+                    title: 'Hero Image (Home Section)',
+                    currentUrl: _heroImageUrl,
+                    selectedBytes: _selectedHeroImage,
+                    isUploading: _isUploadingHero,
+                    onPick: _pickHeroImage,
+                    onRemove: () => setState(() {
+                      _selectedHeroImage = null;
+                      _heroImageUrl = null;
+                    }),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildImageUpload({
+    required String title,
+    required String?  currentUrl,
+    required Uint8List? selectedBytes,
+    required bool isUploading,
+    required VoidCallback onPick,
+    required VoidCallback onRemove,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          title,
+          style: Theme. of(context).textTheme.titleSmall?.copyWith(
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        const SizedBox(height: 8),
+        Container(
+          height: 200,
+          decoration: BoxDecoration(
+            color: AppTheme.darkBackground. withOpacity(0.5),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: AppTheme.primaryColor.withOpacity(0.3)),
+          ),
+          child: selectedBytes != null
+              ? Stack(
+            children: [
+              ClipRRect(
+                borderRadius: BorderRadius.circular(12),
+                child: Image. memory(
+                  selectedBytes,
+                  width: double.infinity,
+                  height: 200,
+                  fit: BoxFit.cover,
+                ),
+              ),
+              Positioned(
+                top: 8,
+                right: 8,
+                child: IconButton(
+                  onPressed: onRemove,
+                  icon:  const Icon(Icons.close),
+                  style: IconButton.styleFrom(
+                    backgroundColor: Colors.black54,
+                    foregroundColor:  Colors.white,
+                  ),
+                ),
+              ),
+            ],
+          )
+              : currentUrl != null && currentUrl.isNotEmpty
+              ? Stack(
+            children: [
+              ClipRRect(
+                borderRadius: BorderRadius. circular(12),
+                child: Image.network(
+                  currentUrl,
+                  width:  double.infinity,
+                  height: 200,
+                  fit: BoxFit.cover,
+                  errorBuilder: (context, error, stackTrace) {
+                    return Center(
+                      child: Icon(
+                        Icons.broken_image,
+                        size: 48,
+                        color: AppTheme.textHint,
+                      ),
+                    );
+                  },
+                ),
+              ),
+              Positioned(
+                top: 8,
+                right: 8,
+                child: Row(
+                  children: [
+                    IconButton(
+                      onPressed: onPick,
+                      icon: const Icon(Icons.edit),
+                      style: IconButton.styleFrom(
+                        backgroundColor: Colors.black54,
+                        foregroundColor: Colors.white,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    IconButton(
+                      onPressed: onRemove,
+                      icon: const Icon(Icons.delete),
+                      style: IconButton.styleFrom(
+                        backgroundColor: Colors.black54,
+                        foregroundColor: Colors.white,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          )
+              : InkWell(
+            onTap: isUploading ? null : onPick,
+            borderRadius: BorderRadius.circular(12),
+            child: Center(
+              child: Column(
+                mainAxisAlignment:  MainAxisAlignment.center,
+                children: [
+                  if (isUploading)
+                    const CircularProgressIndicator()
+                  else
+                    Icon(
+                      Icons.add_photo_alternate_outlined,
+                      size: 48,
+                      color: AppTheme.textHint,
+                    ),
+                  const SizedBox(height: 12),
+                  Text(
+                    isUploading ? 'Uploading...' : 'Click to upload',
+                    style: Theme. of(context)
+                        .textTheme
+                        .bodyMedium
+                        ?.copyWith(
+                      color:  AppTheme.textSecondary,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    'Max 5 MB • JPG, PNG',
+                    style: Theme.of(context)
+                        . textTheme
+                        . bodySmall
+                        ?.copyWith(
+                      color: AppTheme.textHint,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+//Email Feild
   Widget _buildEmailField() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,

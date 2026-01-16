@@ -37,7 +37,7 @@ class MyApp extends StatelessWidget {
         title: 'Saidur- Flutter Developer',
         debugShowCheckedModeBanner: false,
         theme: AppTheme.darkTheme(),
-        home: const HomeScreen(), //HomeScreen //LoginScreen
+        home: const LoginScreen(), //HomeScreen //LoginScreen
       ),
     );
   }

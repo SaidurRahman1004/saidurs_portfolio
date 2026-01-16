@@ -6,6 +6,7 @@ import '../../../config/theme.dart';
 import '../../../widgets/comon/responsive_wrapper.dart';
 import 'package:provider/provider.dart';
 import '../../../providers/portfolio_provider.dart';
+import 'all_projects_page.dart';
 
 class ProjectsSection extends StatelessWidget {
   const ProjectsSection({super.key});
@@ -83,8 +84,13 @@ class ProjectsSection extends StatelessWidget {
                   ),
                 );
               }
+
+              //Only Feature Project
+              final featuredProjects = provider.projects
+                  .where((project) => project.isFeatured)
+                  .toList();
               //Emty State
-              if (provider.projects.isEmpty) {
+              if (featuredProjects.isEmpty) {
                 return Center(
                   child: Padding(
                     padding: const EdgeInsets.all(60.0),
@@ -97,12 +103,12 @@ class ProjectsSection extends StatelessWidget {
                         ),
                         const SizedBox(height: 16),
                         Text(
-                          'No projects yet',
+                          'No featured projects yet',
                           style: Theme.of(context).textTheme.headlineSmall,
                         ),
                         const SizedBox(height: 8),
                         Text(
-                          'Projects will appear here once added',
+                          'Featured Projects will appear here once added',
                           style: Theme.of(context).textTheme.bodyMedium
                               ?.copyWith(color: AppTheme.textHint),
                         ),
@@ -111,13 +117,42 @@ class ProjectsSection extends StatelessWidget {
                   ),
                 );
               }
-              return _buildProjectsGrid(
-                context,
-                provider.projects,
+              return Column(
+                children: [
+                  _buildProjectsGrid(context, featuredProjects),
+                  if (provider.projects.length > featuredProjects.length) ...[
+                    const SizedBox(height: 40),
+                    _buildViewAllButton(context, provider.projects.length),
+                  ],
+                ],
               ); //data loaded success
             },
           ),
         ],
+      ),
+    );
+  }
+
+  //  View All Projects Button
+  Widget _buildViewAllButton(BuildContext context, int totalProjects) {
+    return Center(
+      child: OutlinedButton.icon(
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => const AllProjectsPage()),
+          );
+        },
+        icon: const Icon(Icons.grid_view),
+        label: Text('View All Projects ($totalProjects)'),
+        style: OutlinedButton.styleFrom(
+          padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 20),
+          side: BorderSide(color: AppTheme.primaryColor, width: 2),
+          foregroundColor: AppTheme.primaryColor,
+          textStyle: Theme.of(
+            context,
+          ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
+        ),
       ),
     );
   }
