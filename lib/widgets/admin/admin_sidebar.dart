@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../config/theme.dart';
 import '../../providers/admin_provider.dart';
+import '../../screens/admin/auth/login_screen.dart';
 import '../../screens/public/home_screen.dart';
 
 class AdminSidebar extends StatelessWidget {
@@ -50,7 +51,7 @@ class AdminSidebar extends StatelessWidget {
                     index: 1,
                     icon: Icons.lightbulb_outline,
                     selectedIcon: Icons.lightbulb,
-                    title:  'Skills',
+                    title: 'Skills',
                   ),
                   const SizedBox(height: 8),
 
@@ -66,7 +67,7 @@ class AdminSidebar extends StatelessWidget {
                   _buildMenuItem(
                     context,
                     index: 3,
-                    icon: Icons. contacts_outlined,
+                    icon: Icons.contacts_outlined,
                     selectedIcon: Icons.contacts,
                     title: 'Contact Info',
                   ),
@@ -85,15 +86,15 @@ class AdminSidebar extends StatelessWidget {
                   Divider(color: AppTheme.surfaceColor.withOpacity(0.5)),
 
                   const SizedBox(height: 16),
+
                   /// Settings & Logout
                   _buildMenuItem(
                     context,
                     index: 5,
                     icon: Icons.settings_outlined,
-                    selectedIcon:  Icons.settings,
+                    selectedIcon: Icons.settings,
                     title: 'Settings',
                   ),
-
                 ],
               ),
             ),
@@ -291,45 +292,21 @@ class AdminSidebar extends StatelessWidget {
   }
 
   // Logout confirmation dialog
-  void _handleLogout(BuildContext context) {
-    showDialog(
+  Future<void> _handleLogout(BuildContext context) async {
+    final shouldLogout = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: AppTheme.cardBackground,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: Row(
-          children: [
-            Icon(Icons.logout, color: AppTheme.accentColor),
-            const SizedBox(width: 12),
-            Text('Logout', style: Theme.of(context).textTheme.titleLarge),
-          ],
-        ),
-        content: Text(
-          'Are you sure you want to logout?',
-          style: Theme.of(context).textTheme.bodyLarge,
-        ),
+        title: const Text('Logout'),
+        content: const Text('Are you sure you want to logout?'),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
+            onPressed: () => Navigator.pop(context, false),
             child: const Text('Cancel'),
           ),
           ElevatedButton(
-            onPressed: () async {
-              // Logout
-              final adminProvider = Provider.of<AdminProvider>(
-                context,
-                listen: false,
-              );
-              await adminProvider.logout();
-
-              // Navigate to home
-              if (context.mounted) {
-                Navigator.of(context).pushAndRemoveUntil(
-                  MaterialPageRoute(builder: (_) => const HomeScreen()),
-                  (route) => false,
-                );
-              }
-            },
+            onPressed: () => Navigator.pop(context, true),
             style: ElevatedButton.styleFrom(
               backgroundColor: AppTheme.accentColor,
             ),
@@ -338,5 +315,33 @@ class AdminSidebar extends StatelessWidget {
         ],
       ),
     );
+
+    if (shouldLogout != true) return;
+
+    try {
+      final adminProvider = Provider.of<AdminProvider>(context, listen: false);
+      await adminProvider.logout();
+
+      if (context.mounted) {
+        // Clear navigation stack and go to login
+        Navigator.of(context).pushAndRemoveUntil(
+          MaterialPageRoute(builder: (context) => const LoginScreen()),
+          (route) => false,
+        );
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text(' Logged out successfully'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error: $e'), backgroundColor: Colors.red),
+        );
+      }
+    }
   }
 }

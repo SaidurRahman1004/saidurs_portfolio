@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:futter_portfileo_website/config/constants.dart';
 import 'package:futter_portfileo_website/widgets/comon/section_title.dart';
@@ -61,7 +62,8 @@ class AboutSection extends StatelessWidget {
       ],
     );
   }
-//Avatar Image
+
+  //Avatar Image
   Widget _buildAvatar(BuildContext context) {
     return Consumer<PortfolioProvider>(
       builder: (context, provider, child) {
@@ -109,25 +111,17 @@ class AboutSection extends StatelessWidget {
                   ),
                   child: ClipOval(
                     child: profileImageUrl != null && profileImageUrl.isNotEmpty
-                        ? Image.network(
-                            profileImageUrl,
-                            fit:
-                                BoxFit.cover,
-                            loadingBuilder: (context, child, loadingProgress) {
-                              if (loadingProgress == null) return child;
-                              return Center(
-                                child: CircularProgressIndicator(
-                                  value:
-                                      loadingProgress.expectedTotalBytes != null
-                                      ? loadingProgress.cumulativeBytesLoaded /
-                                            loadingProgress.expectedTotalBytes!
-                                      : null,
-                                ),
-                              );
-                            },
-                            errorBuilder: (context, error, stackTrace) {
-                              return _buildFallbackAvatar();
-                            },
+                        ? CachedNetworkImage(
+                            imageUrl: profileImageUrl,
+                            fit: BoxFit.cover,
+                            placeholder: (context, url) => Center(
+                              child: CircularProgressIndicator(
+                                color: AppTheme.primaryColor,
+                                strokeWidth: 2,
+                              ),
+                            ),
+                            errorWidget: (context, url, error) =>
+                                _buildFallbackAvatar(),
                           )
                         : _buildFallbackAvatar(),
                   ),

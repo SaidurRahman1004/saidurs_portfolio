@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:futter_portfileo_website/screens/admin/auth/login_screen.dart';
+import 'package:futter_portfileo_website/screens/admin/dashboard/admin_layout.dart';
+import 'package:futter_portfileo_website/screens/public/home_screen.dart';
+import 'package:futter_portfileo_website/widgets/comon/error_boundary.dart';
 import 'firebase_options.dart';
 import 'config/theme.dart';
-import 'screens/public/home_screen.dart';
 import 'providers/portfolio_provider.dart';
 import 'package:provider/provider.dart';
 import 'providers/admin_provider.dart';
@@ -33,11 +35,21 @@ class MyApp extends StatelessWidget {
         ),
         ChangeNotifierProvider(create: (_) => AdminProvider()),
       ],
-      child: MaterialApp(
-        title: 'Saidur- Flutter Developer',
-        debugShowCheckedModeBanner: false,
-        theme: AppTheme.darkTheme(),
-        home: const LoginScreen(), //HomeScreen //LoginScreen
+      child: ErrorBoundary(
+        child: MaterialApp(
+          title: 'Saidur- Flutter Developer',
+          debugShowCheckedModeBanner: false,
+          theme: AppTheme.darkTheme(),
+          initialRoute: '/',
+          routes: {
+            '/': (context) => const HomeScreen(),
+            '/admin/login': (context) => const LoginScreen(),
+            '/admin': (context) => const AdminLayout(), // Protected by AuthGuard
+          },
+          onUnknownRoute: (settings) {
+            return MaterialPageRoute(builder: (_) => const HomeScreen());
+          },
+        ),
       ),
     );
   }

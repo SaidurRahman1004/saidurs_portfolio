@@ -3,6 +3,7 @@ import 'package:futter_portfileo_website/widgets/comon/custom_button.dart';
 import 'package:provider/provider.dart';
 import '../../../config/theme.dart';
 import '../../../providers/admin_provider.dart';
+import '../../public/home_screen.dart';
 import '../dashboard/admin_layout.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -42,9 +43,16 @@ class _LoginScreenState extends State<LoginScreen> {
     );
     //if success and go to dashboard
     if (loginSuccess && mounted) {
-      Navigator.pushReplacement(
-        context,
+      Navigator.of(context).pushAndRemoveUntil(
         MaterialPageRoute(builder: (context) => const AdminLayout()),
+        (route) => false, // Remove all previous routes
+      );
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Login successful! Welcome back!'),
+          backgroundColor: Colors.green,
+          behavior: SnackBarBehavior.floating,
+        ),
       );
     }
 
@@ -385,7 +393,10 @@ class _LoginScreenState extends State<LoginScreen> {
   Widget _backButton(BuildContext context) {
     return TextButton.icon(
       onPressed: () {
-        Navigator.of(context).pop();
+        Navigator.of(context).pushAndRemoveUntil(
+          MaterialPageRoute(builder: (_) => const HomeScreen()),
+          (route) => false,
+        );
       },
       icon: const Icon(Icons.arrow_back),
       label: const Text('Back to Portfolio'),

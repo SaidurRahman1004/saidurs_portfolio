@@ -7,6 +7,7 @@ import 'analytics/analytics_screen.dart';
 import 'contact/contact_management.dart';
 import 'dashboard_home.dart';
 import 'projects/projects_management.dart';
+import '../../../widgets/admin/auth_guard.dart';
 
 class AdminLayout extends StatefulWidget {
   const AdminLayout({super.key});
@@ -69,34 +70,36 @@ class _AdminLayoutState extends State<AdminLayout> {
   @override
   Widget build(BuildContext context) {
     final isDesktop = MediaQuery.of(context).size.width >= 900;
-    return Scaffold(
-      key: _scaffoldKey,
-      appBar: AdminAppBar(
-        title: _pageTitles[_selectedIndex],
-        onMenuPressed: isDesktop
-            ? null
-            : () {
-                _scaffoldKey.currentState?.openDrawer();
-              },
-      ),
-      drawer: !isDesktop
-          ? Drawer(
-              child: AdminSidebar(
+    return AuthGuard(
+      child: Scaffold(
+        key: _scaffoldKey,
+        appBar: AdminAppBar(
+          title: _pageTitles[_selectedIndex],
+          onMenuPressed: isDesktop
+              ? null
+              : () {
+                  _scaffoldKey.currentState?.openDrawer();
+                },
+        ),
+        drawer: !isDesktop
+            ? Drawer(
+                child: AdminSidebar(
+                  selectedIndex: _selectedIndex,
+                  onItemSelected: _onMenuItemSelected,
+                ),
+              )
+            : null,
+        body: Row(
+          children: [
+            //Desktop Sidebar always Open
+            if (isDesktop)
+              AdminSidebar(
                 selectedIndex: _selectedIndex,
                 onItemSelected: _onMenuItemSelected,
               ),
-            )
-          : null,
-      body: Row(
-        children: [
-          //Desktop Sidebar always Open
-          if (isDesktop)
-            AdminSidebar(
-              selectedIndex: _selectedIndex,
-              onItemSelected: _onMenuItemSelected,
-            ),
-          Expanded(child: _getCurrentPage()),
-        ],
+            Expanded(child: _getCurrentPage()),
+          ],
+        ),
       ),
     );
   }
