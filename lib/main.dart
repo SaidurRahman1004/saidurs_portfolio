@@ -9,12 +9,23 @@ import 'config/theme.dart';
 import 'providers/portfolio_provider.dart';
 import 'package:provider/provider.dart';
 import 'providers/admin_provider.dart';
+import 'config/env.dart';
+import 'package:firebase_app_check/firebase_app_check.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
+  //Env
+  Env.validateConfig();
+
   // Firebase Initialize
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  //app cheak
+  // await FirebaseAppCheck.instance.activate(
+  //   webProvider: ReCaptchaV3Provider('your-recaptcha-site-key'),
+  //   androidProvider: AndroidProvider.debug,
+  //   appleProvider: AppleProvider.debug,
+  // );
 
   runApp(const MyApp());
 }
@@ -44,7 +55,8 @@ class MyApp extends StatelessWidget {
           routes: {
             '/': (context) => const HomeScreen(),
             '/admin/login': (context) => const LoginScreen(),
-            '/admin': (context) => const AdminLayout(), // Protected by AuthGuard
+            '/admin': (context) => const AdminLayout(),
+            // Protected by AuthGuard
           },
           onUnknownRoute: (settings) {
             return MaterialPageRoute(builder: (_) => const HomeScreen());

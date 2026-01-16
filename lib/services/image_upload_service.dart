@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:flutter/foundation.dart';
 import '../config/constants.dart';
+import '../config/env.dart';
 
 class ImageUploadService {
   static final ImageUploadService _instance = ImageUploadService._internal();
@@ -21,11 +22,8 @@ class ImageUploadService {
   }) async {
     try {
       //Cheak Api key
-      if (_apiKey.isEmpty || _apiKey == "YOUR_IMGBB_API_KEY_HERE") {
-        throw Exception(
-          'Please set your ImgBB API key in image_upload_service.dart\n'
-          'Get API key from:  https://api.imgbb.com/',
-        );
+      if (!Env.isConfigured) {
+        throw Exception('ImgBB API key not configured');
       }
         debugPrint('Starting image upload to ImgBB...');
         debugPrint(' Image size: ${imageBytes.length} bytes');

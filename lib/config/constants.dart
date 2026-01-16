@@ -1,8 +1,11 @@
+import 'env.dart';
+
 class AppConstants {
   // Personal Info
   static const String name = 'Saidur Rahman';
   static const String role = 'Flutter App Developer';
-  static const String tagline = 'Building Cross-Platform Mobile Apps with Flutter & Firebase';
+  static const String tagline =
+      'Building Cross-Platform Mobile Apps with Flutter & Firebase';
   static const imgUrl = 'https://i.postimg.cc/d3yXKM4r/profile-pic-(4).png';
 
   // Contact Info
@@ -24,7 +27,8 @@ class AppConstants {
       'I am also expanding my skills in Django to become a full-stack developer.';
 
   // Resume
-  static const String resumeUrl = 'https://your-resume-link.pdf'; // Update later
+  static const String resumeUrl =
+      'https://your-resume-link.pdf'; // Update later
   // Spacing
   static const double paddingSmall = 16.0;
   static const double paddingMedium = 24.0;
@@ -37,7 +41,7 @@ class AppConstants {
   static const double desktopBreakpoint = 1200;
 
   //Api EndPoint
-  static const String imgbbApiKey = '87f8708f92a158ed045b4746a14c0ab6';
+  static const String imgbbApiKey = Env.imgbbApiKey;
 
   // ImgBB API Endpoint
   static const String imgbbUploadEndpoint = 'https://api.imgbb.com/1/upload';
@@ -45,5 +49,4 @@ class AppConstants {
   // Image Upload Limits
   static const int maxImageSizeMB = 5;
   static const int maxImagesPerUpload = 10;
-
 }
