@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:animated_text_kit/animated_text_kit.dart';
 import 'package:futter_portfileo_website/widgets/comon/custom_button.dart';
@@ -181,57 +182,120 @@ class HeroSection extends StatelessWidget {
   }
 
   //  Dynamic Hero Image from Firebase
+
   Widget _buildIllustration(BuildContext context) {
     return Consumer<PortfolioProvider>(
       builder: (context, provider, child) {
-        final heroImageUrl = provider.contactInfo?.heroImageUrl;
+        final firebaseUrl = provider.contactInfo?.heroImageUrl;
+        final String finalImageUrl =
+            (firebaseUrl != null && firebaseUrl.isNotEmpty)
+            ? firebaseUrl
+            : AppConstants.imgUrl2;
 
-        return Container(
-          height: 300,
-          width: double.infinity,
-          decoration: BoxDecoration(
-            gradient: AppTheme.primaryGradient.scale(0.3),
-            borderRadius: BorderRadius.circular(16),
-          ),
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(16),
-            child: heroImageUrl != null && heroImageUrl.isNotEmpty
-                ? Image.network(
-                    heroImageUrl,
-                    height: 300,
-                    fit: BoxFit.cover,
-                    errorBuilder: (context, error, stackTrace) {
-                      return _buildFallbackImage();
-                    },
-                    loadingBuilder: (context, child, loadingProgress) {
-                      if (loadingProgress == null) return child;
-                      return const Center(child: CircularProgressIndicator());
-                    },
-                  )
-                : _buildFallbackImage(),
+        final bool isMobile = ResponsiveWrapper.isMobile(context);
+
+        return Center(
+          child: Stack(
+            alignment: Alignment.center,
+            children: [
+              //glowing
+              Container(
+                height: isMobile ? 300 : 420,
+                width: isMobile ? 320 : 550,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(40),
+                  border: Border.all(
+                    color: AppTheme.primaryColor.withOpacity(0.1),
+                    width: 2,
+                  ),
+                  // Effect
+                  boxShadow: [
+                    BoxShadow(
+                      color: AppTheme.primaryColor.withOpacity(0.08),
+                      blurRadius: 60,
+                      spreadRadius: 10,
+                    ),
+                  ],
+                ),
+              ),
+
+              // Background
+              Container(
+                height: isMobile ? 280 : 380,
+                width: isMobile ? 300 : 520,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(35),
+                  color: Colors.white.withOpacity(0.03),
+                  border: Border.all(
+                    color: Colors.white.withOpacity(0.05),
+                    width: 1,
+                  ),
+                ),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(35),
+                  child: Stack(
+                    children: [
+                      Positioned(
+                        top: -50,
+                        right: -50,
+                        child: Container(
+                          height: 200,
+                          width: 200,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: AppTheme.primaryColor.withOpacity(0.1),
+                          ),
+                        ),
+                      ),
+
+                      Center(
+                        child: Padding(
+                          padding: const EdgeInsets.all(20.0),
+                          child: CachedNetworkImage(
+                            imageUrl: finalImageUrl,
+                            fit: BoxFit.contain,
+                            placeholder: (context, url) => const Center(
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            ),
+                            errorWidget: (context, url, error) =>
+                                _buildFallbackImage(),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
           ),
         );
       },
     );
   }
 
-  //FAllback Image
   Widget _buildFallbackImage() {
     return Center(
-      child: Image.network(
-        AppConstants.imgUrl,
-        height: 250,
-        fit: BoxFit.contain,
-        errorBuilder: (context, error, stackTrace) {
-          return Icon(
-            Icons.code,
-            size: 120,
-            color: Colors.white.withOpacity(0.3),
-          );
-        },
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            Icons.rocket_launch_rounded,
+            size: 60,
+            color: AppTheme.primaryColor.withOpacity(0.3),
+          ),
+          const SizedBox(height: 10),
+          Text(
+            "Ready to Launch",
+            style: TextStyle(
+              color: AppTheme.textSecondary.withOpacity(0.5),
+              letterSpacing: 1.2,
+            ),
+          ),
+        ],
       ),
     );
   }
+
   //  Launch URL helper
   Future<void> _launchURL(String url) async {
     try {

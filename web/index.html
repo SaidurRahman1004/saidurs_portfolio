@@ -6,34 +6,80 @@
     <meta charset="UTF-8">
     <meta content="IE=Edge" http-equiv="X-UA-Compatible">
 
+    <!-- SEO & General Meta Tags -->
     <meta name="description" content="Saidur Rahman - Professional Flutter Developer | Mobile App Development Expert specializing in Firebase and Cross-platform Apps.">
     <meta name="keywords" content="Flutter Developer, Mobile App Developer, Firebase, Bangladesh, Saidur Rahman, Portfolio">
     <meta name="author" content="Saidur Rahman">
 
+    <!-- Open Graph / Facebook (Social Media Preview) -->
     <meta property="og:type" content="website">
     <meta property="og:title" content="Saidur Rahman | Flutter Developer">
     <meta property="og:description" content="Professional Flutter Developer Portfolio - Building Cross-Platform Mobile Apps.">
     <meta property="og:image" content="https://i.postimg.cc/d3yXKM4r/profile-pic-(4).png">
     <meta property="og:url" content="https://saidur-portfolio.web.app">
 
+    <!-- Twitter -->
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="Saidur Rahman | Flutter Developer">
     <meta name="twitter:description" content="Professional Flutter Developer Portfolio">
     <meta name="twitter:image" content="https://i.postimg.cc/d3yXKM4r/profile-pic-(4).png">
 
+    <!-- Favicon -->
     <link rel="icon" type="image/png" href="favicon.png"/>
 
-    <title>Saidur | Flutter Developer</title>
+    <title>Saidur | App Developer</title>
 
     <link rel="manifest" href="manifest.json">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
 
+    <!-- Mobile Support -->
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black">
     <meta name="apple-mobile-web-app-title" content="Saidur Portfolio">
     <link rel="apple-touch-icon" href="icons/Icon-192.png">
+
+    <!-- Loading Screen Style (Added from your new code) -->
+    <style>
+        body {
+            margin: 0;
+            background: #0A0E27;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            overflow: hidden;
+            font-family: sans-serif;
+        }
+
+        .loading {
+            text-align: center;
+            color: #00D9FF;
+        }
+
+        .spinner {
+            border: 4px solid rgba(0, 217, 255, 0.1);
+            border-top: 4px solid #00D9FF;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
 </head>
 <body>
+<!-- Loading Indicator (Added from your new code) -->
+<div id="loading-indicator" class="loading">
+    <div class="spinner"></div>
+    <p>Loading Portfolio...</p>
+</div>
+
+<!-- Flutter Bootstrap Logic -->
 <script src="flutter_bootstrap.js" async></script>
 </body>
 </html>

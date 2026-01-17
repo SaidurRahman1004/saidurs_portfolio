@@ -7,6 +7,7 @@ class AppConstants {
   static const String tagline =
       'Building Cross-Platform Mobile Apps with Flutter & Firebase';
   static const imgUrl = 'https://i.postimg.cc/d3yXKM4r/profile-pic-(4).png';
+  static const imgUrl2 = 'https://i.postimg.cc/TYRmdvH5/hiropic.png';
 
   // Contact Info
   static const String email = 'saidurrahman1004@gmail.com';
