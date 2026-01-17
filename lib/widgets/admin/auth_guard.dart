@@ -16,11 +16,9 @@ class AuthGuard extends StatelessWidget {
         if (adminProvider.currentUser == null) {
           // Not authenticated - redirect to login
           WidgetsBinding.instance.addPostFrameCallback((_) {
-            if (Navigator.canPop(context)) {
-              Navigator.of(context).pushReplacement(
-                MaterialPageRoute(builder: (_) => const LoginScreen()),
-              );
-            }
+            Navigator.of(context).pushReplacement(
+              MaterialPageRoute(builder: (_) => const LoginScreen()),
+            );
           });
 
           // Show loading while redirecting

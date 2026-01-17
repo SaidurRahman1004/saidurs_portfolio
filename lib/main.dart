@@ -22,7 +22,11 @@ void main() async {
   Env.validateConfig();
 
   // Firebase Initialize
-  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  ).catchError((error) {
+    debugPrint('Firebase init error: $error');
+  });
   //app cheak
   // await FirebaseAppCheck.instance.activate(
   //   webProvider: ReCaptchaV3Provider('your-recaptcha-site-key'),
@@ -46,8 +50,9 @@ class MyApp extends StatelessWidget {
             provider.loadAllData();
             return provider;
           },
+          lazy: false,
         ),
-        ChangeNotifierProvider(create: (_) => AdminProvider()),
+        ChangeNotifierProvider(create: (_) => AdminProvider(), lazy: true),
       ],
       child: ErrorBoundary(
         child: MaterialApp(
@@ -58,7 +63,7 @@ class MyApp extends StatelessWidget {
           routes: {
             '/': (context) => const HomeScreen(),
             '/admin/login': (context) => const LoginScreen(),
-            '/admin': (context) => const AdminLayout(),
+            '/admin': (context) => const AuthGuard(child: AdminLayout()),
             // Protected by AuthGuard
           },
           onUnknownRoute: (settings) {

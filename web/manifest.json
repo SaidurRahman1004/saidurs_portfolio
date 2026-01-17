@@ -1,11 +1,11 @@
 {
-    "name": "futter_portfileo_website",
-    "short_name": "futter_portfileo_website",
-    "start_url": ".",
+    "name": "Saidur Rahman Portfolio",
+    "short_name": "SR Portfolio",
+    "start_url": "/",
     "display": "standalone",
     "background_color": "#0175C2",
     "theme_color": "#0175C2",
-    "description": "My professional developer portfolio with admin dashboard",
+    "description": "Professional Flutter Developer Portfolio",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [
