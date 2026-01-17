@@ -334,7 +334,7 @@ class ProjectsSection extends StatelessWidget {
                     onPressed: () => _launchURL(project.githubUrl),
                     icon: const Icon(Icons.code, size: 16),
                     label: Text(
-                      'Code',
+                      'View Details',
                       style: TextStyle(fontSize: isMobile ? 12 : 13),
                     ),
                     style: ElevatedButton.styleFrom(
