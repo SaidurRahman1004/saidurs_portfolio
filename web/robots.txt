@@ -1,0 +1,6 @@
+# https://www.robotstxt.org/robotstxt.htmlUser-agent: *
+Allow: /
+Disallow: /admin/
+Disallow: /admin/login
+
+Sitemap: https://saidur-portfolio.web.app/sitemap.xml
