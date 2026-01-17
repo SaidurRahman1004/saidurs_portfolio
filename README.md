@@ -16,7 +16,6 @@
 ---
 
 ### 🌟 VIEW LIVE WEBSITE
-
 **Live:** https://saidurs-portfolio.web.app/
 
 [![Live Demo](https://img.shields.io/badge/%F0%9F%8C%90%20LIVE%20DEMO-Click%20Here-success?style=for-the-badge&logo=google-chrome&logoColor=white)](https://saidurs-portfolio.web.app/)
@@ -26,7 +25,6 @@
 ---
 
 ### 🔎 Quick Navigation
-
 [About](#-about-the-project) •
 [Key Features](#-key-features) •
 [Screenshots](#-screenshots) •
@@ -50,10 +48,8 @@
 
 <br/>
 
-**Saidur Rahman Portfolio** is a production-ready web application built with **Flutter Web** and *
-*Firebase**.
-It demonstrates modern UI/UX, secure authentication, real-time data management, and responsive
-design.
+**Saidur Rahman Portfolio** is a production-ready web application built with **Flutter Web** and **Firebase**.
+It demonstrates modern UI/UX, secure authentication, real-time data management, and responsive design.
 
 ### 🎯 Project Goals
 
@@ -66,16 +62,16 @@ design.
 
 ### 💡 Why This Project Stands Out
 
-| Feature                  | Description                                      |
-|--------------------------|--------------------------------------------------|
-| **🏗️ Production-Ready** | Deployed on Firebase Hosting with SSL support    |
-| **🎨 Modern UI/UX**      | Dark gradient theme with smooth animations       |
-| **🔄 Real-Time Sync**    | Firestore-backed live content updates            |
-| **🛡️ Secure Admin**     | Auth-guarded dashboard + session management      |
-| **📊 Data Management**   | Full CRUD for skills, projects, and contact info |
-| **🖼️ Image Upload**     | ImgBB API integration for image hosting          |
-| **📱 Fully Responsive**  | Mobile-first layouts with adaptive UI            |
-| **🚀 SEO Optimized**     | Meta tags, Open Graph, and sitemap ready         |
+| Feature | Description |
+|---|---|
+| **🏗️ Production-Ready** | Deployed on Firebase Hosting with SSL support |
+| **🎨 Modern UI/UX** | Dark gradient theme with smooth animations |
+| **🔄 Real-Time Sync** | Firestore-backed live content updates |
+| **🛡️ Secure Admin** | Auth-guarded dashboard + session management |
+| **📊 Data Management** | Full CRUD for skills, projects, and contact info |
+| **🖼️ Image Upload** | ImgBB API integration for image hosting |
+| **📱 Fully Responsive** | Mobile-first layouts with adaptive UI |
+| **🚀 SEO Optimized** | Meta tags, Open Graph, and sitemap ready |
 
 ---
 
@@ -88,7 +84,6 @@ design.
     <td width="50%" valign="top">
 
 #### 🎨 Modern UI/UX Design
-
 - Animated typewriter hero
 - Smooth scrolling navigation
 - Gradient-based dark theme
@@ -101,7 +96,6 @@ design.
     <td width="50%" valign="top">
 
 #### 📱 Fully Responsive Layout
-
 - Mobile-first approach
 - Adaptive for phone/tablet/desktop
 - Touch-friendly interactions
@@ -116,7 +110,6 @@ design.
     <td width="50%" valign="top">
 
 #### 🔄 Real-Time Data Integration
-
 - Skills loaded from Firestore
 - Projects update in real-time
 - Contact info sync instantly
@@ -129,7 +122,6 @@ design.
     <td width="50%" valign="top">
 
 #### ⚡ Performance & SEO
-
 - Fast load times
 - Lazy loading images
 - Tree shaking / optimized builds
@@ -144,7 +136,6 @@ design.
     <td width="50%" valign="top">
 
 #### 🎯 Portfolio Sections
-
 - **Hero**: Intro + CTA buttons
 - **About**: Bio + profile image
 - **Skills**: Categorized stack
@@ -155,7 +146,6 @@ design.
     <td width="50%" valign="top">
 
 #### 🔗 External Integrations
-
 - GitHub & LinkedIn links
 - WhatsApp direct message
 - Email launch
@@ -164,7 +154,6 @@ design.
 
     </td>
   </tr>
-
 </table>
 
 ### 🔐 Admin Dashboard
@@ -174,7 +163,6 @@ design.
     <td width="50%" valign="top">
 
 #### 🛡️ Secure Authentication
-
 - Firebase Email/Password auth
 - Protected routes (AuthGuard)
 - Session persistence on refresh
@@ -187,7 +175,6 @@ design.
     <td width="50%" valign="top">
 
 #### 📊 Content Management System
-
 - Skills CRUD (add/edit/delete/reorder)
 - Projects CRUD (full control)
 - Contact & social links update
@@ -201,7 +188,6 @@ design.
     <td width="50%" valign="top">
 
 #### 🎛️ Advanced Controls
-
 - Visibility toggles (public/private)
 - Featured project marking
 - Ordering control
@@ -214,7 +200,6 @@ design.
     <td width="50%" valign="top">
 
 #### 📈 Analytics & Monitoring
-
 - Stats cards (skills/projects counts)
 - Firebase Analytics integration
 - Visitor tracking (extendable)
@@ -223,7 +208,6 @@ design.
 
     </td>
   </tr>
-
 </table>
 
 ---
@@ -238,42 +222,36 @@ design.
 <br/>
 
 #### 🏠 Hero Section
-
 <img src="https://i.postimg.cc/B6hxRq2k/hero.png" alt="Hero Section" width="100%"/>
 <em>Dynamic hero section with animated typewriter effect</em>
 
 ---
 
 #### 💼 Skills Showcase
-
 <img src="https://i.postimg.cc/MHvyShDk/skill.png" alt="Skills Section" width="100%"/>
 <em>Categorized skills display with dynamic Firestore loading</em>
 
 ---
 
 #### 🚀 Projects Gallery
-
 <img src="https://i.postimg.cc/tTrh8Xh4/project.png" alt="Projects Section" width="100%"/>
 <em>Featured projects with badges, GitHub links, and live demo buttons</em>
 
 ---
 
 #### 👤 About Me
-
 <img src="https://i.postimg.cc/G23FMBTz/about.png" alt="About Section" width="100%"/>
 <em>Professional bio with profile image and background</em>
 
 ---
 
 #### 📧 Contact Information
-
 <img src="https://i.postimg.cc/MTZ7scfy/contact.png" alt="Contact Section" width="100%"/>
 <em>Email, WhatsApp, location and social links</em>
 
 ---
 
 #### 📱 Mobile Responsive Design
-
 <div align="center">
   <img src="https://i.postimg.cc/rmhS78SV/mobile-View-Portfolio.png" alt="Mobile View" width="45%"/>
   <img src="https://i.postimg.cc/cHDQPsfF/drawer.png" alt="Mobile Drawer Menu" width="45%"/>
@@ -292,42 +270,36 @@ design.
 <br/>
 
 #### 🔑 Admin Login
-
 <img src="https://i.postimg.cc/RFC7P3J7/adminlogin.png" alt="Admin Login Screen" width="100%"/>
 <em>Firebase auth login with “Back to Portfolio”</em>
 
 ---
 
 #### 📊 Dashboard Overview
-
 <img src="https://i.postimg.cc/yd6mfJ3T/dasboard.png" alt="Dashboard Home" width="100%"/>
 <em>Dashboard overview and quick actions</em>
 
 ---
 
 #### 🛠️ Skills Management
-
 <img src="https://i.postimg.cc/nzdvNHqS/Dashboard-Skill-Management.png" alt="Skills Management Panel" width="100%"/>
 <em>Add/edit/delete skills, visibility controls, icon selection</em>
 
 ---
 
 #### 🚀 Projects Management
-
 <img src="https://i.postimg.cc/1tWpb9DC/Dashboard-Project-Management.png" alt="Projects Management Panel" width="100%"/>
 <em>Projects CRUD, image upload, featured toggle, links</em>
 
 ---
 
 #### 📧 Contact Management
-
 <img src="https://i.postimg.cc/G23FMBTz/about.png" alt="Contact Management Panel" width="100%"/>
 <em>Update email/WhatsApp/social links/resume/location</em>
 
 ---
 
 #### 📈 Analytics Dashboard
-
 <img src="https://i.postimg.cc/k4MQjVRc/Dashboard-Analytics-Management.png" alt="Analytics Dashboard" width="100%"/>
 <em>Analytics section (extendable)</em>
 
@@ -338,7 +310,6 @@ design.
 ## 🛠️ Tech Stack
 
 ### Frontend
-
 - Flutter (Web)
 - Dart
 - Material Design 3
@@ -346,11 +317,9 @@ design.
 - Responsive Framework
 
 ### Backend & Cloud
-
 - Firebase (Auth, Firestore, Hosting, Analytics)
 
 ### State Management & Architecture
-
 - Provider
 - MVVM
 - Repository Pattern
@@ -358,28 +327,27 @@ design.
 
 ### Key Dependencies
 
-| Package                | Purpose          | Version  |
-|------------------------|------------------|----------|
-| `provider`             | State management | ^6.1.5+1 |
-| `firebase_core`        | Firebase init    | ^4.3.0   |
-| `firebase_auth`        | Authentication   | ^6.1.3   |
-| `cloud_firestore`      | Database         | ^6.1.1   |
-| `firebase_analytics`   | Analytics        | ^12.1.0  |
-| `google_fonts`         | Fonts            | ^6.3.3   |
-| `image_picker`         | Pick images      | ^1.2.1   |
-| `animated_text_kit`    | Text animation   | ^4.3.0   |
-| `url_launcher`         | External links   | ^6.3.2   |
-| `font_awesome_flutter` | Icons            | ^10.7.0  |
-| `dio`                  | HTTP client      | ^5.9.0   |
-| `http`                 | HTTP alt         | ^1.6.0   |
-| `responsive_framework` | Responsiveness   | ^1.5.1   |
+| Package | Purpose | Version |
+|---|---|---|
+| `provider` | State management | ^6.1.5+1 |
+| `firebase_core` | Firebase init | ^4.3.0 |
+| `firebase_auth` | Authentication | ^6.1.3 |
+| `cloud_firestore` | Database | ^6.1.1 |
+| `firebase_analytics` | Analytics | ^12.1.0 |
+| `google_fonts` | Fonts | ^6.3.3 |
+| `image_picker` | Pick images | ^1.2.1 |
+| `animated_text_kit` | Text animation | ^4.3.0 |
+| `url_launcher` | External links | ^6.3.2 |
+| `font_awesome_flutter` | Icons | ^10.7.0 |
+| `dio` | HTTP client | ^5.9.0 |
+| `http` | HTTP alt | ^1.6.0 |
+| `responsive_framework` | Responsiveness | ^1.5.1 |
 
 ---
 
 ## 🚀 Getting Started
 
 ### Prerequisites
-
 - Flutter SDK **3.10.3+**
 - A Firebase project (Firestore + Auth + Hosting enabled)
 
