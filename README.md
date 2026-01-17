@@ -58,7 +58,9 @@
 
 <br/>
 
-**Saidur Rahman Portfolio** is a cutting-edge, production-ready web application built with **Flutter Web** and **Firebase**. This project demonstrates advanced web development skills with a focus on modern UI/UX, secure authentication, real-time data management, and responsive design.
+**Saidur Rahman Portfolio** is a cutting-edge, production-ready web application built with **Flutter
+Web** and **Firebase**. This project demonstrates advanced web development skills with a focus on
+modern UI/UX, secure authentication, real-time data management, and responsive design.
 
 ### 🎯 Project Goals
 
@@ -73,16 +75,16 @@ This portfolio serves multiple purposes:
 
 ### 💡 Why This Project Stands Out
 
-| Feature | Description |
-|---------|-------------|
+| Feature                  | Description                                                                 |
+|--------------------------|-----------------------------------------------------------------------------|
 | **🏗️ Production-Ready** | Deployed on Firebase Hosting with SSL certificate and custom domain support |
-| **🎨 Modern UI/UX** | Professional gradient-based dark theme with smooth animations |
-| **🔄 Real-Time Sync** | Firestore integration for instant content updates across all devices |
-| **🛡️ Secure Admin** | Firebase Authentication with protected routes and session management |
-| **📊 Data Management** | Complete CRUD operations for skills, projects, and contact information |
-| **🖼️ Image Upload** | Integrated ImgBB API for seamless image hosting |
-| **📱 Fully Responsive** | Mobile-first design with adaptive layouts for all screen sizes |
-| **🚀 SEO Optimized** | Meta tags, Open Graph, and sitemap ready for search engines |
+| **🎨 Modern UI/UX**      | Professional gradient-based dark theme with smooth animations               |
+| **🔄 Real-Time Sync**    | Firestore integration for instant content updates across all devices        |
+| **🛡️ Secure Admin**     | Firebase Authentication with protected routes and session management        |
+| **📊 Data Management**   | Complete CRUD operations for skills, projects, and contact information      |
+| **🖼️ Image Upload**     | Integrated ImgBB API for seamless image hosting                             |
+| **📱 Fully Responsive**  | Mobile-first design with adaptive layouts for all screen sizes              |
+| **🚀 SEO Optimized**     | Meta tags, Open Graph, and sitemap ready for search engines                 |
 
 ---
 
@@ -173,6 +175,7 @@ This portfolio serves multiple purposes:
 
     </td>
   </tr>
+
 </table>
 
 ### 🔐 Admin Dashboard
@@ -234,6 +237,7 @@ This portfolio serves multiple purposes:
 
     </td>
   </tr>
+
 </table>
 
 ---
@@ -248,36 +252,42 @@ This portfolio serves multiple purposes:
 <br/>
 
 #### 🏠 Hero Section
+
 <img src="https://i.postimg.cc/B6hxRq2k/hero.png" alt="Hero Section" width="100%"/>
 <p><em>Dynamic hero section with animated typewriter effect showcasing roles:  Flutter Developer, Problem Solver, Django Developer</em></p>
 
 ---
 
 #### 💼 Skills Showcase
+
 <img src="https://i.postimg.cc/MHvyShDk/skill. png" alt="Skills Section" width="100%"/>
 <p><em>Categorized skills display:  Mobile Development, Backend & APIs, State Management with dynamic loading from Firestore</em></p>
 
 ---
 
 #### 🚀 Projects Gallery
+
 <img src="https://i.postimg.cc/tTrh8Xh4/project. png" alt="Projects Section" width="100%"/>
 <p><em>Featured projects with tech stack badges, GitHub links, and live demo buttons.  Includes "View All Projects" for complete portfolio</em></p>
 
 ---
 
 #### 👤 About Me
+
 <img src="https://i.postimg.cc/G23FMBTz/about.png" alt="About Section" width="100%"/>
 <p><em>Professional bio with circular profile image, education details, location, focus areas, and career goals</em></p>
 
 ---
 
 #### 📧 Contact Information
+
 <img src="https://i.postimg.cc/MTZ7scfy/contact.png" alt="Contact Section" width="100%"/>
 <p><em>Contact cards with email, WhatsApp, location info, and social links (GitHub, LinkedIn, Resume download)</em></p>
 
 ---
 
 #### 📱 Mobile Responsive Design
+
 <div align="center">
   <img src="https://i.postimg.cc/rmhS78SV/mobile-View-Portfolio.png" alt="Mobile View" width="45%"/>
   <img src="https://i.postimg.cc/cHDQPsfF/drawer. png" alt="Mobile Drawer Menu" width="45%"/>
@@ -296,36 +306,42 @@ This portfolio serves multiple purposes:
 <br/>
 
 #### 🔑 Admin Login
+
 <img src="https://i.postimg.cc/RFC7P3J7/adminlogin.png" alt="Admin Login Screen" width="100%"/>
 <p><em>Secure Firebase Authentication login page with email/password fields and "Back to Portfolio" link</em></p>
 
 ---
 
 #### 📊 Dashboard Overview
+
 <img src="https://i.postimg.cc/yd6mfJ3T/dasboard.png" alt="Dashboard Home" width="100%"/>
 <p><em>Welcome dashboard with quick actions:  Add New Skill, Add New Project, and upcoming statistics cards</em></p>
 
 ---
 
 #### 🛠️ Skills Management
+
 <img src="https://i.postimg.cc/nzdvNHqS/Dashboard-Skill-Management.png" alt="Skills Management Panel" width="100%"/>
 <p><em>Complete skills CRUD:  Add, edit, delete skills | Visibility toggles | Category filters | Icon selection | Search functionality</em></p>
 
 ---
 
 #### 🚀 Projects Management
+
 <img src="https://i.postimg.cc/1tWpb9DC/Dashboard-Project-Management.png" alt="Projects Management Panel" width="100%"/>
 <p><em>Projects management:  Add/edit projects | Image uploads | Featured toggles | Visibility controls | Tech stack management | GitHub & live demo links</em></p>
 
 ---
 
 #### 📧 Contact Management
+
 <img src="https://i.postimg.cc/G23FMBTS/Dashboard-Contact-Management.png" alt="Contact Management Panel" width="100%"/>
 <p><em>Update contact information:  Email, phone, WhatsApp | Social links (GitHub, LinkedIn) | Resume URL | Location | Profile & hero image uploads</em></p>
 
 ---
 
 #### 📈 Analytics Dashboard
+
 <img src="https://i.postimg.cc/k4MQjVRc/Dashboard-Analytics-Management.png" alt="Analytics Dashboard" width="100%"/>
 <p><em>Analytics section (coming soon): Visitor stats, engagement metrics, popular projects, traffic sources</em></p>
 
@@ -364,21 +380,21 @@ This portfolio serves multiple purposes:
 
 ### **Key Dependencies**
 
-| Package | Purpose | Version |
-|---------|---------|---------|
-| `provider` | State management solution | ^6.1.5+1 |
-| `firebase_core` | Firebase SDK initialization | ^4.3.0 |
-| `firebase_auth` | User authentication | ^6.1.3 |
-| `cloud_firestore` | NoSQL database | ^6.1.1 |
-| `firebase_analytics` | User analytics tracking | ^12.1.0 |
-| `google_fonts` | Custom font integration | ^6.3.3 |
-| `image_picker` | Image selection from gallery | ^1.2.1 |
-| `animated_text_kit` | Text animations (typewriter effect) | ^4.3.0 |
-| `url_launcher` | Launch external URLs | ^6.3.2 |
-| `font_awesome_flutter` | Icon library | ^10.7.0 |
-| `dio` | HTTP client for API calls | ^5.9.0 |
-| `http` | Alternative HTTP client | ^1.6.0 |
-| `responsive_framework` | Responsive design utilities | ^1.5.1 |
+| Package                | Purpose                             | Version  |
+|------------------------|-------------------------------------|----------|
+| `provider`             | State management solution           | ^6.1.5+1 |
+| `firebase_core`        | Firebase SDK initialization         | ^4.3.0   |
+| `firebase_auth`        | User authentication                 | ^6.1.3   |
+| `cloud_firestore`      | NoSQL database                      | ^6.1.1   |
+| `firebase_analytics`   | User analytics tracking             | ^12.1.0  |
+| `google_fonts`         | Custom font integration             | ^6.3.3   |
+| `image_picker`         | Image selection from gallery        | ^1.2.1   |
+| `animated_text_kit`    | Text animations (typewriter effect) | ^4.3.0   |
+| `url_launcher`         | Launch external URLs                | ^6.3.2   |
+| `font_awesome_flutter` | Icon library                        | ^10.7.0  |
+| `dio`                  | HTTP client for API calls           | ^5.9.0   |
+| `http`                 | Alternative HTTP client             | ^1.6.0   |
+| `responsive_framework` | Responsive design utilities         | ^1.5.1   |
 
 ---
 
