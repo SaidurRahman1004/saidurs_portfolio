@@ -3,6 +3,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:futter_portfileo_website/screens/admin/auth/login_screen.dart';
 import 'package:futter_portfileo_website/screens/admin/dashboard/admin_layout.dart';
 import 'package:futter_portfileo_website/screens/public/home_screen.dart';
+import 'package:futter_portfileo_website/widgets/admin/auth_guard.dart';
 import 'package:futter_portfileo_website/widgets/comon/error_boundary.dart';
 import 'firebase_options.dart';
 import 'config/theme.dart';
@@ -10,10 +11,12 @@ import 'providers/portfolio_provider.dart';
 import 'package:provider/provider.dart';
 import 'providers/admin_provider.dart';
 import 'config/env.dart';
-import 'package:firebase_app_check/firebase_app_check.dart';
+import 'package:flutter_web_plugins/url_strategy.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  //Url Strategy Clean Url
+  usePathUrlStrategy();
 
   //Env
   Env.validateConfig();
