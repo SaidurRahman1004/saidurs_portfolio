@@ -225,3 +225,147 @@ Package name-এ `futter_portfileo_website` typo আছে। কয়েকটি
 - `.env`, `firebase.json`, Firebase rules/indexes — security/deployment hygiene
 - `test/widget_test.dart` — replace template test with portfolio tests
 
+## Design/UI/UX audit
+
+> এই অংশটি source-level layout review। বর্তমানে web build ভাঙা থাকায় real browser screenshot/golden comparison করা সম্ভব হয়নি; তাই নিচেরগুলো code থেকে নিশ্চিত design risk বা visible UX issue হিসেবে চিহ্নিত।
+
+### D1 — Hero mobile layout-এ spacing bug
+
+`lib/screens/public/sections/hero_section.dart:45-52`-এ mobile `Column`-এর মধ্যে illustration-এর পরে `SizedBox(width: 40)` ব্যবহার হয়েছে। Column-এ width কোনো vertical gap তৈরি করে না; ফলে image ও text-এর মধ্যে প্রত্যাশিত 40px vertical spacing থাকবে না। এখানে `height: 40` হওয়া উচিত।
+
+### D2 — Hero desktop height/content clipping risk
+
+Hero section-এর minimum height 600px এবং vertical padding 80px। এর ভিতরে 420px illustration, heading, animated role, description এবং তিনটি button আছে। ছোট laptop height বা browser zoom 125–200%-এ content 600px-এর বেশি হয়ে যেতে পারে; section visually cramped/overflow হতে পারে।
+
+**সংশোধন:** fixed/minimum height-এর বদলে `minHeight`-এর সঙ্গে content-driven layout রাখুন; desktop-এ `mainAxisAlignment.center` এবং mobile-এ natural height ব্যবহার করুন।
+
+### D3 — Hero text animation layout shift তৈরি করতে পারে
+
+`AnimatedTextKit`-এর তিনটি role-এর দৈর্ঘ্য আলাদা। `Wrap`-এর মধ্যে animated text থাকার কারণে text বদলানোর সময় line wrap/height বদলাতে পারে, ফলে পাশে/নিচের description ও button jump করতে পারে।
+
+**সংশোধন:** animated role-এর জন্য fixed/minimum width বা fixed height reserve করুন; reduced-motion preference থাকলে animation কমান/বন্ধ করুন।
+
+### D4 — Hero illustration ছোট width-এ fixed-size
+
+Mobile illustration width 320px, outer horizontal padding 24px। 320px viewport-এ content width 272px হলেও illustration 320px; তাই horizontal overflow হওয়ার সরাসরি ঝুঁকি আছে। একই সমস্যা 300px inner container-এও আছে।
+
+**সংশোধন:** `width: min(constraints.maxWidth, 320)` ধরনের `LayoutBuilder`-based sizing ব্যবহার করুন এবং image container-এ `double.infinity`/bounded width দিন।
+
+### D5 — Desktop-only navigation-এর breakpoint অসঙ্গত
+
+`ResponsiveWrapper.isDesktop()` 900px থেকে desktop ধরে, কিন্তু `ResponsiveWrapper`-এর `desktop` variant 1200px-এ পৌঁছালে আলাদা branch নেয়। ফলে 900–1199px range-এ public layout desktop-style হলেও navbar hamburger/tablet-style থাকে।
+
+**প্রভাব:** layout mode এবং navigation mode একে অপরের সঙ্গে visually inconsistent।
+
+**সংশোধন:** public layout breakpoint ও navigation breakpoint আলাদা নাম/নীতিতে নির্ধারণ করুন, অথবা একই breakpoint contract ব্যবহার করুন।
+
+### D6 — Navigation bar sticky নয় এবং active section indicator নেই
+
+Custom app bar section scroll-এর সময় screen-এর সঙ্গে থাকে না, এবং কোন section active তা দেখায় না। Long portfolio page-এ user context হারায়; section navigation-এর feedback কম।
+
+**সংশোধন:** `SliverAppBar`/sticky header, active nav state এবং scroll offset listener যোগ করুন।
+
+### D7 — App bar background প্রায় transparent
+
+`custom_app_bar.dart:43`-এ background `darkBackground.withOpacity(0.1)`। Content scroll হওয়ার সময় text/image-এর উপর দিয়ে গেলে contrast কমতে পারে; backdrop blur বা solid translucent surface নেই।
+
+**সংশোধন:** opaque/semi-opaque surface, bottom border এবং optional blur ব্যবহার করুন। WCAG contrast check করুন।
+
+### D8 — Dark theme contrast ও muted text risk
+
+`textHint` `#6B7280`, card/surface dark এবং অনেক border/decoration opacity 0.1–0.3। Secondary/hint text, disabled LinkedIn/Resume action এবং subtle borders low-contrast হতে পারে।
+
+**সংশোধন:** body/secondary/hint text-এর contrast ratio যাচাই করুন; disabled control-এ শুধু color নয়, clear state label/tooltip দিন।
+
+### D9 — CTA buttons mobile-এ বেশি জায়গা নিতে পারে
+
+`GradientButton`-এ সব breakpoint-এ horizontal padding 32 এবং vertical padding 16। Hero-তে তিনটি CTA `Wrap`-এ থাকায় 320–375px viewport-এ button দ্রুত আলাদা লাইনে ভেঙে যায় এবং hero অনেক লম্বা হয়।
+
+**সংশোধন:** mobile-এ full-width/half-width CTA layout বা compact padding দিন; primary action-কে visual priority দিন, Resume-কে secondary link/button করুন।
+
+### D10 — Skills section-এর fixed icon/grid sizing
+
+Skills grid-এর icon card ও text layout-এ narrow width-এ category/name দীর্ঘ হলে card height এবং alignment unequal হওয়ার ঝুঁকি আছে। Icon code থেকে dynamic `IconData` বানানোর fallback-ও visualভাবে arbitrary icon দেখাতে পারে।
+
+**সংশোধন:** consistent card min/max height, text maxLines/ellipsis, responsive `maxCrossAxisExtent` এবং meaningful fallback icon ব্যবহার করুন।
+
+### D11 — Project card দু’টি view-তে visual system এক নয়
+
+Homepage project card এবং `AllProjectsPage` card-এর image height, padding, button label, aspect ratio ও information density আলাদা। User homepage থেকে all-projects page-এ গেলে component consistency নষ্ট হয়। Homepage button `View Details` হলেও GitHub action; all-projects-এ `Code`/`Live` দেখা যায়।
+
+**সংশোধন:** একটি reusable `ProjectCard` variant system বানান—compact/expanded, কিন্তু typography, badges, CTA semantics একই রাখুন।
+
+### D12 — Project card action semantics confusing
+
+Homepage-এর `View Details` button সরাসরি GitHub খোলে। এটি detail page-এর প্রত্যাশা তৈরি করে, কিন্তু external repository launch করে। এটি visual bug না হলেও UX design defect।
+
+**সংশোধন:** label `View on GitHub` করুন অথবা সত্যিকারের details page/modal যোগ করুন।
+
+### D13 — Project card content density/overflow risk
+
+Homepage card-এ description height desktop-এ 50px, tech stack সর্বোচ্চ 3টি, card maxHeight 380px। Long translated text, বড় font setting বা accessibility text scale-এ buttons চাপা/overflow হতে পারে।
+
+**সংশোধন:** fixed height কমিয়ে content-driven card রাখুন অথবা action row-এর জন্য guaranteed space দিন; 200% text scale test করুন।
+
+### D14 — About section avatar bounds অস্বাভাবিক হতে পারে
+
+Avatar wrapper-এ mobile max width/height 300, inner circle 280; desktop wrapper max 400, inner 380। কিন্তু wrapper-এর parent `Expanded` এবং image constraints সবসময় square নয়। কিছু width-এ Stack-এর available height/width একে অপরের সঙ্গে না মিললে glow/background circle visually crop হতে পারে।
+
+**সংশোধন:** `AspectRatio(aspectRatio: 1)` ব্যবহার করুন এবং avatar size parent constraints থেকে derive করুন।
+
+### D15 — Contact row দীর্ঘ email/phone-এ overflow risk
+
+`contact_section.dart`-এর contact item Row-তে icon, label এবং value পাশাপাশি থাকে। Narrow mobile বা বড় text scale-এ email/phone এক লাইনে fit না হলে overflow হতে পারে, বিশেষ করে value-তে wrapping policy নেই।
+
+**সংশোধন:** value-তে `Expanded` + `softWrap`, `TextOverflow.ellipsis`/selectable text এবং tap target বজায় রাখুন।
+
+### D16 — Error/loading state design layout jump তৈরি করে
+
+Skills, projects ও contact section loading/error/empty state-এ আলাদা padding/height ব্যবহার করেছে—কোথাও 40px, কোথাও 60px। Data আসার পরে section height হঠাৎ বদলায়, ফলে scroll position jump এবং visual instability হয়।
+
+**সংশোধন:** skeleton বা reserved content height ব্যবহার করুন; error/empty state-এর জন্য shared component ও consistent vertical rhythm রাখুন।
+
+### D17 — Admin sidebar 280px fixed width
+
+`admin_sidebar.dart:21`-এ sidebar width 280px। 900–1024px viewport-এ app bar/content-এর জন্য কম জায়গা থাকে; dashboard cards/table cramped হয়।
+
+**সংশোধন:** 1024px-এর নিচে collapsed rail বা drawer ব্যবহার করুন; desktop sidebar width 240–260px এবং content max-width/grid নিয়ম নির্ধারণ করুন।
+
+### D18 — Admin mobile form/dialog usability risk
+
+Add/edit project ও skill dialogs-এ dense multi-field form, image preview, tech chips এবং action buttons আছে। এগুলো scrollable হলেও mobile keyboard open অবস্থায় bottom actions obscured হতে পারে; dialog-এর fixed internal spacing ছোট viewport-এ অতিরিক্ত চাপ তৈরি করবে।
+
+**সংশোধন:** full-screen mobile route/sheet ব্যবহার করুন, `MediaQuery.viewInsets` handle করুন, sticky bottom action bar দিন এবং form sections accordion/step-wise করুন।
+
+### D19 — Admin loading/error state-এ visual context হারায়
+
+Management screens error হলে center-এ generic message দেখায়; retry button থাকে, কিন্তু search/filter/header context থাকে না। User বুঝতে পারে না কোন data scope ব্যর্থ হয়েছে এবং loading-এর সময় page structure বদলে যায়।
+
+**সংশোধন:** page shell/header স্থির রাখুন; content area-তে inline error banner/skeleton ব্যবহার করুন।
+
+### D20 — Accessibility design gaps
+
+- অনেক decorative icon/image-এর semantic label নেই।
+- `CachedNetworkImage`-এ meaningful image description নেই।
+- 9–13px text (`FEATURED`, tech chips, card buttons) low vision user-এর জন্য ছোট।
+- Gradient/colored text-এর উপর contrast যাচাই নেই।
+- Hover-oriented visual style আছে, কিন্তু keyboard focus state স্পষ্ট নয়।
+- `Text`-based contact values selectable নয়।
+
+**সংশোধন:** semantic labels, focus/pressed states, minimum readable text size, keyboard navigation এবং accessibility text scale test যোগ করুন।
+
+### Design QA matrix
+
+পরবর্তী UI pass-এ অন্তত এই viewport/setting-এ manual বা screenshot test করা উচিত:
+
+| Scenario | কী দেখতে হবে |
+|---|---|
+| 320×568 | hero overflow, CTA wrapping, contact value wrapping |
+| 375×812 | drawer, hero image, project card এবং keyboard form |
+| 600×800 | tablet/public breakpoint mismatch |
+| 768×1024 | project/skills grid, admin filters |
+| 900×700 | sidebar/navigation transition |
+| 1024×768 | fixed 280px sidebar ও dashboard density |
+| 1440×900 | max content width, excessive empty space |
+| 200% text scale | card/dialog/button overflow |
+| reduced motion | animated hero text usability |
