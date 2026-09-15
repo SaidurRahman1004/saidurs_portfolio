@@ -440,6 +440,7 @@ class _ContactManagementState extends State<ContactManagement> {
                   currentUrl: _profileImageUrl,
                   selectedBytes: _selectedProfileImage,
                   isUploading: _isUploadingProfile,
+                  uploadProgress: _profileUploadProgress,
                   onPick: _pickProfileImage,
                   onRemove: () => setState(() {
                     _selectedProfileImage = null;
@@ -452,6 +453,7 @@ class _ContactManagementState extends State<ContactManagement> {
                   currentUrl:  _heroImageUrl,
                   selectedBytes: _selectedHeroImage,
                   isUploading: _isUploadingHero,
+                  uploadProgress: _heroUploadProgress,
                   onPick:  _pickHeroImage,
                   onRemove: () => setState(() {
                     _selectedHeroImage = null;
