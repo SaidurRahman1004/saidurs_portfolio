@@ -4,16 +4,13 @@ class ErrorBoundary extends StatefulWidget {
   final Widget child;
   final Widget? fallback;
 
-  const ErrorBoundary({Key? key, required this.child, this.fallback})
-    : super(key: key);
+  const ErrorBoundary({super.key, required this.child, this.fallback});
 
   @override
-  _ErrorBoundaryState createState() => _ErrorBoundaryState();
+  State<ErrorBoundary> createState() => _ErrorBoundaryState();
 }
 
 class _ErrorBoundaryState extends State<ErrorBoundary> {
-  bool _hasError = false;
-  Object? _error;
 
   @override
   void initState() {

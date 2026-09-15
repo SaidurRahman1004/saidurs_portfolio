@@ -8,7 +8,7 @@ import '../../../providers/portfolio_provider.dart';
 import '../../../widgets/comon/responsive_wrapper.dart';
 
 class AllProjectsPage extends StatelessWidget {
-  const AllProjectsPage({Key? key}) : super(key: key);
+  const AllProjectsPage({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -26,13 +26,13 @@ class AllProjectsPage extends StatelessWidget {
               ),
               background: Container(
                 decoration: BoxDecoration(
-                  gradient: AppTheme.primaryGradient.scale(0.3),
+                  gradient: AppTheme.getPrimaryGradient(context).scale(0.3),
                 ),
                 child: Center(
                   child: Icon(
                     Icons.work_outline,
                     size: 80,
-                    color: Colors.white.withOpacity(0.3),
+                    color: Colors.white.withAlpha(76),
                   ),
                 ),
               ),
@@ -41,8 +41,18 @@ class AllProjectsPage extends StatelessWidget {
 
           //  Projects Grid
           SliverPadding(
-            padding: EdgeInsets.all(
-              ResponsiveWrapper.isMobile(context) ? 16 : 32,
+            padding: EdgeInsets.symmetric(
+              horizontal: () {
+                final width = MediaQuery.of(context).size.width;
+                if (width > 1200) {
+                  return (width - 1200) / 2 + 24;
+                } else if (width > 600) {
+                  return 32.0;
+                } else {
+                  return 16.0;
+                }
+              }(),
+              vertical: 32,
             ),
             sliver: Consumer<PortfolioProvider>(
               builder: (context, provider, child) {
@@ -61,7 +71,7 @@ class AllProjectsPage extends StatelessWidget {
                           Icon(
                             Icons.error_outline,
                             size: 64,
-                            color: AppTheme.accentColor,
+                            color: Theme.of(context).colorScheme.error,
                           ),
                           const SizedBox(height: 16),
                           Text(
@@ -99,9 +109,9 @@ class AllProjectsPage extends StatelessWidget {
                           : 3,
                       crossAxisSpacing: 20,
                       mainAxisSpacing: 20,
-                      childAspectRatio: ResponsiveWrapper.isMobile(context)
-                          ? 0.85
-                          : (ResponsiveWrapper.isTablet(context) ? 0.9 : 1.5),
+                      mainAxisExtent: ResponsiveWrapper.isMobile(context)
+                          ? 480
+                          : 460,
                     ),
                     delegate: SliverChildBuilderDelegate((context, index) {
                       return _buildProjectCard(context, projects[index]);
@@ -119,73 +129,92 @@ class AllProjectsPage extends StatelessWidget {
   Widget _buildProjectCard(BuildContext context, ProjectModel project) {
     return Container(
       decoration: BoxDecoration(
-        gradient: AppTheme.cardGradient,
+        gradient: AppTheme.getCardGradient(context),
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
           color: project.isFeatured
-              ? AppTheme.primaryColor.withOpacity(0.5)
-              : AppTheme.primaryColor.withOpacity(0.2),
+              ? Theme.of(context).colorScheme.primary.withAlpha(127)
+              : Theme.of(context).colorScheme.primary.withAlpha(51),
           width: project.isFeatured ? 2 : 1,
         ),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Image if available
-          if (project.imageUrl != null && project.imageUrl!.isNotEmpty)
-            ClipRRect(
-              borderRadius: const BorderRadius.vertical(
-                top: Radius.circular(20),
-              ),
-              child: Image.network(
-                project.imageUrl!,
-                height: 150,
-                width: double.infinity,
-                fit: BoxFit.cover,
-                errorBuilder: (context, error, stackTrace) {
-                  return Container(
-                    height: 150,
-                    color: AppTheme.surfaceColor,
-                    child: Icon(
-                      Icons.broken_image,
-                      size: 48,
-                      color: AppTheme.textHint,
+          // Image and Badge
+          Stack(
+            children: [
+              if (project.imageUrl != null && project.imageUrl!.isNotEmpty)
+                ClipRRect(
+                  borderRadius: const BorderRadius.vertical(
+                    top: Radius.circular(20),
+                  ),
+                  child: Image.network(
+                    project.imageUrl!,
+                    height: 180,
+                    width: double.infinity,
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) {
+                      return Container(
+                        height: 180,
+                        color: Theme.of(context).cardColor,
+                        child: Icon(
+                          Icons.broken_image,
+                          size: 48,
+                          color: Theme.of(context).hintColor,
+                        ),
+                      );
+                    },
+                  ),
+                )
+              else
+                Container(
+                  height: 180,
+                  width: double.infinity,
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).cardColor,
+                    borderRadius: const BorderRadius.vertical(
+                      top: Radius.circular(20),
                     ),
-                  );
-                },
-              ),
-            ),
-
-          // Featured Badge
-          if (project.isFeatured)
-            Padding(
-              padding: const EdgeInsets.all(16),
-              child: Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 6,
+                  ),
+                  child: Icon(
+                    Icons.code,
+                    size: 48,
+                    color: Theme.of(context).hintColor,
+                  ),
                 ),
-                decoration: BoxDecoration(
-                  gradient: AppTheme.primaryGradient,
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Icon(Icons.star, size: 14, color: Colors.white),
-                    const SizedBox(width: 4),
-                    Text(
-                      'FEATURED',
-                      style: const TextStyle(
-                        fontSize: 10,
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                      ),
+              if (project.isFeatured)
+                Positioned(
+                  top: 12,
+                  left: 12,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 6,
                     ),
-                  ],
+                    decoration: BoxDecoration(
+                      gradient: AppTheme.getPrimaryGradient(context),
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(Icons.star, size: 14, color: Colors.white),
+                        const SizedBox(width: 4),
+                        const Text(
+                          'FEATURED',
+                          style: TextStyle(
+                            fontSize: 10,
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
                 ),
-              ),
-            ),
+            ],
+          ),
 
           Expanded(
             child: Padding(
@@ -219,14 +248,14 @@ class AllProjectsPage extends StatelessWidget {
                           vertical: 4,
                         ),
                         decoration: BoxDecoration(
-                          color: AppTheme.secondaryColor.withOpacity(0.2),
+                          color: Theme.of(context).colorScheme.secondary.withAlpha(51),
                           borderRadius: BorderRadius.circular(6),
                         ),
                         child: Text(
                           tech,
                           style: Theme.of(context).textTheme.bodySmall
                               ?.copyWith(
-                                color: AppTheme.secondaryColor,
+                                color: Theme.of(context).colorScheme.secondary,
                                 fontSize: 11,
                               ),
                         ),
@@ -244,12 +273,12 @@ class AllProjectsPage extends StatelessWidget {
               children: [
                 Expanded(
                   child: ElevatedButton.icon(
-                    onPressed: () => _launchURL(project.githubUrl),
+                    onPressed: () => _launchURL(project.githubUrl ?? ''),
                     icon: const Icon(Icons.code, size: 18),
                     label: const Text('Code'),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: AppTheme.primaryColor.withOpacity(0.1),
-                      foregroundColor: AppTheme.primaryColor,
+                      backgroundColor: Theme.of(context).colorScheme.primary.withAlpha(25),
+                      foregroundColor: Theme.of(context).colorScheme.primary,
                       padding: const EdgeInsets.symmetric(vertical: 12),
                     ),
                   ),
@@ -262,10 +291,10 @@ class AllProjectsPage extends StatelessWidget {
                       icon: const Icon(Icons.launch, size: 18),
                       label: const Text('Live'),
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: AppTheme.secondaryColor.withOpacity(
-                          0.1,
+                        backgroundColor: Theme.of(context).colorScheme.secondary.withValues(
+                          alpha: 0.1,
                         ),
-                        foregroundColor: AppTheme.secondaryColor,
+                        foregroundColor: Theme.of(context).colorScheme.secondary,
                         padding: const EdgeInsets.symmetric(vertical: 12),
                       ),
                     ),
@@ -290,3 +319,4 @@ class AllProjectsPage extends StatelessWidget {
     }
   }
 }
+

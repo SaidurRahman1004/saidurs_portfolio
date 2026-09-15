@@ -15,96 +15,91 @@ class ContactSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: EdgeInsets.symmetric(
-        horizontal: Responsive.value(
-          context: context,
-          mobile: 24,
-          tablet: 64,
-          desktop: 120,
-        ),
-        vertical: 80,
-      ),
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(vertical: 80),
       decoration: BoxDecoration(
-        color: AppTheme.cardBackground.withOpacity(0.3),
+        color: Theme.of(context).cardColor.withAlpha(76),
       ),
-      child: Column(
-        children: [
-          SectionTitle(
-            title: 'Get In Touch',
-            subtitle: "Have a project in mind? Let's collaborate!",
-          ),
-          const SizedBox(height: 60),
-          Consumer<PortfolioProvider>(
-            builder: (context, provider, child) {
-              //loading State
-              if (provider.isLoadingContact) {
-                return const Center(
-                  child: Padding(
-                    padding: EdgeInsets.all(40.0),
-                    child: CircularProgressIndicator(),
-                  ),
-                );
-              }
-              //Error State
-              if (provider.errorContact != null) {
-                return Center(
-                  child: Padding(
-                    padding: const EdgeInsets.all(60.0),
-                    child: Column(
-                      children: [
-                        Icon(
-                          Icons.error_outline,
-                          size: 64,
-                          color: AppTheme.accentColor,
-                        ),
-                        const SizedBox(height: 24),
-                        Text(
-                          'Failed to load contact information',
-                          style: Theme.of(context).textTheme.headlineSmall,
-                        ),
-                        const SizedBox(height: 12),
-                        Text(
-                          provider.errorContact!,
-                          style: Theme.of(context).textTheme.bodyMedium,
-                          textAlign: TextAlign.center,
-                        ),
-                        const SizedBox(height: 24),
-                        ElevatedButton.icon(
-                          onPressed: () => provider.loadContactInfo(),
-                          icon: const Icon(Icons.refresh),
-                          label: const Text('Retry'),
-                        ),
-                      ],
+      child: ResponsiveContainer(
+        child: Column(
+          children: [
+            SectionTitle(
+              title: 'Get In Touch',
+              subtitle: "Have a project in mind? Let's collaborate!",
+            ),
+            const SizedBox(height: 60),
+            Consumer<PortfolioProvider>(
+              builder: (context, provider, child) {
+                // loading State
+                if (provider.isLoadingContact) {
+                  return const Center(
+                    child: Padding(
+                      padding: EdgeInsets.all(40.0),
+                      child: CircularProgressIndicator(),
                     ),
-                  ),
-                );
-              }
-              //Null State
-              if (provider.contactInfo == null) {
-                return Center(
-                  child: Padding(
-                    padding: const EdgeInsets.all(40.0),
-                    child: Text(
-                      'Contact information not available',
-                      style: Theme.of(context).textTheme.bodyLarge,
+                  );
+                }
+                // Error State
+                if (provider.errorContact != null) {
+                  return Center(
+                    child: Padding(
+                      padding: const EdgeInsets.all(60.0),
+                      child: Column(
+                        children: [
+                          Icon(
+                            Icons.error_outline,
+                            size: 64,
+                            color: Theme.of(context).colorScheme.error,
+                          ),
+                          const SizedBox(height: 24),
+                          Text(
+                            'Failed to load contact information',
+                            style: Theme.of(context).textTheme.headlineSmall,
+                          ),
+                          const SizedBox(height: 12),
+                          Text(
+                            provider.errorContact!,
+                            style: Theme.of(context).textTheme.bodyMedium,
+                            textAlign: TextAlign.center,
+                          ),
+                          const SizedBox(height: 24),
+                          ElevatedButton.icon(
+                            onPressed: () => provider.loadContactInfo(),
+                            icon: const Icon(Icons.refresh),
+                            label: const Text('Retry'),
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
-                );
-              }
-              final contact = provider.contactInfo!;
-              return Column(
-                children: [
-                  ResponsiveWrapper(
-                    mobile: _buildMobileLayout(context, contact),
-                    desktop: _buildDesktopLayout(context, contact),
-                  ),
-                  const SizedBox(height: 60),
-                  _buildFooter(context),
-                ],
-              ); //data loaded success
-            },
-          ),
-        ],
+                  );
+                }
+                // Null State
+                if (provider.contactInfo == null) {
+                  return Center(
+                    child: Padding(
+                      padding: const EdgeInsets.all(40.0),
+                      child: Text(
+                        'Contact information not available',
+                        style: Theme.of(context).textTheme.bodyLarge,
+                      ),
+                    ),
+                  );
+                }
+                final contact = provider.contactInfo!;
+                return Column(
+                  children: [
+                    ResponsiveWrapper(
+                      mobile: _buildMobileLayout(context, contact),
+                      desktop: _buildDesktopLayout(context, contact),
+                    ),
+                    const SizedBox(height: 60),
+                    _buildFooter(context),
+                  ],
+                ); // data loaded success
+              },
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -182,7 +177,10 @@ class ContactSection extends StatelessWidget {
         const SizedBox(height: 32),
         _buildSocialButton(
           context,
-          icon: FontAwesomeIcons.github,
+           icon: FaIcon(
+             FontAwesomeIcons.github,
+             color: Colors.white,
+           ),
           label: 'GitHub',
           color: const Color(0xFF181717),
           onTap: () => _launchURL(contact.githubUrl),
@@ -192,7 +190,10 @@ class ContactSection extends StatelessWidget {
 
         _buildSocialButton(
           context,
-          icon: FontAwesomeIcons.linkedin,
+           icon: FaIcon(
+             FontAwesomeIcons.linkedin,
+             color: const Color(0xFF0A66C2),
+           ),
           label: 'LinkedIn',
           color: const Color(0xFF0A66C2),
           onTap: contact.linkedinUrl != null
@@ -204,9 +205,9 @@ class ContactSection extends StatelessWidget {
 
         _buildSocialButton(
           context,
-          icon: Icons.picture_as_pdf,
+           icon: const Icon(Icons.picture_as_pdf),
           label: 'Download Resume',
-          color: AppTheme.accentColor,
+          color: Theme.of(context).colorScheme.error,
           onTap: contact.resumeUrl != null
               ? () => _launchURL(contact.resumeUrl!)
               : () {
@@ -222,7 +223,7 @@ class ContactSection extends StatelessWidget {
   //Contact Contents
   Widget _buildContactItem(
     BuildContext context, {
-    required IconData icon,
+    required dynamic icon,
     required String title,
     required String value,
     VoidCallback? onTap,
@@ -233,19 +234,19 @@ class ContactSection extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          gradient: AppTheme.cardGradient,
+          gradient: AppTheme.getCardGradient(context),
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: AppTheme.primaryColor.withOpacity(0.2)),
+          border: Border.all(color: Theme.of(context).colorScheme.primary.withAlpha(51)),
         ),
         child: Row(
           children: [
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                gradient: AppTheme.primaryGradient.scale(0.3),
+                gradient: AppTheme.getPrimaryGradient(context).scale(0.3),
                 borderRadius: BorderRadius.circular(10),
               ),
-              child: Icon(icon, color: AppTheme.primaryColor),
+              child: Icon(icon, color: Theme.of(context).colorScheme.primary),
             ),
             const SizedBox(width: 16),
             Expanded(
@@ -256,7 +257,7 @@ class ContactSection extends StatelessWidget {
                     title,
                     style: Theme.of(
                       context,
-                    ).textTheme.bodyMedium?.copyWith(color: AppTheme.textHint),
+                    ).textTheme.bodyMedium?.copyWith(color: Theme.of(context).hintColor),
                   ),
                   const SizedBox(height: 4),
                   Text(value, style: Theme.of(context).textTheme.titleMedium),
@@ -267,7 +268,7 @@ class ContactSection extends StatelessWidget {
               Icon(
                 Icons.arrow_forward_ios,
                 size: 16,
-                color: AppTheme.primaryColor,
+                color: Theme.of(context).colorScheme.primary,
               ),
           ],
         ),
@@ -277,7 +278,7 @@ class ContactSection extends StatelessWidget {
 
   Widget _buildSocialButton(
     BuildContext context, {
-    required IconData icon,
+    required Widget icon,
     required String label,
     required Color color,
     required onTap,
@@ -287,12 +288,7 @@ class ContactSection extends StatelessWidget {
       width: double.infinity,
       child: ElevatedButton.icon(
         onPressed: onTap,
-        icon: Icon(
-          icon,
-          color: label == 'GitHub'
-              ? (isDisabled ? Colors.grey : Colors.white)
-              : (isDisabled ? color.withOpacity(0.3) : color),
-        ),
+        icon: icon,
         label: Row(
           children: [
             Text(
@@ -309,7 +305,7 @@ class ContactSection extends StatelessWidget {
                 '(Coming soon)',
                 style: Theme.of(
                   context,
-                ).textTheme.bodySmall?.copyWith(color: AppTheme.textHint),
+                ).textTheme.bodySmall?.copyWith(color: Theme.of(context).hintColor),
               ),
             ],
           ],
@@ -317,16 +313,16 @@ class ContactSection extends StatelessWidget {
         style: ElevatedButton.styleFrom(
           backgroundColor: label == 'GitHub'
               ? (isDisabled ? Colors.grey.shade800 : const Color(0xFF181717))
-              : color.withOpacity(isDisabled ? 0.05 : 0.1),
+              : color.withValues(alpha: isDisabled ? 0.05 : 0.1),
           foregroundColor: label == 'GitHub'
               ? Colors.white
-              : (isDisabled ? color.withOpacity(0.3) : color),
+              : (isDisabled ? color.withAlpha(76) : color),
           padding: const EdgeInsets.all(20),
           alignment: Alignment.centerLeft,
           side: BorderSide(
             color: label == 'GitHub'
                 ? Colors.grey.shade700
-                : color.withOpacity(0.3),
+                : color.withAlpha(76),
             width: 1,
           ),
         ),
@@ -340,7 +336,7 @@ class ContactSection extends StatelessWidget {
 
     return Column(
       children: [
-        const Divider(color: AppTheme.surfaceColor, thickness: 1),
+        Divider(color: Theme.of(context).cardColor, thickness: 1),
         const SizedBox(height: 32),
 
         // Main footer text
@@ -348,7 +344,7 @@ class ContactSection extends StatelessWidget {
           '© $currentYear Saidur Rahman.  All rights reserved.',
           style: Theme.of(
             context,
-          ).textTheme.bodyMedium?.copyWith(color: AppTheme.textSecondary),
+          ).textTheme.bodyMedium?.copyWith(color: (Theme.of(context).textTheme.bodyMedium?.color ?? Colors.grey)),
           textAlign: TextAlign.center,
         ),
 
@@ -362,18 +358,18 @@ class ContactSection extends StatelessWidget {
               'Crafted with ',
               style: Theme.of(
                 context,
-              ).textTheme.bodySmall?.copyWith(color: AppTheme.textHint),
+              ).textTheme.bodySmall?.copyWith(color: Theme.of(context).hintColor),
             ),
             ShaderMask(
               shaderCallback: (bounds) =>
-                  AppTheme.primaryGradient.createShader(bounds),
+                  AppTheme.getPrimaryGradient(context).createShader(bounds),
               child: const Icon(Icons.favorite, size: 16, color: Colors.white),
             ),
             Text(
               ' using Flutter & Firebase',
               style: Theme.of(
                 context,
-              ).textTheme.bodySmall?.copyWith(color: AppTheme.textHint),
+              ).textTheme.bodySmall?.copyWith(color: Theme.of(context).hintColor),
             ),
           ],
         ),
@@ -385,7 +381,7 @@ class ContactSection extends StatelessWidget {
           'Dhaka, Bangladesh',
           style: Theme.of(
             context,
-          ).textTheme.bodySmall?.copyWith(color: AppTheme.textHint),
+          ).textTheme.bodySmall?.copyWith(color: Theme.of(context).hintColor),
         ),
 
         const SizedBox(height: 24),
@@ -421,3 +417,5 @@ class ContactSection extends StatelessWidget {
     }
   }
 }
+
+

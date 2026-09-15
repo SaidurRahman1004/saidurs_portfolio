@@ -5,7 +5,7 @@ import '../../../../providers/portfolio_provider.dart';
 import '../../../../widgets/comon/responsive_wrapper.dart';
 
 class AnalyticsScreen extends StatelessWidget {
-  const AnalyticsScreen({Key? key}) : super(key: key);
+  const AnalyticsScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -113,7 +113,7 @@ class AnalyticsScreen extends StatelessWidget {
       decoration: BoxDecoration(
         gradient: AppTheme.cardGradient,
         borderRadius: BorderRadius.circular(16),
-        border: Border. all(color: AppTheme. primaryColor.withOpacity(0.2)),
+        border: Border. all(color: AppTheme. primaryColor.withAlpha(51)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -132,9 +132,9 @@ class AnalyticsScreen extends StatelessWidget {
               return Container(
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                 decoration: BoxDecoration(
-                  color: item.color. withOpacity(0.1),
+                  color: item.color.withAlpha(25),
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: item.color.withOpacity(0.3)),
+                  border: Border.all(color: item.color.withAlpha(76)),
                 ),
                 child: Column(
                   crossAxisAlignment:  CrossAxisAlignment.start,
@@ -171,7 +171,7 @@ class AnalyticsScreen extends StatelessWidget {
       decoration: BoxDecoration(
         gradient: AppTheme. cardGradient,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppTheme.primaryColor.withOpacity(0.2)),
+        border: Border.all(color: AppTheme.primaryColor.withAlpha(51)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -190,7 +190,7 @@ class AnalyticsScreen extends StatelessWidget {
               final count = provider.allSkills.where((s) => s.category == category).length;
               return Chip(
                 label: Text('$category ($count)'),
-                backgroundColor: AppTheme.primaryColor.withOpacity(0.2),
+                backgroundColor: AppTheme.primaryColor.withAlpha(51),
                 labelStyle: TextStyle(color: AppTheme.primaryColor),
               );
             }).toList(),
@@ -204,9 +204,9 @@ class AnalyticsScreen extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: AppTheme.secondaryColor.withOpacity(0.1),
+        color: AppTheme.secondaryColor.withAlpha(25),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppTheme.secondaryColor.withOpacity(0.3)),
+        border: Border.all(color: AppTheme.secondaryColor.withAlpha(76)),
       ),
       child: Row(
         children: [

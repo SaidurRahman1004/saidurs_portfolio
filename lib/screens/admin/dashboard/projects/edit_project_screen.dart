@@ -33,6 +33,7 @@ class _EditProjectDialogState extends State<EditProjectDialog> {
   late bool _isVisible;
   bool _isLoading = false;
   bool _isUploadingImage = false;
+  double _uploadProgress = 0.0;
 
   final ImagePicker _picker = ImagePicker();
   final ImageUploadService _uploadService = ImageUploadService.instance;
@@ -118,12 +119,18 @@ class _EditProjectDialogState extends State<EditProjectDialog> {
     try {
       setState(() {
         _isUploadingImage = true;
+        _uploadProgress = 0.0;
       });
 
       final imageUrl = await _uploadService.uploadImage(
         imageBytes: _selectedImageBytes!,
         fileName:
-            'project_${widget.project.id}_${DateTime.now().millisecondsSinceEpoch}',
+            'project_${widget.project.id}_${DateTime.now().millisecondsSinceEpoch}.jpg',
+        onProgress: (progress) {
+          setState(() {
+            _uploadProgress = progress;
+          });
+        },
       );
 
       setState(() {
@@ -402,7 +409,7 @@ class _EditProjectDialogState extends State<EditProjectDialog> {
                       top: 8,
                       right: 8,
                       child: IconButton(
-                        onPressed: () {
+                        onPressed: _isUploadingImage ? null : () {
                           setState(() {
                             _selectedImageBytes = null;
                           });
@@ -414,6 +421,18 @@ class _EditProjectDialogState extends State<EditProjectDialog> {
                         ),
                       ),
                     ),
+                    if (_isUploadingImage)
+                      Positioned(
+                        bottom: 0,
+                        left: 0,
+                        right: 0,
+                        child: LinearProgressIndicator(
+                          value: _uploadProgress,
+                          backgroundColor: Colors.black54,
+                          color: AppTheme.primaryColor,
+                          minHeight: 6,
+                        ),
+                      ),
                   ],
                 )
               : _imageUrl != null
@@ -817,13 +836,22 @@ class _EditProjectDialogState extends State<EditProjectDialog> {
                 foregroundColor: Colors.white,
               ),
               child: _isLoading
-                  ? const SizedBox(
-                      height: 20,
-                      width: 20,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                      ),
+                  ? Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const SizedBox(
+                          height: 20,
+                          width: 20,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                          ),
+                        ),
+                        if (_isUploadingImage) ...[
+                          const SizedBox(width: 12),
+                          Text('Uploading Image... ${(_uploadProgress * 100).toInt()}%'),
+                        ],
+                      ],
                     )
                   : const Text('Save Changes'),
             ),

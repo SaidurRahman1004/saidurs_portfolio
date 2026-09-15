@@ -8,6 +8,7 @@ import 'package:futter_portfileo_website/widgets/comon/error_boundary.dart';
 import 'firebase_options.dart';
 import 'config/theme.dart';
 import 'providers/portfolio_provider.dart';
+import 'providers/theme_provider.dart';
 import 'package:provider/provider.dart';
 import 'providers/admin_provider.dart';
 import 'config/env.dart';
@@ -22,23 +23,23 @@ void main() async {
   Env.validateConfig();
 
   // Firebase Initialize
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  ).catchError((error) {
+  bool isFirebaseInitialized = false;
+  try {
+    await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform,
+    );
+    isFirebaseInitialized = true;
+  } catch (error) {
     debugPrint('Firebase init error: $error');
-  });
-  //app cheak
-  // await FirebaseAppCheck.instance.activate(
-  //   webProvider: ReCaptchaV3Provider('your-recaptcha-site-key'),
-  //   androidProvider: AndroidProvider.debug,
-  //   appleProvider: AppleProvider.debug,
-  // );
+  }
 
-  runApp(const MyApp());
+  runApp(MyApp(isFirebaseInitialized: isFirebaseInitialized));
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({Key? key}) : super(key: key);
+  final bool isFirebaseInitialized;
+
+  const MyApp({super.key, required this.isFirebaseInitialized});
 
   @override
   Widget build(BuildContext context) {
@@ -53,21 +54,28 @@ class MyApp extends StatelessWidget {
           lazy: false,
         ),
         ChangeNotifierProvider(create: (_) => AdminProvider(), lazy: true),
+        ChangeNotifierProvider(create: (_) => ThemeProvider(), lazy: false),
       ],
       child: ErrorBoundary(
-        child: MaterialApp(
-          title: 'Saidur- Flutter Developer',
-          debugShowCheckedModeBanner: false,
-          theme: AppTheme.darkTheme(),
-          initialRoute: '/',
-          routes: {
-            '/': (context) => const HomeScreen(),
-            '/admin/login': (context) => const LoginScreen(),
-            '/admin': (context) => const AuthGuard(child: AdminLayout()),
-            // Protected by AuthGuard
-          },
-          onUnknownRoute: (settings) {
-            return MaterialPageRoute(builder: (_) => const HomeScreen());
+        child: Consumer<ThemeProvider>(
+          builder: (context, themeProvider, child) {
+            return MaterialApp(
+              title: 'Saidur- Flutter Developer',
+              debugShowCheckedModeBanner: false,
+              theme: AppTheme.lightTheme(),
+              darkTheme: AppTheme.darkTheme(),
+              themeMode: themeProvider.themeMode,
+              initialRoute: '/',
+              routes: {
+                '/': (context) => const HomeScreen(),
+                '/admin/login': (context) => const LoginScreen(),
+                '/admin': (context) => const AuthGuard(child: AdminLayout()),
+                // Protected by AuthGuard
+              },
+              onUnknownRoute: (settings) {
+                return MaterialPageRoute(builder: (_) => const HomeScreen());
+              },
+            );
           },
         ),
       ),

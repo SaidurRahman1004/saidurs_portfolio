@@ -61,7 +61,6 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final size = MediaQuery.of(context).size;
     return Scaffold(
       body: Container(
         decoration: BoxDecoration(
@@ -108,12 +107,12 @@ class _LoginScreenState extends State<LoginScreen> {
         gradient: AppTheme.cardGradient,
         borderRadius: BorderRadius.circular(24),
         border: Border.all(
-          color: AppTheme.primaryColor.withOpacity(0.2),
+          color: AppTheme.primaryColor.withAlpha(51),
           width: 1,
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.2),
+            color: Colors.black.withAlpha(51),
             blurRadius: 20,
             offset: const Offset(0, 10),
           ),
@@ -151,7 +150,7 @@ class _LoginScreenState extends State<LoginScreen> {
             shape: BoxShape.circle,
             boxShadow: [
               BoxShadow(
-                color: AppTheme.primaryColor.withOpacity(0.3),
+                color: AppTheme.primaryColor.withAlpha(76),
                 blurRadius: 30,
                 spreadRadius: 5,
               ),
@@ -203,14 +202,14 @@ class _LoginScreenState extends State<LoginScreen> {
         hintText: 'admin@example.com',
         prefixIcon: const Icon(Icons.email_outlined),
         filled: true,
-        fillColor: AppTheme.darkBackground.withOpacity(0.5),
+        fillColor: AppTheme.darkBackground.withAlpha(127),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
           borderSide: BorderSide.none,
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: AppTheme.surfaceColor.withOpacity(0.5)),
+          borderSide: BorderSide(color: AppTheme.surfaceColor.withAlpha(127)),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
@@ -267,14 +266,14 @@ class _LoginScreenState extends State<LoginScreen> {
 
         filled: true,
         // Fill background
-        fillColor: AppTheme.darkBackground.withOpacity(0.5),
+        fillColor: AppTheme.darkBackground.withAlpha(127),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
           borderSide: BorderSide.none,
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: AppTheme.surfaceColor.withOpacity(0.5)),
+          borderSide: BorderSide(color: AppTheme.surfaceColor.withAlpha(127)),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
@@ -359,9 +358,9 @@ class _LoginScreenState extends State<LoginScreen> {
           return Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: AppTheme.accentColor.withOpacity(0.1),
+              color: AppTheme.accentColor.withAlpha(25),
               borderRadius: BorderRadius.circular(8),
-              border: Border.all(color: AppTheme.accentColor.withOpacity(0.5)),
+              border: Border.all(color: AppTheme.accentColor.withAlpha(127)),
             ),
             child: Row(
               children: [
@@ -450,7 +449,8 @@ class _LoginScreenState extends State<LoginScreen> {
                 );
                 final success = await adminProvider.sendPasswordReset(email);
 
-                if (success && mounted) {
+                if (success) {
+                  if (!context.mounted) return;
                   Navigator.pop(context);
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(

@@ -14,17 +14,8 @@ class AuthGuard extends StatelessWidget {
       builder: (context, adminProvider, _) {
         // Show loading while checking auth state
         if (adminProvider.currentUser == null) {
-          // Not authenticated - redirect to login
-          WidgetsBinding.instance.addPostFrameCallback((_) {
-            Navigator.of(context).pushReplacement(
-              MaterialPageRoute(builder: (_) => const LoginScreen()),
-            );
-          });
-
-          // Show loading while redirecting
-          return const Scaffold(
-            body: Center(child: CircularProgressIndicator()),
-          );
+          // Not authenticated - show login screen
+          return const LoginScreen();
         }
 
         // Authenticated - show protected content

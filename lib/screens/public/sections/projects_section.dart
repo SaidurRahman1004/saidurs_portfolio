@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:futter_portfileo_website/models/project_model.dart';
 import 'package:futter_portfileo_website/widgets/comon/section_title.dart';
-import 'package:url_launcher/url_launcher.dart';
 import '../../../config/theme.dart';
 import '../../../widgets/comon/responsive_wrapper.dart';
 import 'package:provider/provider.dart';
 import '../../../providers/portfolio_provider.dart';
 import 'all_projects_page.dart';
+import 'package:url_launcher/url_launcher.dart';
+
+import '../../../widgets/comon/project_details_modal.dart';
 
 class ProjectsSection extends StatelessWidget {
   const ProjectsSection({super.key});
@@ -14,126 +16,122 @@ class ProjectsSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: EdgeInsets.symmetric(
-        horizontal: Responsive.value(
-          context: context,
-          mobile: 24,
-          tablet: 64,
-          desktop: 120,
-        ),
-        vertical: 80,
-      ),
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(vertical: 80),
       decoration: BoxDecoration(
-        color: AppTheme.cardBackground.withOpacity(0.3),
+        color: Theme.of(context).cardColor.withAlpha(76),
       ),
-      child: Column(
-        children: [
-          SectionTitle(
-            title: 'Featured Projects',
-            subtitle: 'Showcasing my best work and achievements',
-          ),
-          const SizedBox(height: 60),
-          Consumer<PortfolioProvider>(
-            builder: (context, provider, child) {
-              //loading State
-              if (provider.isLoadingProjects) {
-                return const Center(
-                  child: Padding(
-                    padding: EdgeInsets.all(60.0),
-                    child: Column(
-                      children: [
-                        CircularProgressIndicator(),
-                        SizedBox(height: 16),
-                        Text('Loading projects... '),
-                      ],
+      child: ResponsiveContainer(
+        child: Column(
+          children: [
+            SectionTitle(
+              title: 'Featured Projects',
+              subtitle: 'Showcasing my best work and achievements',
+            ),
+            const SizedBox(height: 60),
+            Consumer<PortfolioProvider>(
+              builder: (context, provider, child) {
+                // loading State
+                if (provider.isLoadingProjects) {
+                  return const Center(
+                    child: Padding(
+                      padding: EdgeInsets.all(60.0),
+                      child: Column(
+                        children: [
+                          CircularProgressIndicator(),
+                          SizedBox(height: 16),
+                          Text('Loading projects... '),
+                        ],
+                      ),
                     ),
-                  ),
-                );
-              }
-              //Error State
-              if (provider.errorProjects != null) {
-                return Center(
-                  child: Padding(
-                    padding: const EdgeInsets.all(60.0),
-                    child: Column(
-                      children: [
-                        Icon(
-                          Icons.error_outline,
-                          size: 64,
-                          color: AppTheme.accentColor,
-                        ),
-                        const SizedBox(height: 24),
-                        Text(
-                          'Failed to load projects',
-                          style: Theme.of(context).textTheme.headlineSmall,
-                        ),
-                        const SizedBox(height: 12),
-                        Text(
-                          provider.errorProjects!,
-                          style: Theme.of(context).textTheme.bodyMedium,
-                          textAlign: TextAlign.center,
-                        ),
-                        const SizedBox(height: 24),
-                        ElevatedButton.icon(
-                          onPressed: () => provider.loadProjects(),
-                          icon: const Icon(Icons.refresh),
-                          label: const Text('Retry'),
-                        ),
-                      ],
+                  );
+                }
+                // Error State
+                if (provider.errorProjects != null) {
+                  return Center(
+                    child: Padding(
+                      padding: const EdgeInsets.all(60.0),
+                      child: Column(
+                        children: [
+                          Icon(
+                            Icons.error_outline,
+                            size: 64,
+                            color: Theme.of(context).colorScheme.error,
+                          ),
+                          const SizedBox(height: 24),
+                          Text(
+                            'Failed to load projects',
+                            style: Theme.of(context).textTheme.headlineSmall,
+                          ),
+                          const SizedBox(height: 12),
+                          Text(
+                            provider.errorProjects!,
+                            style: Theme.of(context).textTheme.bodyMedium,
+                            textAlign: TextAlign.center,
+                          ),
+                          const SizedBox(height: 24),
+                          ElevatedButton.icon(
+                            onPressed: () => provider.loadProjects(),
+                            icon: const Icon(Icons.refresh),
+                            label: const Text('Retry'),
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
-                );
-              }
+                  );
+                }
 
-              //Only Feature Project
-              final featuredProjects = provider.projects
-                  .where((project) => project.isFeatured)
-                  .toList();
-              //Emty State
-              if (featuredProjects.isEmpty) {
-                return Center(
-                  child: Padding(
-                    padding: const EdgeInsets.all(60.0),
-                    child: Column(
-                      children: [
-                        Icon(
-                          Icons.work_outline,
-                          size: 64,
-                          color: AppTheme.textHint,
-                        ),
-                        const SizedBox(height: 16),
-                        Text(
-                          'No featured projects yet',
-                          style: Theme.of(context).textTheme.headlineSmall,
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          'Featured Projects will appear here once added',
-                          style: Theme.of(context).textTheme.bodyMedium
-                              ?.copyWith(color: AppTheme.textHint),
-                        ),
-                      ],
+                // Only Featured Projects
+                final featuredProjects = provider.projects
+                    .where((project) => project.isFeatured)
+                    .toList();
+
+                // Empty State
+                if (featuredProjects.isEmpty) {
+                  return Center(
+                    child: Padding(
+                      padding: const EdgeInsets.all(60.0),
+                      child: Column(
+                        children: [
+                          Icon(
+                            Icons.work_outline,
+                            size: 64,
+                            color: Theme.of(context).hintColor,
+                          ),
+                          const SizedBox(height: 16),
+                          Text(
+                            'No featured projects yet',
+                            style: Theme.of(context).textTheme.headlineSmall,
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            'Featured Projects will appear here once added',
+                            style: Theme.of(context).textTheme.bodyMedium
+                                ?.copyWith(color: Theme.of(context).hintColor),
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
-                );
-              }
-              return Column(
-                children: [
-                  _buildProjectsGrid(context, featuredProjects),
-                  if (provider.projects.isNotEmpty) ...[
-                    const SizedBox(height: 40),
-                    _buildViewAllButton(context, provider.projects.length),
+                  );
+                }
+                return Column(
+                  children: [
+                    _buildProjectsGrid(context, featuredProjects),
+                    if (provider.projects.isNotEmpty) ...[
+                      const SizedBox(height: 40),
+                      _buildViewAllButton(context, provider.projects.length),
+                    ],
                   ],
-                ],
-              ); //data loaded success
-            },
-          ),
-        ],
+                );
+              },
+            ),
+          ],
+        ),
       ),
     );
   }
 
-  //  View All Projects Button
+  // View All Projects Button
   Widget _buildViewAllButton(BuildContext context, int totalProjects) {
     return Center(
       child: OutlinedButton.icon(
@@ -147,8 +145,8 @@ class ProjectsSection extends StatelessWidget {
         label: Text('View All Projects ($totalProjects)'),
         style: OutlinedButton.styleFrom(
           padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 20),
-          side: BorderSide(color: AppTheme.primaryColor, width: 2),
-          foregroundColor: AppTheme.primaryColor,
+          side: BorderSide(color: Theme.of(context).colorScheme.primary, width: 2),
+          foregroundColor: Theme.of(context).colorScheme.primary,
           textStyle: Theme.of(
             context,
           ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
@@ -165,8 +163,8 @@ class ProjectsSection extends StatelessWidget {
     );
   }
 
-  //Phobe Grid
-  Widget _buildMobileGrid(context, List<ProjectModel> projects) {
+  // Phone Grid
+  Widget _buildMobileGrid(BuildContext context, List<ProjectModel> projects) {
     return ListView.builder(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
@@ -180,8 +178,8 @@ class ProjectsSection extends StatelessWidget {
     );
   }
 
-  //Tablet Grid
-  Widget _buildTabletGrid(context, List<ProjectModel> projects) {
+  // Tablet Grid
+  Widget _buildTabletGrid(BuildContext context, List<ProjectModel> projects) {
     return GridView.builder(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
@@ -189,7 +187,7 @@ class ProjectsSection extends StatelessWidget {
         crossAxisCount: 2,
         crossAxisSpacing: 20,
         mainAxisSpacing: 20,
-        childAspectRatio: 0.9,
+        mainAxisExtent: 420,
       ),
       itemCount: projects.length,
       itemBuilder: (context, index) =>
@@ -197,8 +195,8 @@ class ProjectsSection extends StatelessWidget {
     );
   }
 
-  //Deskto[ Grid
-  Widget _buildDesktopGrid(context, List<ProjectModel> projects) {
+  // Desktop Grid
+  Widget _buildDesktopGrid(BuildContext context, List<ProjectModel> projects) {
     return GridView.builder(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
@@ -206,7 +204,7 @@ class ProjectsSection extends StatelessWidget {
         crossAxisCount: 3,
         crossAxisSpacing: 24,
         mainAxisSpacing: 24,
-        childAspectRatio: 1.2,
+        mainAxisExtent: 420,
       ),
       itemCount: projects.length,
       itemBuilder: (context, index) =>
@@ -214,55 +212,107 @@ class ProjectsSection extends StatelessWidget {
     );
   }
 
-  //Projects Card
+  // Projects Card
   Widget _buildProjectCard(BuildContext context, ProjectModel project) {
     final isMobile = MediaQuery.of(context).size.width < 600;
 
     return Container(
-      constraints: BoxConstraints(
-        minHeight: isMobile ? 0 : 320,
-        maxHeight: isMobile ? double.infinity : 380,
-      ),
       decoration: BoxDecoration(
-        gradient: AppTheme.cardGradient,
+        gradient: AppTheme.getCardGradient(context),
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
           color: project.isFeatured
-              ? AppTheme.primaryColor.withOpacity(0.5)
-              : AppTheme.primaryColor.withOpacity(0.2),
+              ? Theme.of(context).colorScheme.primary.withAlpha(127)
+              : Theme.of(context).colorScheme.primary.withAlpha(51),
           width: project.isFeatured ? 2 : 1,
         ),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisSize: MainAxisSize.min,
         children: [
-          // Featured Badge
-          if (project.isFeatured)
-            Container(
-              margin: const EdgeInsets.all(12),
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-              decoration: BoxDecoration(
-                gradient: AppTheme.primaryGradient,
-                borderRadius: BorderRadius.circular(20),
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Icon(Icons.star, size: 12, color: Colors.white),
-                  const SizedBox(width: 4),
-                  Text(
-                    'FEATURED',
-                    style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                      fontSize: 9,
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
+          // Banner Image & Badges
+          Stack(
+            children: [
+              if (project.imageUrl != null && project.imageUrl!.isNotEmpty)
+                ClipRRect(
+                  borderRadius: const BorderRadius.vertical(
+                    top: Radius.circular(20),
+                  ),
+                  child: Image.network(
+                    project.imageUrl!,
+                    height: 150,
+                    width: double.infinity,
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) =>
+                        _buildFallbackBanner(context, project),
+                  ),
+                )
+              else
+                _buildFallbackBanner(context, project),
+
+              // Featured Badge
+              if (project.isFeatured)
+                Positioned(
+                  top: 12,
+                  left: 12,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 4,
+                    ),
+                    decoration: BoxDecoration(
+                      gradient: AppTheme.getPrimaryGradient(context),
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(Icons.star, size: 12, color: Colors.white),
+                        const SizedBox(width: 4),
+                        Text(
+                          'FEATURED',
+                          style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                            fontSize: 9,
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                ],
-              ),
-            ),
+                ),
 
+              // Category Badge
+              if (project.category != null && project.category!.isNotEmpty)
+                Positioned(
+                  top: 12,
+                  right: 12,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 4,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).scaffoldBackgroundColor.withAlpha(200),
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(
+                        color: Theme.of(context).colorScheme.primary.withAlpha(76),
+                      ),
+                    ),
+                    child: Text(
+                      project.category!,
+                      style: const TextStyle(
+                        fontSize: 9,
+                        color: Colors.white70,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ),
+            ],
+          ),
+
+          // Card Body
           Padding(
             padding: const EdgeInsets.all(16),
             child: Column(
@@ -274,25 +324,31 @@ class ProjectsSection extends StatelessWidget {
                   project.name,
                   style: Theme.of(
                     context,
-                  ).textTheme.titleLarge?.copyWith(fontSize: 18),
+                  ).textTheme.titleLarge?.copyWith(
+                    fontSize: 17,
+                    fontWeight: FontWeight.bold,
+                  ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
-                const SizedBox(height: 8),
+                const SizedBox(height: 6),
 
+                // Description
                 SizedBox(
-                  height: isMobile ? 60 : 50,
+                  height: 40,
                   child: Text(
                     project.description,
                     style: Theme.of(
                       context,
-                    ).textTheme.bodyMedium?.copyWith(fontSize: 13),
-                    maxLines: isMobile ? 3 : 2,
+                    ).textTheme.bodyMedium?.copyWith(
+                      fontSize: 12,
+                      color: (Theme.of(context).textTheme.bodyMedium?.color ?? Colors.grey),
+                    ),
+                    maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                   ),
                 ),
-
-                const SizedBox(height: 12),
+                const SizedBox(height: 10),
 
                 // Tech Stack
                 Wrap(
@@ -305,13 +361,16 @@ class ProjectsSection extends StatelessWidget {
                         vertical: 3,
                       ),
                       decoration: BoxDecoration(
-                        color: AppTheme.secondaryColor.withOpacity(0.2),
+                        color: Theme.of(context).colorScheme.secondary.withAlpha(35),
                         borderRadius: BorderRadius.circular(6),
+                        border: Border.all(
+                          color: Theme.of(context).colorScheme.secondary.withAlpha(60),
+                        ),
                       ),
                       child: Text(
                         tech,
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: AppTheme.secondaryColor,
+                          color: Theme.of(context).colorScheme.secondary,
                           fontSize: 10,
                         ),
                       ),
@@ -321,46 +380,56 @@ class ProjectsSection extends StatelessWidget {
               ],
             ),
           ),
-          //const Spacer(),
-          isMobile ? const SizedBox(height: 20) : const Spacer(),
 
-          // Buttons
+          if (!isMobile) const Spacer() else const SizedBox(height: 16),
+
+          // Action Buttons
           Padding(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
             child: Row(
               children: [
                 Expanded(
                   child: ElevatedButton.icon(
-                    onPressed: () => _launchURL(project.githubUrl),
-                    icon: const Icon(Icons.code, size: 16),
+                    onPressed: () {
+                      showDialog(
+                        context: context,
+                        builder: (context) =>
+                            ProjectDetailsModal(project: project),
+                      );
+                    },
+                    icon: const Icon(Icons.info_outline, size: 15),
                     label: Text(
-                      'View Details',
+                      'Details',
                       style: TextStyle(fontSize: isMobile ? 12 : 13),
                     ),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: AppTheme.primaryColor.withOpacity(0.1),
-                      foregroundColor: AppTheme.primaryColor,
+                      backgroundColor: Theme.of(context).colorScheme.primary.withAlpha(25),
+                      foregroundColor: Theme.of(context).colorScheme.primary,
                       padding: const EdgeInsets.symmetric(vertical: 10),
                     ),
                   ),
                 ),
+                if (project.githubUrl != null && project.githubUrl!.isNotEmpty) ...[
+                  const SizedBox(width: 8),
+                  IconButton(
+                    onPressed: () => _launchURL(project.githubUrl!),
+                    icon: const Icon(Icons.code, size: 18),
+                    tooltip: 'GitHub Repository',
+                    style: IconButton.styleFrom(
+                      backgroundColor: Theme.of(context).cardColor,
+                      foregroundColor: (Theme.of(context).textTheme.bodyLarge?.color ?? Colors.white),
+                    ),
+                  ),
+                ],
                 if (project.liveUrl != null && project.liveUrl!.isNotEmpty) ...[
                   const SizedBox(width: 8),
-                  Expanded(
-                    child: ElevatedButton.icon(
-                      onPressed: () => _launchURL(project.liveUrl!),
-                      icon: const Icon(Icons.launch, size: 16),
-                      label: Text(
-                        'Live',
-                        style: TextStyle(fontSize: isMobile ? 12 : 13),
-                      ),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppTheme.secondaryColor.withOpacity(
-                          0.1,
-                        ),
-                        foregroundColor: AppTheme.secondaryColor,
-                        padding: const EdgeInsets.symmetric(vertical: 10),
-                      ),
+                  IconButton(
+                    onPressed: () => _launchURL(project.liveUrl!),
+                    icon: const Icon(Icons.launch, size: 18),
+                    tooltip: 'Live Demo',
+                    style: IconButton.styleFrom(
+                      backgroundColor: Theme.of(context).colorScheme.primary.withAlpha(50),
+                      foregroundColor: Theme.of(context).colorScheme.primary,
                     ),
                   ),
                 ],
@@ -368,6 +437,34 @@ class ProjectsSection extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildFallbackBanner(BuildContext context, ProjectModel project) {
+    return Container(
+      height: 150,
+      width: double.infinity,
+      decoration: BoxDecoration(
+        color: Theme.of(context).cardColor,
+        borderRadius: const BorderRadius.vertical(
+          top: Radius.circular(20),
+        ),
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            Theme.of(context).colorScheme.primary.withAlpha(50),
+            Theme.of(context).scaffoldBackgroundColor,
+          ],
+        ),
+      ),
+      child: Center(
+        child: Icon(
+          Icons.devices_outlined,
+          size: 44,
+          color: Theme.of(context).colorScheme.primary.withAlpha(150),
+        ),
       ),
     );
   }
@@ -386,3 +483,7 @@ class ProjectsSection extends StatelessWidget {
     }
   }
 }
+
+
+
+

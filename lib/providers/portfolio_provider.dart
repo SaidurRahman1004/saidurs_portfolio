@@ -1,86 +1,115 @@
+import 'dart:async';
 import 'package:flutter/cupertino.dart';
 
 import '../models/skill_model.dart';
 import '../models/project_model.dart';
 import '../models/contact_model.dart';
+import '../models/professional_experience_model.dart';
+import '../models/education_model.dart';
+import '../models/certification_model.dart';
 import '../services/firebase_service.dart';
 
 class PortfolioProvider with ChangeNotifier {
-  final FirebaseService _firebaseService =
-      FirebaseService.instance; //instance of firebase service class
-  ///Store All Logics
+  final FirebaseService _firebaseService = FirebaseService.instance;
+
+  /// Store All Logics
   List<SkillModel> _skills = [];
   List<ProjectModel> _projects = [];
   ContactModel? _contactInfo;
+  
+  List<ProfessionalExperienceModel> _experiences = [];
+  List<EducationModel> _education = [];
+  List<CertificationModel> _certifications = [];
 
-  //For Admin
+  StreamSubscription? _skillsSub;
+  StreamSubscription? _projectsSub;
+  StreamSubscription? _contactSub;
+  StreamSubscription? _allSkillsSub;
+  StreamSubscription? _allProjectsSub;
+  
+  StreamSubscription? _experiencesSub;
+  StreamSubscription? _educationSub;
+  StreamSubscription? _certificationsSub;
+
+  // For Admin
   List<SkillModel> _allSkills = [];
   List<ProjectModel> _allProjects = [];
 
-  //getter
+  // getter
   List<SkillModel> get skills => _skills;
-
   List<ProjectModel> get projects => _projects;
-
   ContactModel? get contactInfo => _contactInfo;
+  List<ProfessionalExperienceModel> get experiences => _experiences;
+  List<EducationModel> get education => _education;
+  List<CertificationModel> get certifications => _certifications;
 
-  //Admin gretter
+  // Admin getter
   List<SkillModel> get allSkills => _allSkills;
-
   List<ProjectModel> get allProjects => _allProjects;
 
-  ///Loading states
+  /// Loading states
   bool _isLoadingSkills = true;
   bool _isLoadingProjects = true;
   bool _isLoadingContact = true;
+  bool _isLoadingExperiences = true;
+  bool _isLoadingEducation = true;
+  bool _isLoadingCertifications = true;
 
-  //Admin Loaders
+  // Admin Loaders
   bool _isLoadingAllSkills = false;
   bool _isLoadingAllProjects = false;
 
-  //get Admin loaders
+  // get Admin loaders
   bool get isLoadingAllSkills => _isLoadingAllSkills;
-
   bool get isLoadingAllProjects => _isLoadingAllProjects;
 
   bool get isLoadingSkills => _isLoadingSkills;
-
   bool get isLoadingProjects => _isLoadingProjects;
-
   bool get isLoadingContact => _isLoadingContact;
+  bool get isLoadingExperiences => _isLoadingExperiences;
+  bool get isLoadingEducation => _isLoadingEducation;
+  bool get isLoadingCertifications => _isLoadingCertifications;
 
-  //All Data Loading State
+  // All Data Loading State
   bool get isLoading =>
-      _isLoadingSkills || _isLoadingProjects || _isLoadingContact;
+      _isLoadingSkills || 
+      _isLoadingProjects || 
+      _isLoadingContact || 
+      _isLoadingExperiences || 
+      _isLoadingEducation || 
+      _isLoadingCertifications;
 
-  ///Error States
+  /// Error States
   String? _errorSkills;
   String? _errorProjects;
   String? _errorContact;
+  String? _errorExperiences;
+  String? _errorEducation;
+  String? _errorCertifications;
 
-  //  Admin error states
+  // Admin error states
   String? _errorAllSkills;
   String? _errorAllProjects;
 
   // Admin error getters
   String? get errorAllSkills => _errorAllSkills;
-
   String? get errorAllProjects => _errorAllProjects;
 
   String? get errorSkills => _errorSkills;
-
   String? get errorProjects => _errorProjects;
-
   String? get errorContact => _errorContact;
+  String? get errorExperiences => _errorExperiences;
+  String? get errorEducation => _errorEducation;
+  String? get errorCertifications => _errorCertifications;
 
-  ///Loads Data
-  //Load Skill
+  /// Loads Data
   Future<void> loadSkills() async {
     try {
       _isLoadingSkills = true;
       _errorSkills = null;
       notifyListeners();
-      await _firebaseService.getSkills().listen(
+      _skillsSub?.cancel();
+      _skillsSub = _firebaseService.getSkills().listen(
         (skillsList) {
           _skills = skillsList;
           _isLoadingSkills = false;
@@ -100,14 +129,13 @@ class PortfolioProvider with ChangeNotifier {
     }
   }
 
-  //Load All Skills For Admin
   Future<void> loadAllSkills() async {
     try {
       _isLoadingAllSkills = true;
       _errorAllSkills = null;
       notifyListeners();
-
-      _firebaseService.getAllSkills().listen(
+      _allSkillsSub?.cancel();
+      _allSkillsSub = _firebaseService.getAllSkills().listen(
         (skillsList) {
           _allSkills = skillsList;
           _isLoadingAllSkills = false;
@@ -127,14 +155,13 @@ class PortfolioProvider with ChangeNotifier {
     }
   }
 
-  //Load All Project
   Future<void> loadProjects() async {
     try {
       _isLoadingProjects = true;
       _errorProjects = null;
       notifyListeners();
-
-      _firebaseService.getProjects().listen(
+      _projectsSub?.cancel();
+      _projectsSub = _firebaseService.getProjects().listen(
         (projectsList) {
           _projects = projectsList;
           _isLoadingProjects = false;
@@ -154,14 +181,13 @@ class PortfolioProvider with ChangeNotifier {
     }
   }
 
-  //Load All Projects For Admin
   Future<void> loadAllProjects() async {
     try {
       _isLoadingAllProjects = true;
       _errorAllProjects = null;
       notifyListeners();
-
-      _firebaseService.getAllProjects().listen(
+      _allProjectsSub?.cancel();
+      _allProjectsSub = _firebaseService.getAllProjects().listen(
         (projectsList) {
           _allProjects = projectsList;
           _isLoadingAllProjects = false;
@@ -181,13 +207,13 @@ class PortfolioProvider with ChangeNotifier {
     }
   }
 
-  //Load Contact Info
   Future<void> loadContactInfo() async {
     try {
       _isLoadingContact = true;
       _errorContact = null;
       notifyListeners();
-      _firebaseService.getContactInfo().listen(
+      _contactSub?.cancel();
+      _contactSub = _firebaseService.getContactInfo().listen(
         (contact) {
           _contactInfo = contact;
           _isLoadingContact = false;
@@ -206,21 +232,103 @@ class PortfolioProvider with ChangeNotifier {
       notifyListeners();
     }
   }
-
-  //All Data Load Initial Loading,call in main.dart
-  Future<void> loadAllData() async {
-    await Future.wait([loadSkills(), loadProjects(), loadContactInfo()]);
+  
+  Future<void> loadExperiences() async {
+    try {
+      _isLoadingExperiences = true;
+      _errorExperiences = null;
+      notifyListeners();
+      _experiencesSub?.cancel();
+      _experiencesSub = _firebaseService.getExperiences().listen(
+        (list) {
+          _experiences = list;
+          _isLoadingExperiences = false;
+          _errorExperiences = null;
+          notifyListeners();
+        },
+        onError: (error) {
+          _isLoadingExperiences = false;
+          _errorExperiences = 'Failed to load experiences: $error';
+          notifyListeners();
+        },
+      );
+    } catch (e) {
+      _isLoadingExperiences = false;
+      _errorExperiences = 'Failed to load experiences: $e';
+      notifyListeners();
+    }
   }
 
-  //Pull To Refresh
+  Future<void> loadEducation() async {
+    try {
+      _isLoadingEducation = true;
+      _errorEducation = null;
+      notifyListeners();
+      _educationSub?.cancel();
+      _educationSub = _firebaseService.getEducation().listen(
+        (list) {
+          _education = list;
+          _isLoadingEducation = false;
+          _errorEducation = null;
+          notifyListeners();
+        },
+        onError: (error) {
+          _isLoadingEducation = false;
+          _errorEducation = 'Failed to load education: $error';
+          notifyListeners();
+        },
+      );
+    } catch (e) {
+      _isLoadingEducation = false;
+      _errorEducation = 'Failed to load education: $e';
+      notifyListeners();
+    }
+  }
+
+  Future<void> loadCertifications() async {
+    try {
+      _isLoadingCertifications = true;
+      _errorCertifications = null;
+      notifyListeners();
+      _certificationsSub?.cancel();
+      _certificationsSub = _firebaseService.getCertifications().listen(
+        (list) {
+          _certifications = list;
+          _isLoadingCertifications = false;
+          _errorCertifications = null;
+          notifyListeners();
+        },
+        onError: (error) {
+          _isLoadingCertifications = false;
+          _errorCertifications = 'Failed to load certifications: $error';
+          notifyListeners();
+        },
+      );
+    } catch (e) {
+      _isLoadingCertifications = false;
+      _errorCertifications = 'Failed to load certifications: $e';
+      notifyListeners();
+    }
+  }
+
+  Future<void> loadAllData() async {
+    await Future.wait([
+      loadSkills(), 
+      loadProjects(), 
+      loadContactInfo(),
+      loadExperiences(),
+      loadEducation(),
+      loadCertifications()
+    ]);
+  }
+
   Future<void> refresh() async {
     await loadAllData();
   }
 
-  //  FILTERED DATA
-  //Show Catagorywise Skills
+  // FILTERED DATA
   Map<String, List<SkillModel>> get skillsByCategory {
-    final Map<String, List<SkillModel>> grouped = {}; //uses for sorting
+    final Map<String, List<SkillModel>> grouped = {};
     for (var skill in _skills) {
       if (!grouped.containsKey(skill.category)) {
         grouped[skill.category] = [];
@@ -230,13 +338,11 @@ class PortfolioProvider with ChangeNotifier {
     return grouped;
   }
 
-  /// Show Featured Projects highlight in Publicly from Firebase
   List<ProjectModel> get featuredProjects {
-    return _projects.where((project) => project.isFeatured).toList();
+    return _projects.where((project) => project.featured).toList();
   }
 
   /// ADMIN OPERATIONS - SKILLS CRUD
-  // Add New Skill
   Future<void> addSkill(SkillModel skill) async {
     try {
       await _firebaseService.addSkill(skill);
@@ -245,7 +351,6 @@ class PortfolioProvider with ChangeNotifier {
     }
   }
 
-  //Update Skill
   Future<void> updateSkill(String skillId, SkillModel skill) async {
     try {
       await _firebaseService.updateSkill(skillId, skill);
@@ -254,7 +359,6 @@ class PortfolioProvider with ChangeNotifier {
     }
   }
 
-  //DEllet Screen
   Future<void> deleteSkill(String skillId) async {
     try {
       await _firebaseService.deleteSkill(skillId);
@@ -263,10 +367,8 @@ class PortfolioProvider with ChangeNotifier {
     }
   }
 
-  //Skill visibility toggle
   Future<void> toggleSkillVisibility(SkillModel skill) async {
     try {
-      //cheak Current Visiability
       final updateSkill = skill.copyWith(isVisible: !skill.isVisible);
       await _firebaseService.updateSkill(skill.id, updateSkill);
     } catch (e) {
@@ -275,7 +377,6 @@ class PortfolioProvider with ChangeNotifier {
   }
 
   /// ADMIN OPERATIONS - PROJECTS CRUD
-  // Project add
   Future<void> addProject(ProjectModel project) async {
     try {
       await _firebaseService.addProject(project);
@@ -284,7 +385,6 @@ class PortfolioProvider with ChangeNotifier {
     }
   }
 
-  //Project update
   Future<void> updateProject(String projectId, ProjectModel project) async {
     try {
       await _firebaseService.updateProject(projectId, project);
@@ -293,7 +393,6 @@ class PortfolioProvider with ChangeNotifier {
     }
   }
 
-  //Project delete
   Future<void> deleteProject(String projectId) async {
     try {
       await _firebaseService.deleteProject(projectId);
@@ -302,7 +401,6 @@ class PortfolioProvider with ChangeNotifier {
     }
   }
 
-  //Project visibility toggle
   Future<void> toggleProjectVisibility(ProjectModel project) async {
     try {
       final updateProject = project.copyWith(isVisible: !project.isVisible);
@@ -312,11 +410,9 @@ class PortfolioProvider with ChangeNotifier {
     }
   }
 
-  // Toggle featured status
   Future<void> toggleProjectFeatured(ProjectModel project) async {
     try {
-      final updatedProject = project.copyWith(isFeatured: !project.isFeatured);
-
+      final updatedProject = project.copyWith(featured: !project.featured);
       await _firebaseService.updateProject(project.id, updatedProject);
     } catch (e) {
       throw Exception('Failed to toggle featured:  $e');
@@ -324,12 +420,96 @@ class PortfolioProvider with ChangeNotifier {
   }
 
   /// ADMIN OPERATIONS - CONTACT INFO CRUD
-  //Update Contact Info
   Future<void> updateContactInfo(ContactModel contact) async {
     try {
       await _firebaseService.updateContactInfo(contact);
     } catch (e) {
       throw Exception('Failed to update contact info: $e');
     }
+  }
+
+  Future<void> addExperience(ProfessionalExperienceModel item) async {
+    try {
+      await _firebaseService.addExperience(item);
+    } catch (e) {
+      throw Exception('Failed to add experience: $e');
+    }
+  }
+
+  Future<void> updateExperience(String id, ProfessionalExperienceModel item) async {
+    try {
+      await _firebaseService.updateExperience(id, item);
+    } catch (e) {
+      throw Exception('Failed to update experience: $e');
+    }
+  }
+
+  Future<void> deleteExperience(String id) async {
+    try {
+      await _firebaseService.deleteExperience(id);
+    } catch (e) {
+      throw Exception('Failed to delete experience: $e');
+    }
+  }
+
+  Future<void> addEducation(EducationModel item) async {
+    try {
+      await _firebaseService.addEducation(item);
+    } catch (e) {
+      throw Exception('Failed to add education: $e');
+    }
+  }
+
+  Future<void> updateEducation(String id, EducationModel item) async {
+    try {
+      await _firebaseService.updateEducation(id, item);
+    } catch (e) {
+      throw Exception('Failed to update education: $e');
+    }
+  }
+
+  Future<void> deleteEducation(String id) async {
+    try {
+      await _firebaseService.deleteEducation(id);
+    } catch (e) {
+      throw Exception('Failed to delete education: $e');
+    }
+  }
+
+  Future<void> addCertification(CertificationModel item) async {
+    try {
+      await _firebaseService.addCertification(item);
+    } catch (e) {
+      throw Exception('Failed to add certification: $e');
+    }
+  }
+
+  Future<void> updateCertification(String id, CertificationModel item) async {
+    try {
+      await _firebaseService.updateCertification(id, item);
+    } catch (e) {
+      throw Exception('Failed to update certification: $e');
+    }
+  }
+
+  Future<void> deleteCertification(String id) async {
+    try {
+      await _firebaseService.deleteCertification(id);
+    } catch (e) {
+      throw Exception('Failed to delete certification: $e');
+    }
+  }
+
+  @override
+  void dispose() {
+    _skillsSub?.cancel();
+    _projectsSub?.cancel();
+    _contactSub?.cancel();
+    _allSkillsSub?.cancel();
+    _allProjectsSub?.cancel();
+    _experiencesSub?.cancel();
+    _educationSub?.cancel();
+    _certificationsSub?.cancel();
+    super.dispose();
   }
 }

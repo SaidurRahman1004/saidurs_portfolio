@@ -1,11 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
+import 'package:provider/provider.dart';
 import '../../widgets/comon/custom_app_bar.dart';
 import 'sections/hero_section.dart';
+import 'sections/highlights_section.dart';
 import 'sections/about_section.dart';
+import 'sections/experience_section.dart';
 import 'sections/skills_section.dart';
 import 'sections/projects_section.dart';
+import 'sections/education_section.dart';
+import 'sections/certifications_section.dart';
 import 'sections/contact_section.dart';
 import '../../config/theme.dart';
+import '../../providers/theme_provider.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -17,16 +24,18 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   final GlobalKey heroKey = GlobalKey();
   final GlobalKey aboutKey = GlobalKey();
+  final GlobalKey experienceKey = GlobalKey();
   final GlobalKey skillsKey = GlobalKey();
   final GlobalKey projectsKey = GlobalKey();
+  final GlobalKey educationKey = GlobalKey();
   final GlobalKey contactKey = GlobalKey();
 
   void _scrollToSection(GlobalKey key) {
-    if (Navigator.canPop(context)) {
+    if (Scaffold.of(context).isDrawerOpen) {
       Navigator.pop(context);
     }
 
-    Future.delayed(const Duration(milliseconds: 300), () {
+    Future.delayed(const Duration(milliseconds: 100), () {
       Scrollable.ensureVisible(
         key.currentContext!,
         duration: const Duration(milliseconds: 800),
@@ -37,32 +46,34 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = context.watch<ThemeProvider>().isDarkMode;
+    final gradient = isDark ? AppTheme.primaryGradient : AppTheme.lightPrimaryGradient;
+
     return Scaffold(
       appBar: CustomAppBar(
         herokey: heroKey,
         aboutkey: aboutKey,
+        experiencekey: experienceKey,
         skillskey: skillsKey,
         projectskey: projectsKey,
+        educationkey: educationKey,
         contactkey: contactKey,
       ),
-      //Drawer for mobile
       drawer: Drawer(
-        backgroundColor: AppTheme.darkBackground,
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         child: ListView(
           padding: EdgeInsets.zero,
           children: [
-            // Drawer Header
             DrawerHeader(
               decoration: BoxDecoration(
-                gradient: AppTheme.primaryGradient.scale(0.3),
+                gradient: gradient.scale(0.3),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
                   ShaderMask(
-                    shaderCallback: (bounds) =>
-                        AppTheme.primaryGradient.createShader(bounds),
+                    shaderCallback: (bounds) => gradient.createShader(bounds),
                     child: Text(
                       '<SR/>',
                       style: Theme.of(context).textTheme.headlineLarge
@@ -74,16 +85,12 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    'Flutter Developer',
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: AppTheme.textSecondary,
-                    ),
+                    'Junior Flutter Developer',
+                    style: Theme.of(context).textTheme.bodyMedium,
                   ),
                 ],
               ),
             ),
-
-            // Menu Items
             _buildDrawerItem(
               context,
               icon: Icons.home_outlined,
@@ -95,6 +102,12 @@ class _HomeScreenState extends State<HomeScreen> {
               icon: Icons.person_outline,
               title: 'About',
               onTap: () => _scrollToSection(aboutKey),
+            ),
+            _buildDrawerItem(
+              context,
+              icon: Icons.work_history_outlined,
+              title: 'Experience',
+              onTap: () => _scrollToSection(experienceKey),
             ),
             _buildDrawerItem(
               context,
@@ -110,59 +123,55 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
             _buildDrawerItem(
               context,
+              icon: Icons.school_outlined,
+              title: 'Education',
+              onTap: () => _scrollToSection(educationKey),
+            ),
+            _buildDrawerItem(
+              context,
               icon: Icons.contact_mail_outlined,
               title: 'Contact',
               onTap: () => _scrollToSection(contactKey),
             ),
-
-            const Divider(color: AppTheme.surfaceColor),
-
-            // Footer in drawer
+            Divider(color: Theme.of(context).cardColor),
             Padding(
               padding: const EdgeInsets.all(16.0),
               child: Text(
                 '© ${DateTime.now().year} Saidur Rahman',
-                style: Theme.of(
-                  context,
-                ).textTheme.bodySmall?.copyWith(color: AppTheme.textHint),
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Theme.of(context).hintColor),
                 textAlign: TextAlign.center,
               ),
             ),
           ],
         ),
       ),
-
       body: SingleChildScrollView(
         child: Column(
           children: [
-            // Hero Section
             Container(
               key: heroKey,
               child: HeroSection(
-                onProjectClick: () {
-                  return _scrollToSection(projectsKey);
-                },
-                onContentClick: () {
-                  return _scrollToSection(contactKey);
-                },
+                onProjectClick: () => _scrollToSection(projectsKey),
+                onContentClick: () => _scrollToSection(contactKey),
               ),
             ),
-            // About Section
+            const HighlightsSection(),
             Container(key: aboutKey, child: const AboutSection()),
-            // Skills Section
+            Container(key: experienceKey, child: const ExperienceSection()),
             Container(key: skillsKey, child: const SkillsSection()),
-            // Projects Section
             Container(key: projectsKey, child: const ProjectsSection()),
-
-            // Contact Section
+            Container(key: educationKey, child: const EducationSection()),
+            const CertificationsSection(),
             Container(key: contactKey, child: const ContactSection()),
-          ],
+          ]
+              .animate(interval: 200.ms)
+              .fade(duration: 800.ms)
+              .slideY(begin: 0.1, end: 0, duration: 800.ms, curve: Curves.easeOutCubic),
         ),
       ),
     );
   }
 
-  //Drawer Item Builder
   Widget _buildDrawerItem(
     BuildContext context, {
     required IconData icon,
@@ -170,10 +179,10 @@ class _HomeScreenState extends State<HomeScreen> {
     required VoidCallback onTap,
   }) {
     return ListTile(
-      leading: Icon(icon, color: AppTheme.primaryColor),
+      leading: Icon(icon, color: Theme.of(context).colorScheme.primary),
       title: Text(title, style: Theme.of(context).textTheme.titleMedium),
       onTap: onTap,
-      hoverColor: AppTheme.primaryColor.withOpacity(0.1),
+      hoverColor: Theme.of(context).colorScheme.primary.withAlpha(25),
     );
   }
-}
+}

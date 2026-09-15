@@ -1,151 +1,133 @@
-import 'dart:convert';
-import 'package:http/http.dart' as http;
 import 'package:flutter/foundation.dart';
-import '../config/constants.dart';
-import '../config/env.dart';
+import 'package:firebase_storage/firebase_storage.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class ImageUploadService {
   static final ImageUploadService _instance = ImageUploadService._internal();
-
   factory ImageUploadService() => _instance;
-
   ImageUploadService._internal();
-
   static ImageUploadService get instance => _instance;
 
-  static const String _apiKey = AppConstants.imgbbApiKey;
-  static const String _uploadUrl = AppConstants.imgbbUploadEndpoint;
+  final FirebaseStorage _storage = FirebaseStorage.instance;
+  final FirebaseAuth _auth = FirebaseAuth.instance;
 
+  /// Uploads an image to Firebase Storage and returns the download URL.
+  /// Reports upload progress via [onProgress] if provided.
   Future<String> uploadImage({
     required Uint8List imageBytes,
     String? fileName,
+    String folder = 'uploads',
+    void Function(double progress)? onProgress,
   }) async {
+    // 1. Security Check: Ensure user is authenticated before uploading
+    if (_auth.currentUser == null) {
+      throw Exception('Upload failed: User is not authenticated.');
+    }
+
+    // 2. Generate unique filename
+    final String safeFileName = fileName ?? 'img_${DateTime.now().millisecondsSinceEpoch}.jpg';
+    final String fullPath = '$folder/$safeFileName';
+
     try {
-      //Cheak Api key
-      if (!Env.isConfigured) {
-        throw Exception('ImgBB API key not configured');
+      final Reference ref = _storage.ref().child(fullPath);
+
+      // Set Metadata to ensure correct handling
+      final SettableMetadata metadata = SettableMetadata(
+        contentType: _guessContentType(safeFileName),
+        customMetadata: {'uploaded_by': _auth.currentUser!.uid},
+      );
+
+      // 3. Start Upload
+      final UploadTask uploadTask = ref.putData(imageBytes, metadata);
+
+      // 4. Listen to progress if callback is provided
+      if (onProgress != null) {
+        uploadTask.snapshotEvents.listen((TaskSnapshot snapshot) {
+          final double progress = snapshot.bytesTransferred / snapshot.totalBytes;
+          onProgress(progress);
+        });
       }
-        debugPrint('Starting image upload to ImgBB...');
-        debugPrint(' Image size: ${imageBytes.length} bytes');
 
-        //encode Image to base 64
-        final base64Image = base64Encode(imageBytes);
-        debugPrint(' Image encoded to base64');
-        //Create HTTP Post Request
-        final uri = Uri.parse('$_uploadUrl?key=$_apiKey');
-        final request = http.MultipartRequest('POST', uri);
+      // 5. Wait for completion and return URL
+      final TaskSnapshot completedTask = await uploadTask;
+      final String downloadUrl = await completedTask.ref.getDownloadURL();
+      
+      debugPrint('Successfully uploaded image to: $fullPath');
+      return downloadUrl;
 
-        //Add Image Data in base 64 formate
-        request.fields['image'] = base64Image;
-        // Optional File name set
-        if (fileName != null) {
-          request.fields['name'] = fileName;
-        }
-        debugPrint('Image data added to request');
-
-        //Send Request
-        final streamedResponse = await request.send();
-        debugPrint('Request sent to ImgBB');
-        final response = await http.Response.fromStream(streamedResponse);
-
-        debugPrint('📨 Response status: ${response.statusCode}');
-
-        //Check ResponseSending request to ImgBB...');
-        if (response.statusCode == 200) {
-          //Response JSon PArse
-          final responseData = jsonDecode(response.body);
-          debugPrint('Response data: $responseData');
-          if (responseData['success'] == true &&
-              responseData['data'] != null &&
-              responseData['data']['url'] != null) {
-            final imageUrl = responseData['data']['url'] as String;
-
-            debugPrint(' Upload successful! ');
-            debugPrint(' Image URL: $imageUrl');
-
-            return imageUrl;
-          } else {
-            /// Response have no url
-            throw Exception('Invalid response from ImgBB:  Missing image URL');
-          }
-        } else {
-          // Upload failed
-          debugPrint('Upload failed with status: ${response.statusCode}');
-          debugPrint('Response body: ${response.body}');
-
-          // Error message extract
-          try {
-            final errorData = json.decode(response.body);
-            final errorMessage =
-                errorData['error']['message'] ?? 'Unknown error';
-            throw Exception('ImgBB upload failed: $errorMessage');
-          } catch (e) {
-            throw Exception('ImgBB upload failed: ${response.statusCode}');
-          }
-        }
-
-    } on http.ClientException catch (e) {
-      /// Network error
-      debugPrint('Network error: $e');
-      throw Exception('Network error: Please check your internet connection');
+    } on FirebaseException catch (e) {
+      debugPrint('Firebase Storage Error: ${e.code} - ${e.message}');
+      throw Exception('Failed to upload image: ${e.message ?? e.code}');
     } catch (e) {
-      debugPrint('Upload error: $e');
-      throw Exception('Image upload failed: $e');
+      debugPrint('Upload Error: $e');
+      throw Exception('An unexpected error occurred during upload.');
     }
   }
 
-  //Upload Multiple Image
+  /// Uploads multiple images and returns a list of URLs.
   Future<List<String>> uploadMultipleImages({
     required List<Uint8List> imagesBytesList,
+    String folder = 'uploads',
+    void Function(int currentIndex, int total, double currentProgress)? onProgress,
   }) async {
     final List<String> imageUrls = [];
 
     try {
-      debugPrint(' Uploading ${imagesBytesList.length} images...');
-
-      /// each image upload
       for (int i = 0; i < imagesBytesList.length; i++) {
-        debugPrint(' Uploading image ${i + 1}/${imagesBytesList.length}...');
-
         final url = await uploadImage(
           imageBytes: imagesBytesList[i],
-          fileName: 'image_${DateTime.now().millisecondsSinceEpoch}_$i',
+          fileName: 'img_${DateTime.now().millisecondsSinceEpoch}_$i.jpg',
+          folder: folder,
+          onProgress: (progress) {
+            if (onProgress != null) {
+              onProgress(i + 1, imagesBytesList.length, progress);
+            }
+          },
         );
-
         imageUrls.add(url);
-        debugPrint(' Image ${i + 1} uploaded successfully');
       }
-
-      debugPrint('All images uploaded successfully!');
       return imageUrls;
     } catch (e) {
-      debugPrint(' Multiple upload error: $e');
+      debugPrint('Multiple upload error: $e');
       throw Exception('Failed to upload images: $e');
     }
   }
 
-  // Delete image from ImgBB
-
+  /// Deletes an image from Firebase Storage using its download URL.
   Future<void> deleteImage(String imageUrl) async {
-    // ImgBB free tier doesn't support deletion
-    debugPrint('ImgBB free tier does not support image deletion');
-    debugPrint(' Removing image URL from database only');
-  }
-
-  bool validateImageSize(Uint8List imageBytes, {int maxSizeMB = 5}) {
-    final sizeInMB = imageBytes.length / (1024 * 1024);
-
-    debugPrint(' Image size:  ${sizeInMB.toStringAsFixed(2)} MB');
-
-    if (sizeInMB > maxSizeMB) {
-      debugPrint('⚠️ Image size exceeds $maxSizeMB MB limit');
-      return false;
+    if (_auth.currentUser == null) {
+      throw Exception('Delete failed: User is not authenticated.');
     }
 
+    try {
+      // Create a reference from the download URL and delete it
+      final Reference ref = _storage.refFromURL(imageUrl);
+      await ref.delete();
+      debugPrint('Successfully deleted image: ${ref.fullPath}');
+    } on FirebaseException catch (e) {
+      if (e.code == 'object-not-found') {
+        debugPrint('Image already deleted or not found: $imageUrl');
+        return; // Ignore if it doesn't exist to avoid orphaned data errors
+      }
+      debugPrint('Firebase Storage Delete Error: ${e.code} - ${e.message}');
+      throw Exception('Failed to delete image: ${e.message ?? e.code}');
+    } catch (e) {
+      debugPrint('Delete Error: $e');
+      throw Exception('An unexpected error occurred during deletion.');
+    }
+  }
+
+  /// Validates image size against [maxSizeMB].
+  bool validateImageSize(Uint8List imageBytes, {int maxSizeMB = 5}) {
+    final sizeInMB = imageBytes.length / (1024 * 1024);
+    if (sizeInMB > maxSizeMB) {
+      debugPrint('Warning: Image size (${sizeInMB.toStringAsFixed(2)} MB) exceeds $maxSizeMB MB limit');
+      return false;
+    }
     return true;
   }
 
-  // Get recommended image size info
+  /// Returns a human-readable size string.
   String getImageSizeInfo(Uint8List imageBytes) {
     final sizeInBytes = imageBytes.length;
     final sizeInKB = sizeInBytes / 1024;
@@ -157,6 +139,25 @@ class ImageUploadService {
       return '${sizeInKB.toStringAsFixed(2)} KB';
     } else {
       return '$sizeInBytes bytes';
+    }
+  }
+
+  /// Helper to guess content type from filename extension
+  String _guessContentType(String fileName) {
+    final extension = fileName.split('.').last.toLowerCase();
+    switch (extension) {
+      case 'png':
+        return 'image/png';
+      case 'webp':
+        return 'image/webp';
+      case 'gif':
+        return 'image/gif';
+      case 'svg':
+        return 'image/svg+xml';
+      case 'jpg':
+      case 'jpeg':
+      default:
+        return 'image/jpeg';
     }
   }
 }

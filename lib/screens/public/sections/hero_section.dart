@@ -22,20 +22,14 @@ class HeroSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
+      width: double.infinity,
       constraints: const BoxConstraints(minHeight: 600),
-      padding: EdgeInsets.symmetric(
-        horizontal: Responsive.value(
-          context: context,
-          mobile: 24,
-          tablet: 64,
-          desktop: 120,
+      padding: const EdgeInsets.symmetric(vertical: 80),
+      child: ResponsiveContainer(
+        child: ResponsiveWrapper(
+          mobile: _buildMobileLayout(context),
+          desktop: _buildDesktopLayout(context),
         ),
-        // Adjust the horizontal padding as needed using Responsive layout
-        vertical: 80, // Adjust the vertical padding as needed
-      ),
-      child: ResponsiveWrapper(
-        mobile: _buildMobileLayout(context),
-        desktop: _buildDesktopLayout(context),
       ),
     );
   }
@@ -65,24 +59,24 @@ class HeroSection extends StatelessWidget {
 
   //Widget For Main HEro Content and Button
   Widget _buildContent(BuildContext context) {
-    final TxtTheme = Theme.of(context).textTheme;
+    final txtTheme = Theme.of(context).textTheme;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         Text(
           'Hi, I\'m',
-          style: TxtTheme.headlineMedium?.copyWith(
-            color: AppTheme.textSecondary,
+          style: txtTheme.headlineMedium?.copyWith(
+            color: (Theme.of(context).textTheme.bodyMedium?.color ?? Colors.grey),
           ),
         ),
         const SizedBox(height: 8),
         ShaderMask(
           shaderCallback: (bounds) =>
-              AppTheme.primaryGradient.createShader(bounds),
+              AppTheme.getPrimaryGradient(context).createShader(bounds),
           child: Text(
             AppConstants.name,
-            style: TxtTheme.displayLarge?.copyWith(
+            style: txtTheme.displayLarge?.copyWith(
               color: Colors.white,
               fontSize: Responsive.value(
                 context: context,
@@ -97,7 +91,7 @@ class HeroSection extends StatelessWidget {
         Wrap(
           crossAxisAlignment: WrapCrossAlignment.center,
           children: [
-            Text('A', style: TxtTheme.headlineMedium),
+            Text('A', style: txtTheme.headlineMedium),
             const SizedBox(width: 8),
             //Animated Textkit
             AnimatedTextKit(
@@ -105,24 +99,24 @@ class HeroSection extends StatelessWidget {
               animatedTexts: [
                 TypewriterAnimatedText(
                   'Flutter Developer',
-                  textStyle: TxtTheme.headlineMedium?.copyWith(
-                    color: AppTheme.primaryColor,
+                  textStyle: txtTheme.headlineMedium?.copyWith(
+                    color: Theme.of(context).colorScheme.primary,
                     fontWeight: FontWeight.bold,
                   ),
                   speed: const Duration(milliseconds: 100),
                 ),
                 TypewriterAnimatedText(
                   'Problem Solver',
-                  textStyle: TxtTheme.headlineMedium?.copyWith(
-                    color: AppTheme.accentColor,
+                  textStyle: txtTheme.headlineMedium?.copyWith(
+                    color: Theme.of(context).colorScheme.error,
                     fontWeight: FontWeight.bold,
                   ),
                   speed: const Duration(milliseconds: 100),
                 ),
                 TypewriterAnimatedText(
                   'Django Developer',
-                  textStyle: TxtTheme.headlineMedium?.copyWith(
-                    color: AppTheme.secondaryColor,
+                  textStyle: txtTheme.headlineMedium?.copyWith(
+                    color: Theme.of(context).colorScheme.secondary,
                     fontWeight: FontWeight.bold,
                   ),
                   speed: const Duration(milliseconds: 100),
@@ -134,7 +128,7 @@ class HeroSection extends StatelessWidget {
         //Description
         Text(
           AppConstants.heroDescription,
-          style: TxtTheme.bodyLarge,
+          style: txtTheme.bodyLarge,
           maxLines: 4,
         ),
         const SizedBox(height: 40),
@@ -205,13 +199,13 @@ class HeroSection extends StatelessWidget {
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(40),
                   border: Border.all(
-                    color: AppTheme.primaryColor.withOpacity(0.1),
+                    color: Theme.of(context).colorScheme.primary.withAlpha(25),
                     width: 2,
                   ),
                   // Effect
                   boxShadow: [
                     BoxShadow(
-                      color: AppTheme.primaryColor.withOpacity(0.08),
+                      color: Theme.of(context).colorScheme.primary.withAlpha(20),
                       blurRadius: 60,
                       spreadRadius: 10,
                     ),
@@ -225,9 +219,9 @@ class HeroSection extends StatelessWidget {
                 width: isMobile ? 300 : 520,
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(35),
-                  color: Colors.white.withOpacity(0.03),
+                  color: Colors.white.withAlpha(7),
                   border: Border.all(
-                    color: Colors.white.withOpacity(0.05),
+                    color: Colors.white.withAlpha(12),
                     width: 1,
                   ),
                 ),
@@ -243,7 +237,7 @@ class HeroSection extends StatelessWidget {
                           width: 200,
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
-                            color: AppTheme.primaryColor.withOpacity(0.1),
+                            color: Theme.of(context).colorScheme.primary.withAlpha(25),
                           ),
                         ),
                       ),
@@ -258,7 +252,7 @@ class HeroSection extends StatelessWidget {
                               child: CircularProgressIndicator(strokeWidth: 2),
                             ),
                             errorWidget: (context, url, error) =>
-                                _buildFallbackImage(),
+                                _buildFallbackImage(context),
                           ),
                         ),
                       ),
@@ -273,7 +267,7 @@ class HeroSection extends StatelessWidget {
     );
   }
 
-  Widget _buildFallbackImage() {
+  Widget _buildFallbackImage(BuildContext context) {
     return Center(
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -281,13 +275,13 @@ class HeroSection extends StatelessWidget {
           Icon(
             Icons.rocket_launch_rounded,
             size: 60,
-            color: AppTheme.primaryColor.withOpacity(0.3),
+            color: Theme.of(context).colorScheme.primary.withAlpha(76),
           ),
           const SizedBox(height: 10),
           Text(
             "Ready to Launch",
             style: TextStyle(
-              color: AppTheme.textSecondary.withOpacity(0.5),
+              color: (Theme.of(context).textTheme.bodyMedium?.color ?? Colors.grey).withAlpha(127),
               letterSpacing: 1.2,
             ),
           ),
@@ -308,3 +302,7 @@ class HeroSection extends StatelessWidget {
     }
   }
 }
+
+
+
+

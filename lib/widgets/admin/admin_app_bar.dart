@@ -16,7 +16,7 @@ class AdminAppBar extends StatelessWidget implements PreferredSizeWidget {
         gradient: AppTheme.cardGradient,
         border: Border(
           bottom: BorderSide(
-            color: AppTheme.primaryColor.withOpacity(0.1),
+            color: AppTheme.primaryColor.withAlpha(25),
             width: 1,
           ),
         ),
@@ -73,6 +73,5 @@ class AdminAppBar extends StatelessWidget implements PreferredSizeWidget {
   }
 
   @override
-  // TODO: implement preferredSize
   Size get preferredSize => const Size.fromHeight(64);
 }

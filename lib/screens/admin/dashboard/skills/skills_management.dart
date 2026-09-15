@@ -4,6 +4,7 @@ import '../../../../config/theme.dart';
 import '../../../../providers/portfolio_provider.dart';
 import '../../../../models/skill_model.dart';
 import '../../../../widgets/comon/responsive_wrapper.dart';
+import '../../../../widgets/comon/material_icon_mapper.dart';
 import 'add_skill_dialog.dart';
 import 'edit_skill_dialog.dart';
 
@@ -276,7 +277,7 @@ class _SkillsManagementState extends State<SkillsManagement> {
       decoration: BoxDecoration(
         gradient: AppTheme.cardGradient,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppTheme.primaryColor.withOpacity(0.2)),
+        border: Border.all(color: AppTheme.primaryColor.withAlpha(51)),
       ),
       child: Column(
         children: [
@@ -284,7 +285,7 @@ class _SkillsManagementState extends State<SkillsManagement> {
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: AppTheme.primaryColor.withOpacity(0.1),
+              color: AppTheme.primaryColor.withAlpha(25),
               borderRadius: const BorderRadius.only(
                 topLeft: Radius.circular(16),
                 topRight: Radius.circular(16),
@@ -331,7 +332,7 @@ class _SkillsManagementState extends State<SkillsManagement> {
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         border: Border(
-          bottom: BorderSide(color: AppTheme.surfaceColor.withOpacity(0.3)),
+          bottom: BorderSide(color: AppTheme.surfaceColor.withAlpha(76)),
         ),
       ),
       child: Row(
@@ -341,11 +342,11 @@ class _SkillsManagementState extends State<SkillsManagement> {
             width: 40,
             height: 40,
             decoration: BoxDecoration(
-              color: AppTheme.primaryColor.withOpacity(0.1),
+              color: AppTheme.primaryColor.withAlpha(25),
               borderRadius: BorderRadius.circular(8),
             ),
             child: Icon(
-              IconData(skill.iconCode, fontFamily: 'MaterialIcons'),
+              MaterialIconMapper.fromCode(skill.iconCode),
               color: AppTheme.primaryColor,
               size: 20,
             ),
@@ -436,7 +437,7 @@ class _SkillsManagementState extends State<SkillsManagement> {
       decoration: BoxDecoration(
         gradient: AppTheme.cardGradient,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppTheme.primaryColor.withOpacity(0.2)),
+        border: Border.all(color: AppTheme.primaryColor.withAlpha(51)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -447,11 +448,11 @@ class _SkillsManagementState extends State<SkillsManagement> {
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: AppTheme.primaryColor.withOpacity(0.1),
+                  color: AppTheme.primaryColor.withAlpha(25),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Icon(
-                  IconData(skill.iconCode, fontFamily: 'MaterialIcons'),
+                  MaterialIconMapper.fromCode(skill.iconCode),
                   color: AppTheme.primaryColor,
                 ),
               ),
@@ -527,8 +528,8 @@ class _SkillsManagementState extends State<SkillsManagement> {
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
         color: isVisible
-            ? Colors.green.withOpacity(0.1)
-            : Colors.orange.withOpacity(0.1),
+            ? Colors.green.withAlpha(25)
+            : Colors.orange.withAlpha(25),
         borderRadius: BorderRadius.circular(6),
       ),
       child: Text(
@@ -596,7 +597,7 @@ class _SkillsManagementState extends State<SkillsManagement> {
 
       await portfolioProvider.toggleSkillVisibility(skill);
 
-      if (mounted) {
+      if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
@@ -609,7 +610,7 @@ class _SkillsManagementState extends State<SkillsManagement> {
         );
       }
     } catch (e) {
-      if (mounted) {
+      if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Error:  $e'),
@@ -667,7 +668,7 @@ class _SkillsManagementState extends State<SkillsManagement> {
 
       await portfolioProvider.deleteSkill(skill.id);
 
-      if (mounted) {
+      if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Skill deleted successfully'),
@@ -676,7 +677,7 @@ class _SkillsManagementState extends State<SkillsManagement> {
         );
       }
     } catch (e) {
-      if (mounted) {
+      if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Error deleting skill: $e'),

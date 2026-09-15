@@ -13,27 +13,22 @@ class AboutSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: EdgeInsets.symmetric(
-        horizontal: Responsive.value(
-          context: context,
-          mobile: 24,
-          tablet: 64,
-          desktop: 120,
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(vertical: 80),
+      child: ResponsiveContainer(
+        child: Column(
+          children: [
+            SectionTitle(
+              title: 'About Me',
+              subtitle: 'Learn more about my journey and expertise',
+            ),
+            const SizedBox(height: 60),
+            ResponsiveWrapper(
+              mobile: _buildMobileLayout(context),
+              desktop: _buildDesktopLayout(context),
+            ),
+          ],
         ),
-        vertical: 80,
-      ),
-      child: Column(
-        children: [
-          SectionTitle(
-            title: 'About Me',
-            subtitle: 'Learn more about my journey and expertise',
-          ),
-          const SizedBox(height: 60),
-          ResponsiveWrapper(
-            mobile: _buildMobileLayout(context),
-            desktop: _buildDesktopLayout(context),
-          ),
-        ],
       ),
     );
   }
@@ -80,10 +75,10 @@ class AboutSection extends StatelessWidget {
               Container(
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  gradient: AppTheme.primaryGradient.scale(0.3),
+                  gradient: AppTheme.getPrimaryGradient(context).scale(0.3),
                   boxShadow: [
                     BoxShadow(
-                      color: AppTheme.primaryColor.withOpacity(0.3),
+                      color: Theme.of(context).colorScheme.primary.withAlpha(76),
                       blurRadius: 40,
                       spreadRadius: 10,
                     ),
@@ -98,12 +93,12 @@ class AboutSection extends StatelessWidget {
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     border: Border.all(
-                      color: AppTheme.primaryColor.withOpacity(0.5),
+                      color: Theme.of(context).colorScheme.primary.withAlpha(127),
                       width: 3,
                     ),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.3),
+                        color: Colors.black.withAlpha(76),
                         blurRadius: 20,
                         offset: const Offset(0, 10),
                       ),
@@ -116,14 +111,14 @@ class AboutSection extends StatelessWidget {
                             fit: BoxFit.cover,
                             placeholder: (context, url) => Center(
                               child: CircularProgressIndicator(
-                                color: AppTheme.primaryColor,
+                                color: Theme.of(context).colorScheme.primary,
                                 strokeWidth: 2,
                               ),
                             ),
                             errorWidget: (context, url, error) =>
-                                _buildFallbackAvatar(),
+                                _buildFallbackAvatar(context),
                           )
-                        : _buildFallbackAvatar(),
+                        : _buildFallbackAvatar(context),
                   ),
                 ),
               ),
@@ -135,17 +130,17 @@ class AboutSection extends StatelessWidget {
   }
 
   // fallback Avatar
-  Widget _buildFallbackAvatar() {
+  Widget _buildFallbackAvatar(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        gradient: AppTheme.cardGradient,
+        gradient: AppTheme.getCardGradient(context),
         shape: BoxShape.circle,
       ),
       child: Center(
         child: Icon(
           Icons.person_outline,
           size: 100,
-          color: AppTheme.primaryColor.withOpacity(0.5),
+          color: Theme.of(context).colorScheme.primary.withAlpha(127),
         ),
       ),
     );
@@ -153,7 +148,6 @@ class AboutSection extends StatelessWidget {
 
   //About Content
   Widget _buildContent(BuildContext context) {
-    final TxtTheme = Theme.of(context).textTheme;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -209,10 +203,10 @@ class AboutSection extends StatelessWidget {
         Container(
           padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
-            gradient: AppTheme.primaryGradient.scale(0.3),
+            gradient: AppTheme.getPrimaryGradient(context).scale(0.3),
             borderRadius: BorderRadius.circular(12),
           ),
-          child: Icon(icon, color: AppTheme.primaryColor, size: 24),
+          child: Icon(icon, color: Theme.of(context).colorScheme.primary, size: 24),
         ),
         const SizedBox(width: 16),
         Expanded(
@@ -223,7 +217,7 @@ class AboutSection extends StatelessWidget {
                 title,
                 style: Theme.of(
                   context,
-                ).textTheme.titleMedium?.copyWith(color: AppTheme.textHint),
+                ).textTheme.titleMedium?.copyWith(color: Theme.of(context).hintColor),
               ),
               const SizedBox(height: 4),
               Text(value, style: Theme.of(context).textTheme.titleMedium),
@@ -234,3 +228,6 @@ class AboutSection extends StatelessWidget {
     );
   }
 }
+
+
+

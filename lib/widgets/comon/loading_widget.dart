@@ -6,10 +6,10 @@ class LoadingWidget extends StatelessWidget {
   final double size;
 
   const LoadingWidget({
-    Key? key,
+    super.key,
     this. message,
     this.size = 40,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -47,10 +47,10 @@ class ErrorWidget extends StatelessWidget {
   final VoidCallback? onRetry;
 
   const ErrorWidget({
-    Key? key,
+    super.key,
     required this.message,
     this. onRetry,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -100,11 +100,11 @@ class EmptyStateWidget extends StatelessWidget {
   final IconData icon;
 
   const EmptyStateWidget({
-    Key? key,
+    super.key,
     required this. title,
     required this.message,
     this.icon = Icons.inbox_outlined,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

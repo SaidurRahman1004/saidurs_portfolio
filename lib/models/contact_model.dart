@@ -1,3 +1,5 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+
 class ContactModel {
   final String id;
   final String email;
@@ -9,6 +11,7 @@ class ContactModel {
   final String whatsappNumber;
   final String? profileImageUrl;
   final String? heroImageUrl;
+  final DateTime? updatedAt;
 
   ContactModel({
     required this.id,
@@ -21,10 +24,17 @@ class ContactModel {
     required this.whatsappNumber,
     this.profileImageUrl,
     this.heroImageUrl,
+    this.updatedAt,
   });
 
-  ////json to dart model Map<String, dynamic> formet,Receved Data from Firebase
   factory ContactModel.fromFirestore(String id, Map<String, dynamic> data) {
+    DateTime? parsedUpdateDate;
+    if (data['updatedAt'] is Timestamp) {
+      parsedUpdateDate = (data['updatedAt'] as Timestamp).toDate();
+    } else if (data['updatedAt'] is String) {
+      parsedUpdateDate = DateTime.tryParse(data['updatedAt']);
+    }
+
     return ContactModel(
       id: id,
       email: data['email'] ?? '',
@@ -36,6 +46,7 @@ class ContactModel {
       whatsappNumber: data['whatsappNumber'] ?? data['phone'] ?? '',
       profileImageUrl: data['profileImageUrl'],
       heroImageUrl: data['heroImageUrl'],
+      updatedAt: parsedUpdateDate,
     );
   }
 
@@ -49,7 +60,7 @@ class ContactModel {
       'resumeUrl': resumeUrl,
       'location': location,
       'whatsappNumber': whatsappNumber,
-      'updatedAt': DateTime.now().toIso8601String(),
+      'updatedAt': FieldValue.serverTimestamp(),
       'profileImageUrl': profileImageUrl,
       'heroImageUrl': heroImageUrl,
     };
@@ -67,6 +78,7 @@ class ContactModel {
     String? whatsappNumber,
     String? profileImageUrl,
     String? heroImageUrl,
+    DateTime? updatedAt,
   }) {
     return ContactModel(
       id: id ?? this.id,
@@ -79,6 +91,7 @@ class ContactModel {
       whatsappNumber: whatsappNumber ?? this.whatsappNumber,
       profileImageUrl: profileImageUrl ?? this.profileImageUrl,
       heroImageUrl: heroImageUrl ?? this.heroImageUrl,
+      updatedAt: updatedAt ?? this.updatedAt,
     );
   }
 }

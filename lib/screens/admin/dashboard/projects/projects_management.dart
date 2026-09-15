@@ -8,7 +8,7 @@ import 'add_project_screen.dart';
 import 'edit_project_screen.dart';
 
 class ProjectsManagement extends StatefulWidget {
-  const ProjectsManagement({Key? key}) : super(key: key);
+  const ProjectsManagement({super.key});
 
   @override
   State<ProjectsManagement> createState() => _ProjectsManagementState();
@@ -239,7 +239,7 @@ class _ProjectsManagementState extends State<ProjectsManagement> {
               });
             },
             backgroundColor: AppTheme.cardBackground,
-            selectedColor: AppTheme.primaryColor.withOpacity(0.2),
+            selectedColor: AppTheme.primaryColor.withAlpha(51),
             checkmarkColor: AppTheme.primaryColor,
           ),
         );
@@ -281,8 +281,8 @@ class _ProjectsManagementState extends State<ProjectsManagement> {
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
           color: project.isFeatured
-              ? AppTheme.primaryColor.withOpacity(0.5)
-              : AppTheme.primaryColor.withOpacity(0.2),
+              ? AppTheme.primaryColor.withAlpha(127)
+              : AppTheme.primaryColor.withAlpha(51),
           width: project.isFeatured ? 2 : 1,
         ),
       ),
@@ -371,8 +371,8 @@ class _ProjectsManagementState extends State<ProjectsManagement> {
                   ),
                   decoration: BoxDecoration(
                     color: project.isVisible
-                        ? Colors.green.withOpacity(0.2)
-                        : Colors.orange.withOpacity(0.2),
+                        ? Colors.green.withAlpha(51)
+                        : Colors.orange.withAlpha(51),
                     borderRadius: BorderRadius.circular(6),
                   ),
                   child: Text(
@@ -429,7 +429,7 @@ class _ProjectsManagementState extends State<ProjectsManagement> {
                           vertical: 4,
                         ),
                         decoration: BoxDecoration(
-                          color: AppTheme.secondaryColor.withOpacity(0.2),
+                          color: AppTheme.secondaryColor.withAlpha(51),
                           borderRadius: BorderRadius.circular(6),
                         ),
                         child: Text(
@@ -454,7 +454,7 @@ class _ProjectsManagementState extends State<ProjectsManagement> {
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
               border: Border(
-                top: BorderSide(color: AppTheme.surfaceColor.withOpacity(0.3)),
+                top: BorderSide(color: AppTheme.surfaceColor.withAlpha(76)),
               ),
             ),
             child: Row(
@@ -570,7 +570,7 @@ class _ProjectsManagementState extends State<ProjectsManagement> {
       final provider = Provider.of<PortfolioProvider>(context, listen: false);
       await provider.toggleProjectVisibility(project);
 
-      if (mounted) {
+      if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
@@ -583,7 +583,7 @@ class _ProjectsManagementState extends State<ProjectsManagement> {
         );
       }
     } catch (e) {
-      if (mounted) {
+      if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Error:  $e'),
@@ -602,7 +602,7 @@ class _ProjectsManagementState extends State<ProjectsManagement> {
       final provider = Provider.of<PortfolioProvider>(context, listen: false);
       await provider.toggleProjectFeatured(project);
 
-      if (mounted) {
+      if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
@@ -615,7 +615,7 @@ class _ProjectsManagementState extends State<ProjectsManagement> {
         );
       }
     } catch (e) {
-      if (mounted) {
+      if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Error: $e'),
@@ -670,7 +670,7 @@ class _ProjectsManagementState extends State<ProjectsManagement> {
       final provider = Provider.of<PortfolioProvider>(context, listen: false);
       await provider.deleteProject(project.id);
 
-      if (mounted) {
+      if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Project deleted successfully'),
@@ -679,7 +679,7 @@ class _ProjectsManagementState extends State<ProjectsManagement> {
         );
       }
     } catch (e) {
-      if (mounted) {
+      if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Error deleting project: $e'),

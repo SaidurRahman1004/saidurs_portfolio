@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../../../../config/theme.dart';
 import '../../../../providers/portfolio_provider.dart';
 import '../../../../models/skill_model.dart';
+import '../../../../widgets/comon/material_icon_mapper.dart';
 
 class AddSkillDialog extends StatefulWidget {
   const AddSkillDialog({super.key});
@@ -137,7 +138,7 @@ class _AddSkillDialogState extends State<AddSkillDialog> {
           gradient: AppTheme.cardGradient,
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
-            color: AppTheme.primaryColor.withOpacity(0.3),
+            color: AppTheme.primaryColor.withAlpha(76),
             width: 1,
           ),
         ),
@@ -207,7 +208,7 @@ class _AddSkillDialogState extends State<AddSkillDialog> {
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: AppTheme.primaryColor.withOpacity(0.2),
+              color: AppTheme.primaryColor.withAlpha(51),
               borderRadius: BorderRadius.circular(12),
             ),
             child: Icon(
@@ -269,7 +270,7 @@ class _AddSkillDialogState extends State<AddSkillDialog> {
             hintText: 'e.g., Flutter, Firebase, Django',
             prefixIcon: const Icon(Icons.label_outline),
             filled: true,
-            fillColor: AppTheme.darkBackground.withOpacity(0.5),
+            fillColor: AppTheme.darkBackground.withAlpha(127),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
               borderSide: BorderSide.none,
@@ -312,9 +313,9 @@ class _AddSkillDialogState extends State<AddSkillDialog> {
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 16),
           decoration: BoxDecoration(
-            color: AppTheme.darkBackground.withOpacity(0.5),
+            color: AppTheme.darkBackground.withAlpha(127),
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: AppTheme.surfaceColor.withOpacity(0.5)),
+            border: Border.all(color: AppTheme.surfaceColor.withAlpha(127)),
           ),
           child: DropdownButtonHideUnderline(
             child: DropdownButton<String>(
@@ -353,9 +354,9 @@ class _AddSkillDialogState extends State<AddSkillDialog> {
         Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: AppTheme.darkBackground.withOpacity(0.5),
+            color: AppTheme.darkBackground.withAlpha(127),
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: AppTheme.primaryColor.withOpacity(0.3)),
+            border: Border.all(color: AppTheme.primaryColor.withAlpha(76)),
           ),
           child: Row(
             children: [
@@ -366,7 +367,7 @@ class _AddSkillDialogState extends State<AddSkillDialog> {
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Icon(
-                  IconData(_selectedIconCode, fontFamily: 'MaterialIcons'),
+                  MaterialIconMapper.fromCode(_selectedIconCode),
                   color: AppTheme.primaryColor,
                   size: 32,
                 ),
@@ -436,7 +437,7 @@ class _AddSkillDialogState extends State<AddSkillDialog> {
             hintText: '0',
             prefixIcon: const Icon(Icons.sort),
             filled: true,
-            fillColor: AppTheme.darkBackground.withOpacity(0.5),
+            fillColor: AppTheme.darkBackground.withAlpha(127),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
               borderSide: BorderSide.none,
@@ -457,13 +458,13 @@ class _AddSkillDialogState extends State<AddSkillDialog> {
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: _isVisible
-            ? Colors.green.withOpacity(0.1)
-            : Colors.orange.withOpacity(0.1),
+            ? Colors.green.withAlpha(25)
+            : Colors.orange.withAlpha(25),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
           color: _isVisible
-              ? Colors.green.withOpacity(0.3)
-              : Colors.orange.withOpacity(0.3),
+              ? Colors.green.withAlpha(76)
+              : Colors.orange.withAlpha(76),
         ),
       ),
       child: Row(
@@ -505,7 +506,7 @@ class _AddSkillDialogState extends State<AddSkillDialog> {
                 _isVisible = value;
               });
             },
-            activeColor: Colors.green,
+            activeThumbColor: Colors.green,
           ),
         ],
       ),
@@ -518,7 +519,7 @@ class _AddSkillDialogState extends State<AddSkillDialog> {
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
         border: Border(
-          top: BorderSide(color: AppTheme.surfaceColor.withOpacity(0.3)),
+          top: BorderSide(color: AppTheme.surfaceColor.withAlpha(76)),
         ),
       ),
       child: Row(
@@ -622,8 +623,8 @@ class _AddSkillDialogState extends State<AddSkillDialog> {
                       child: Container(
                         decoration: BoxDecoration(
                           color: isSelected
-                              ? AppTheme.primaryColor.withOpacity(0.2)
-                              : AppTheme.darkBackground.withOpacity(0.5),
+                              ? AppTheme.primaryColor.withAlpha(51)
+                              : AppTheme.darkBackground.withAlpha(127),
                           borderRadius: BorderRadius.circular(12),
                           border: Border.all(
                             color: isSelected
@@ -636,10 +637,7 @@ class _AddSkillDialogState extends State<AddSkillDialog> {
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             Icon(
-                              IconData(
-                                entry.value,
-                                fontFamily: 'MaterialIcons',
-                              ),
+                              MaterialIconMapper.fromCode(entry.value),
                               color: isSelected
                                   ? AppTheme.primaryColor
                                   : AppTheme.textSecondary,

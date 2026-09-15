@@ -3,8 +3,8 @@ import 'package:futter_portfileo_website/screens/admin/dashboard/settings/admin_
 import 'package:futter_portfileo_website/screens/admin/dashboard/skills/skills_management.dart';
 import '../../../widgets/admin/admin_sidebar.dart';
 import '../../../widgets/admin/admin_app_bar.dart';
-import 'analytics/analytics_screen.dart';
 import 'contact/contact_management.dart';
+import 'content_management.dart';
 import 'dashboard_home.dart';
 import 'projects/projects_management.dart';
 import '../../../widgets/admin/auth_guard.dart';
@@ -25,10 +25,14 @@ class _AdminLayoutState extends State<AdminLayout> {
   //Page Title List Dynamically Show in Appbar
   final List<String> _pageTitles = [
     'Dashboard',
-    'Skills Management',
+    'Profile',
+    'Professional Experience',
     'Projects Management',
+    'Skills Management',
+    'Education',
+    'Certifications',
+    'Resume',
     'Contact Information',
-    'Analytics',
     'Settings',
   ];
 
@@ -38,14 +42,22 @@ class _AdminLayoutState extends State<AdminLayout> {
       case 0:
         return const DashboardHome();
       case 1:
-        return const SkillsManagement();
-      case 2:
-        return const ProjectsManagement();
-      case 3:
         return const ContactManagement();
+      case 2:
+        return const PortfolioContentManagement(type: AdminContentType.experience);
+      case 3:
+        return const ProjectsManagement();
       case 4:
-        return const AnalyticsScreen();
+        return const SkillsManagement();
       case 5:
+        return const PortfolioContentManagement(type: AdminContentType.education);
+      case 6:
+        return const PortfolioContentManagement(type: AdminContentType.certification);
+      case 7:
+        return const ContactManagement();
+      case 8:
+        return const ContactManagement();
+      case 9:
         return const AdminSettings();
       default:
         return const DashboardHome();

@@ -1,7 +1,12 @@
+import 'package:flutter/foundation.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/skill_model.dart';
 import '../models/project_model.dart';
 import '../models/contact_model.dart';
+
+import '../models/professional_experience_model.dart';
+import '../models/education_model.dart';
+import '../models/certification_model.dart';
 
 class FirebaseService {
   //Singleton Define for access Anywhere/Global access,Memory efficient,not create for object
@@ -23,6 +28,13 @@ class FirebaseService {
       _firestore.collection('projects'); //Skil Coll Ref
   CollectionReference get _contactCollection =>
       _firestore.collection('contact'); //Skil Coll Ref
+  
+  CollectionReference get _experienceCollection =>
+      _firestore.collection('experience');
+  CollectionReference get _educationCollection =>
+      _firestore.collection('education');
+  CollectionReference get _certificationsCollection =>
+      _firestore.collection('certifications');
   ///Skills Operations
   //fetch All Skills data  For Publicly from Firebase
   Stream<List<SkillModel>> getSkills() {
@@ -60,7 +72,7 @@ class FirebaseService {
     try {
       await _skillsCollections.add(skill.toFirestoreMapJson());
     } catch (e) {
-      print('Failed to adding skill: $e');
+      debugPrint('Failed to adding skill: $e');
     }
   }
 
@@ -70,7 +82,7 @@ class FirebaseService {
     try {
       await _skillsCollections.doc(id).update(skill.toFirestoreMapJson());
     } catch (e) {
-      print('Failed to Update skill: $e');
+      debugPrint('Failed to Update skill: $e');
     }
   }
 
@@ -210,5 +222,120 @@ class FirebaseService {
     }
   }
 
+  /// Professional Experience Operations
+  Stream<List<ProfessionalExperienceModel>> getExperiences() {
+    return _experienceCollection
+        .orderBy('order')
+        .snapshots()
+        .map((snapshot) {
+      return snapshot.docs.map((doc) {
+        return ProfessionalExperienceModel.fromFirestore(
+          doc.id,
+          doc.data() as Map<String, dynamic>,
+        );
+      }).toList();
+    });
+  }
 
+  Future<void> addExperience(ProfessionalExperienceModel exp) async {
+    try {
+      await _experienceCollection.add(exp.toFirestore());
+    } catch (e) {
+      throw Exception('Failed to add experience: $e');
+    }
+  }
+
+  Future<void> updateExperience(String id, ProfessionalExperienceModel exp) async {
+    try {
+      await _experienceCollection.doc(id).update(exp.toFirestore());
+    } catch (e) {
+      throw Exception('Failed to update experience: $e');
+    }
+  }
+
+  Future<void> deleteExperience(String id) async {
+    try {
+      await _experienceCollection.doc(id).delete();
+    } catch (e) {
+      throw Exception('Failed to delete experience: $e');
+    }
+  }
+
+  /// Education Operations
+  Stream<List<EducationModel>> getEducation() {
+    return _educationCollection
+        .orderBy('order')
+        .snapshots()
+        .map((snapshot) {
+      return snapshot.docs.map((doc) {
+        return EducationModel.fromFirestore(
+          doc.id,
+          doc.data() as Map<String, dynamic>,
+        );
+      }).toList();
+    });
+  }
+
+  Future<void> addEducation(EducationModel edu) async {
+    try {
+      await _educationCollection.add(edu.toFirestore());
+    } catch (e) {
+      throw Exception('Failed to add education: $e');
+    }
+  }
+
+  Future<void> updateEducation(String id, EducationModel edu) async {
+    try {
+      await _educationCollection.doc(id).update(edu.toFirestore());
+    } catch (e) {
+      throw Exception('Failed to update education: $e');
+    }
+  }
+
+  Future<void> deleteEducation(String id) async {
+    try {
+      await _educationCollection.doc(id).delete();
+    } catch (e) {
+      throw Exception('Failed to delete education: $e');
+    }
+  }
+
+  /// Certification Operations
+  Stream<List<CertificationModel>> getCertifications() {
+    return _certificationsCollection
+        .orderBy('order')
+        .snapshots()
+        .map((snapshot) {
+      return snapshot.docs.map((doc) {
+        return CertificationModel.fromFirestore(
+          doc.id,
+          doc.data() as Map<String, dynamic>,
+        );
+      }).toList();
+    });
+  }
+
+  Future<void> addCertification(CertificationModel cert) async {
+    try {
+      await _certificationsCollection.add(cert.toFirestore());
+    } catch (e) {
+      throw Exception('Failed to add certification: $e');
+    }
+  }
+
+  Future<void> updateCertification(String id, CertificationModel cert) async {
+    try {
+      await _certificationsCollection.doc(id).update(cert.toFirestore());
+    } catch (e) {
+      throw Exception('Failed to update certification: $e');
+    }
+  }
+
+  Future<void> deleteCertification(String id) async {
+    try {
+      await _certificationsCollection.doc(id).delete();
+    } catch (e) {
+      throw Exception('Failed to delete certification: $e');
+    }
+  }
 }

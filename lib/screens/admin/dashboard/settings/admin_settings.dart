@@ -5,7 +5,7 @@ import '../../../../providers/admin_provider.dart';
 import '../../../../widgets/comon/responsive_wrapper.dart';
 
 class AdminSettings extends StatelessWidget {
-  const AdminSettings({Key? key}) : super(key: key);
+  const AdminSettings({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -58,7 +58,7 @@ class AdminSettings extends StatelessWidget {
           decoration: BoxDecoration(
             gradient: AppTheme.cardGradient,
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: AppTheme.primaryColor.withOpacity(0.2)),
+            border: Border.all(color: AppTheme.primaryColor.withAlpha(51)),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -141,7 +141,7 @@ class AdminSettings extends StatelessWidget {
       decoration: BoxDecoration(
         gradient: AppTheme.cardGradient,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppTheme.primaryColor.withOpacity(0.2)),
+        border: Border.all(color: AppTheme.primaryColor.withAlpha(51)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -173,7 +173,7 @@ class AdminSettings extends StatelessWidget {
       decoration: BoxDecoration(
         gradient: AppTheme.cardGradient,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppTheme.primaryColor.withOpacity(0.2)),
+        border: Border.all(color: AppTheme.primaryColor.withAlpha(51)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,

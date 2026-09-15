@@ -33,6 +33,7 @@ class _AddProjectDialogState extends State<AddProjectDialog> {
   bool _isVisible = true;
   bool _isLoading = false;
   bool _isUploadingImage = false;
+  double _uploadProgress = 0.0;
 
   /// Services
   final ImagePicker _picker = ImagePicker();
@@ -103,11 +104,17 @@ class _AddProjectDialogState extends State<AddProjectDialog> {
     try {
       setState(() {
         _isUploadingImage = true;
+        _uploadProgress = 0.0;
       });
 
       final imageUrl = await _uploadService.uploadImage(
         imageBytes: _selectedImageBytes!,
-        fileName: 'project_${DateTime.now().millisecondsSinceEpoch}',
+        fileName: 'project_${DateTime.now().millisecondsSinceEpoch}.jpg',
+        onProgress: (progress) {
+          setState(() {
+            _uploadProgress = progress;
+          });
+        },
       );
 
       setState(() {
@@ -398,7 +405,7 @@ class _AddProjectDialogState extends State<AddProjectDialog> {
                       top: 8,
                       right: 8,
                       child: IconButton(
-                        onPressed: () {
+                        onPressed: _isUploadingImage ? null : () {
                           setState(() {
                             _selectedImageBytes = null;
                             _imageUrl = null;
@@ -411,6 +418,18 @@ class _AddProjectDialogState extends State<AddProjectDialog> {
                         ),
                       ),
                     ),
+                    if (_isUploadingImage)
+                      Positioned(
+                        bottom: 0,
+                        left: 0,
+                        right: 0,
+                        child: LinearProgressIndicator(
+                          value: _uploadProgress,
+                          backgroundColor: Colors.black54,
+                          color: AppTheme.primaryColor,
+                          minHeight: 6,
+                        ),
+                      ),
                   ],
                 )
               : InkWell(
@@ -834,15 +853,24 @@ class _AddProjectDialogState extends State<AddProjectDialog> {
                 foregroundColor: Colors.white,
               ),
               child: _isLoading
-                  ? const SizedBox(
-                      height: 20,
-                      width: 20,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                      ),
+                  ? Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const SizedBox(
+                          height: 20,
+                          width: 20,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                          ),
+                        ),
+                        if (_isUploadingImage) ...[
+                          const SizedBox(width: 12),
+                          Text('Uploading Image... ${(_uploadProgress * 100).toInt()}%'),
+                        ],
+                      ],
                     )
-                  : const Text('Add Project'),
+                  : const Text('Save Project'),
             ),
           ),
         ],

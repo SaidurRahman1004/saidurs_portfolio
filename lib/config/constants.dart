@@ -1,5 +1,3 @@
-import 'env.dart';
-
 class AppConstants {
   // Personal Info
   static const String name = 'Saidur Rahman';
@@ -42,7 +40,8 @@ class AppConstants {
   static const double desktopBreakpoint = 1200;
 
   //Api EndPoint
-  static const String imgbbApiKey = Env.imgbbApiKey;
+  // ImgBB API Key should not be exposed in the client bundle.
+  // We will enforce backend proxy for uploads in the future.
 
   // ImgBB API Endpoint
   static const String imgbbUploadEndpoint = 'https://api.imgbb.com/1/upload';

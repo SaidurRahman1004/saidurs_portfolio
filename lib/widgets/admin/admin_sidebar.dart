@@ -3,7 +3,6 @@ import 'package:provider/provider.dart';
 import '../../config/theme.dart';
 import '../../providers/admin_provider.dart';
 import '../../screens/admin/auth/login_screen.dart';
-import '../../screens/public/home_screen.dart';
 
 class AdminSidebar extends StatelessWidget {
   const AdminSidebar({
@@ -24,7 +23,7 @@ class AdminSidebar extends StatelessWidget {
         gradient: AppTheme.cardGradient,
         border: Border(
           right: BorderSide(
-            color: AppTheme.primaryColor.withOpacity(0.1),
+            color: AppTheme.primaryColor.withAlpha(25),
             width: 1,
           ),
         ),
@@ -49,48 +48,77 @@ class AdminSidebar extends StatelessWidget {
                   _buildMenuItem(
                     context,
                     index: 1,
-                    icon: Icons.lightbulb_outline,
-                    selectedIcon: Icons.lightbulb,
-                    title: 'Skills',
+                    icon: Icons.person_outline,
+                    selectedIcon: Icons.person,
+                    title: 'Profile',
                   ),
                   const SizedBox(height: 8),
-
                   _buildMenuItem(
                     context,
                     index: 2,
+                    icon: Icons.work_history_outlined,
+                    selectedIcon: Icons.work_history,
+                    title: 'Experience',
+                  ),
+                  const SizedBox(height: 8),
+                  _buildMenuItem(
+                    context,
+                    index: 3,
                     icon: Icons.work_outline,
                     selectedIcon: Icons.work,
                     title: 'Projects',
                   ),
                   const SizedBox(height: 8),
-
                   _buildMenuItem(
                     context,
-                    index: 3,
+                    index: 4,
+                    icon: Icons.lightbulb_outline,
+                    selectedIcon: Icons.lightbulb,
+                    title: 'Skills',
+                  ),
+                  const SizedBox(height: 8),
+                  _buildMenuItem(
+                    context,
+                    index: 5,
+                    icon: Icons.school_outlined,
+                    selectedIcon: Icons.school,
+                    title: 'Education',
+                  ),
+                  const SizedBox(height: 8),
+                  _buildMenuItem(
+                    context,
+                    index: 6,
+                    icon: Icons.workspace_premium_outlined,
+                    selectedIcon: Icons.workspace_premium,
+                    title: 'Certifications',
+                  ),
+                  const SizedBox(height: 8),
+                  _buildMenuItem(
+                    context,
+                    index: 7,
+                    icon: Icons.picture_as_pdf_outlined,
+                    selectedIcon: Icons.picture_as_pdf,
+                    title: 'Resume',
+                  ),
+                  const SizedBox(height: 8),
+                  _buildMenuItem(
+                    context,
+                    index: 8,
                     icon: Icons.contacts_outlined,
                     selectedIcon: Icons.contacts,
                     title: 'Contact Info',
                   ),
-                  const SizedBox(height: 8),
-
-                  _buildMenuItem(
-                    context,
-                    index: 4,
-                    icon: Icons.analytics_outlined,
-                    selectedIcon: Icons.analytics,
-                    title: 'Analytics',
-                  ),
                   const SizedBox(height: 24),
 
                   /// Divider
-                  Divider(color: AppTheme.surfaceColor.withOpacity(0.5)),
+                  Divider(color: AppTheme.surfaceColor.withAlpha(127)),
 
                   const SizedBox(height: 16),
 
                   /// Settings & Logout
                   _buildMenuItem(
                     context,
-                    index: 5,
+                    index: 9,
                     icon: Icons.settings_outlined,
                     selectedIcon: Icons.settings,
                     title: 'Settings',
@@ -118,7 +146,7 @@ class AdminSidebar extends StatelessWidget {
             gradient: AppTheme.primaryGradient.scale(0.2),
             borderRadius: BorderRadius.circular(16),
             border: Border.all(
-              color: AppTheme.primaryColor.withOpacity(0.3),
+              color: AppTheme.primaryColor.withAlpha(76),
               width: 1,
             ),
           ),
@@ -174,7 +202,7 @@ class AdminSidebar extends StatelessWidget {
                   shape: BoxShape.circle,
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.green.withOpacity(0.5),
+                      color: Colors.green.withAlpha(127),
                       blurRadius: 8,
                       spreadRadius: 2,
                     ),
@@ -208,7 +236,7 @@ class AdminSidebar extends StatelessWidget {
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
             color: isSelected
-                ? AppTheme.primaryColor.withOpacity(0.3)
+                ? AppTheme.primaryColor.withAlpha(76)
                 : Colors.transparent,
             width: 1,
           ),
@@ -262,10 +290,10 @@ class AdminSidebar extends StatelessWidget {
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           decoration: BoxDecoration(
-            color: AppTheme.accentColor.withOpacity(0.1),
+            color: AppTheme.accentColor.withAlpha(25),
             borderRadius: BorderRadius.circular(12),
             border: Border.all(
-              color: AppTheme.accentColor.withOpacity(0.3),
+              color: AppTheme.accentColor.withAlpha(76),
               width: 1,
             ),
           ),
@@ -319,6 +347,7 @@ class AdminSidebar extends StatelessWidget {
     if (shouldLogout != true) return;
 
     try {
+      if (!context.mounted) return;
       final adminProvider = Provider.of<AdminProvider>(context, listen: false);
       await adminProvider.logout();
 

@@ -37,6 +37,8 @@ class _ContactManagementState extends State<ContactManagement> {
   String? _heroImageUrl;
   bool _isUploadingProfile = false;
   bool _isUploadingHero = false;
+  double _profileUploadProgress = 0.0;
+  double _heroUploadProgress = 0.0;
   final ImagePicker _picker = ImagePicker();
   final ImageUploadService _uploadService = ImageUploadService.instance;
 
@@ -111,6 +113,7 @@ class _ContactManagementState extends State<ContactManagement> {
         heroImageUrl: finalHeroUrl,
       );
 
+      if (!mounted) return;
       final portfolioProvider = Provider.of<PortfolioProvider>(
         context,
         listen: false,
@@ -231,11 +234,19 @@ class _ContactManagementState extends State<ContactManagement> {
     if (_selectedProfileImage == null) return _profileImageUrl;
 
     try {
-      setState(() => _isUploadingProfile = true);
+      setState(() {
+        _isUploadingProfile = true;
+        _profileUploadProgress = 0.0;
+      });
 
       final url = await _uploadService.uploadImage(
         imageBytes: _selectedProfileImage!,
-        fileName: 'profile_${DateTime.now().millisecondsSinceEpoch}',
+        fileName: 'profile_${DateTime.now().millisecondsSinceEpoch}.jpg',
+        onProgress: (progress) {
+          setState(() {
+            _profileUploadProgress = progress;
+          });
+        },
       );
 
       setState(() {
@@ -254,11 +265,19 @@ class _ContactManagementState extends State<ContactManagement> {
     if (_selectedHeroImage == null) return _heroImageUrl;
 
     try {
-      setState(() => _isUploadingHero = true);
+      setState(() {
+        _isUploadingHero = true;
+        _heroUploadProgress = 0.0;
+      });
 
       final url = await _uploadService.uploadImage(
         imageBytes: _selectedHeroImage!,
-        fileName: 'hero_${DateTime.now().millisecondsSinceEpoch}',
+        fileName: 'hero_${DateTime.now().millisecondsSinceEpoch}.jpg',
+        onProgress: (progress) {
+          setState(() {
+            _heroUploadProgress = progress;
+          });
+        },
       );
 
       setState(() {
@@ -400,7 +419,7 @@ class _ContactManagementState extends State<ContactManagement> {
       decoration: BoxDecoration(
         gradient: AppTheme.cardGradient,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppTheme.primaryColor. withOpacity(0.2)),
+        border: Border.all(color: AppTheme.primaryColor.withAlpha(51)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -449,6 +468,7 @@ class _ContactManagementState extends State<ContactManagement> {
                     currentUrl:  _profileImageUrl,
                     selectedBytes: _selectedProfileImage,
                     isUploading:  _isUploadingProfile,
+                    uploadProgress: _profileUploadProgress,
                     onPick: _pickProfileImage,
                     onRemove: () => setState(() {
                       _selectedProfileImage = null;
@@ -463,6 +483,7 @@ class _ContactManagementState extends State<ContactManagement> {
                     currentUrl: _heroImageUrl,
                     selectedBytes: _selectedHeroImage,
                     isUploading: _isUploadingHero,
+                    uploadProgress: _heroUploadProgress,
                     onPick: _pickHeroImage,
                     onRemove: () => setState(() {
                       _selectedHeroImage = null;
@@ -483,6 +504,7 @@ class _ContactManagementState extends State<ContactManagement> {
     required String?  currentUrl,
     required Uint8List? selectedBytes,
     required bool isUploading,
+    required double uploadProgress,
     required VoidCallback onPick,
     required VoidCallback onRemove,
   }) {
@@ -499,9 +521,9 @@ class _ContactManagementState extends State<ContactManagement> {
         Container(
           height: 200,
           decoration: BoxDecoration(
-            color: AppTheme.darkBackground. withOpacity(0.5),
+            color: AppTheme.darkBackground.withAlpha(127),
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: AppTheme.primaryColor.withOpacity(0.3)),
+            border: Border.all(color: AppTheme.primaryColor.withAlpha(76)),
           ),
           child: selectedBytes != null
               ? Stack(
@@ -519,7 +541,7 @@ class _ContactManagementState extends State<ContactManagement> {
                 top: 8,
                 right: 8,
                 child: IconButton(
-                  onPressed: onRemove,
+                  onPressed: isUploading ? null : onRemove,
                   icon:  const Icon(Icons.close),
                   style: IconButton.styleFrom(
                     backgroundColor: Colors.black54,
@@ -527,6 +549,18 @@ class _ContactManagementState extends State<ContactManagement> {
                   ),
                 ),
               ),
+              if (isUploading)
+                Positioned(
+                  bottom: 0,
+                  left: 0,
+                  right: 0,
+                  child: LinearProgressIndicator(
+                    value: uploadProgress,
+                    backgroundColor: Colors.black54,
+                    color: AppTheme.primaryColor,
+                    minHeight: 6,
+                  ),
+                ),
             ],
           )
               : currentUrl != null && currentUrl.isNotEmpty
@@ -915,15 +949,31 @@ class _ContactManagementState extends State<ContactManagement> {
           foregroundColor: Colors.white,
         ),
         child: _isLoading
-            ? const SizedBox(
-                height: 20,
-                width: 20,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2,
-                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                ),
+            ? Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const SizedBox(
+                    height: 20,
+                    width: 20,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                    ),
+                  ),
+                  if (_isUploadingProfile || _isUploadingHero) ...[
+                    const SizedBox(width: 12),
+                    Text(
+                      _isUploadingProfile
+                          ? 'Uploading Profile... ${(_profileUploadProgress * 100).toInt()}%'
+                          : 'Uploading Hero... ${(_heroUploadProgress * 100).toInt()}%',
+                    ),
+                  ],
+                ],
               )
-            : const Text('Save Changes'),
+            : const Text(
+                'Save Changes',
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
       ),
     );
   }
