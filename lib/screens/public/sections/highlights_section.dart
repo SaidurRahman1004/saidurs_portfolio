@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../../../config/theme.dart';
 import '../../../providers/portfolio_provider.dart';
 import '../../../widgets/comon/responsive_wrapper.dart';
 
@@ -10,11 +11,22 @@ class HighlightsSection extends StatelessWidget {
   Widget build(BuildContext context) {
     final experienceDuration =
         context.watch<PortfolioProvider>().experienceDuration;
+    final isDark = AppTheme.isDark(context);
 
     return Container(
       width: double.infinity,
-      color: Theme.of(context).cardColor,
-      padding: const EdgeInsets.symmetric(vertical: 60),
+      decoration: BoxDecoration(
+        color: isDark
+            ? Theme.of(context).cardColor
+            : const Color(0xFFF8FAFC),
+        border: Border.symmetric(
+          horizontal: BorderSide(
+            color: AppTheme.getBorderColor(context).withAlpha(140),
+            width: 1,
+          ),
+        ),
+      ),
+      padding: const EdgeInsets.symmetric(vertical: 54),
       child: ResponsiveContainer(
         child: LayoutBuilder(
           builder: (context, constraints) {
@@ -90,55 +102,58 @@ class _HighlightCardState extends State<_HighlightCard> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = AppTheme.isDark(context);
     final primary = Theme.of(context).colorScheme.primary;
 
     return MouseRegion(
       onEnter: (_) => setState(() => _isHovered = true),
       onExit: (_) => setState(() => _isHovered = false),
       child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+        duration: const Duration(milliseconds: 220),
+        curve: Curves.easeOutCubic,
+        transform: Matrix4.translationValues(0, _isHovered ? -4 : 0, 0),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
         decoration: BoxDecoration(
           color: _isHovered
-              ? primary.withAlpha(20)
-              : Theme.of(context).cardColor,
+              ? (isDark ? primary.withAlpha(20) : Colors.white)
+              : (isDark ? Theme.of(context).cardColor : Colors.white),
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
             color: _isHovered
-                ? primary.withAlpha(120)
-                : primary.withAlpha(51),
+                ? primary.withAlpha(isDark ? 140 : 180)
+                : AppTheme.getBorderColor(context),
             width: _isHovered ? 1.5 : 1.0,
           ),
           boxShadow: _isHovered
               ? [
                   BoxShadow(
-                    color: primary.withAlpha(35),
-                    blurRadius: 16,
-                    offset: const Offset(0, 4),
-                  )
+                    color: primary.withAlpha(isDark ? 40 : 30),
+                    blurRadius: 20,
+                    offset: const Offset(0, 8),
+                  ),
                 ]
-              : null,
+              : AppTheme.getCardShadow(context),
         ),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           mainAxisSize: MainAxisSize.min,
           children: [
             Container(
-              padding: const EdgeInsets.all(8),
+              padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
-                color: primary.withAlpha(25),
-                borderRadius: BorderRadius.circular(10),
+                color: primary.withAlpha(isDark ? 25 : 18),
+                borderRadius: BorderRadius.circular(12),
               ),
               child: Icon(widget.icon, color: primary, size: 26),
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 10),
             FittedBox(
               fit: BoxFit.scaleDown,
               child: Text(
                 widget.title,
                 style: Theme.of(context).textTheme.titleLarge?.copyWith(
                   color: primary,
-                  fontWeight: FontWeight.bold,
+                  fontWeight: FontWeight.w800,
                   fontSize: 18,
                 ),
                 textAlign: TextAlign.center,
@@ -148,8 +163,9 @@ class _HighlightCardState extends State<_HighlightCard> {
             Text(
               widget.subtitle,
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                color: (Theme.of(context).textTheme.bodyMedium?.color ?? Colors.grey),
+                color: isDark ? AppTheme.textSecondary : AppTheme.lightTextSecondary,
                 fontSize: 12,
+                fontWeight: FontWeight.w500,
                 height: 1.25,
               ),
               textAlign: TextAlign.center,

@@ -244,16 +244,21 @@ class _ProjectsSectionState extends State<ProjectsSection> {
       }
     });
 
+    final isDark = AppTheme.isDark(context);
+    final primary = Theme.of(context).colorScheme.primary;
+
     return Container(
       decoration: BoxDecoration(
-        gradient: AppTheme.getCardGradient(context),
+        color: isDark ? null : Colors.white,
+        gradient: isDark ? AppTheme.getCardGradient(context) : null,
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
           color: project.isFeatured
-              ? Theme.of(context).colorScheme.primary.withAlpha(127)
-              : Theme.of(context).colorScheme.primary.withAlpha(51),
+              ? primary.withAlpha(isDark ? 127 : 180)
+              : (isDark ? primary.withAlpha(51) : AppTheme.getBorderColor(context)),
           width: project.isFeatured ? 2 : 1,
         ),
+        boxShadow: AppTheme.getCardShadow(context),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -325,18 +330,22 @@ class _ProjectsSectionState extends State<ProjectsSection> {
                       vertical: 4,
                     ),
                     decoration: BoxDecoration(
-                      color: Theme.of(context).scaffoldBackgroundColor.withAlpha(200),
+                      color: isDark
+                          ? Theme.of(context).scaffoldBackgroundColor.withAlpha(200)
+                          : const Color(0xFFF1F5F9),
                       borderRadius: BorderRadius.circular(20),
                       border: Border.all(
-                        color: Theme.of(context).colorScheme.primary.withAlpha(76),
+                        color: isDark
+                            ? primary.withAlpha(76)
+                            : AppTheme.getBorderColor(context),
                       ),
                     ),
                     child: Text(
                       project.category!,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 9,
-                        color: Colors.white70,
-                        fontWeight: FontWeight.w600,
+                        color: isDark ? Colors.white70 : AppTheme.lightTextSecondary,
+                        fontWeight: FontWeight.w700,
                       ),
                     ),
                   ),

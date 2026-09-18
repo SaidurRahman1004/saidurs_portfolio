@@ -375,3 +375,39 @@ Management screens error হলে center-এ generic message দেখায়; r
 The final production audit is documented in [FINAL_PRODUCTION_AUDIT.md](FINAL_PRODUCTION_AUDIT.md). The repository now has a passing Dart analyzer, 103 passing Flutter tests, passing debug/release web builds, and passing Functions lint. Firestore rules were compiled and deployed successfully.
 
 The audit also fixed Functions ESLint 9 configuration, hostname/canonical SEO metadata, viewport zoom restriction, and public exposure of hidden portfolio content. Cloud Functions and Firebase Storage could not be verified because the project has not enabled the Cloud Functions API and Storage is not provisioned. Manual responsive, authenticated CRUD, analytics, error-ingestion, accessibility and real-device performance QA remain required.
+
+## Phase 11 — Admin Analytics Responsive Layout & Public Light Theme Redesign (2026-09-18)
+
+### 1. Admin Analytics Dashboard Layout Bug Fixes
+- **FractionallySizedBox Unbounded Height Crash**: Fixed Flutter render tree crash in `_buildTrafficChart` caused by `FractionallySizedBox` inside an unconstrained `Column`. Replaced with safe computed animated height `SizedBox(height: (110 * ratio).clamp(12.0, 110.0))`, ensuring charts and all subsequent telemetry sections (Leaderboards, Device Breakdowns, Section Analytics) render completely without blank white screens.
+- **Hero Metric Cards Responsive Grid**: Replaced rigid `crossAxisCount: 6` with dynamic responsive columns:
+  - Mobile (<600px): 1 column
+  - Tablet (600–960px): 2 columns
+  - Desktop (960–1440px): 3 columns (2 balanced rows of 3 spacious cards)
+  - Ultra-wide (1440px+): 6 columns
+- **CanvasKit Buffer Ghosting Fix**: Replaced `Scaffold(backgroundColor: Colors.transparent)` in `AnalyticsScreen` with `AppTheme.getScaffoldBackground(context)`. In Flutter Web CanvasKit, transparent backgrounds do not clear the surface buffer, which previously caused underlying text/headers to bleed through under cards.
+- **Header Overflow Prevention**: Converted header title, pulsing real-time indicator, and filter chips into responsive `Wrap` layout to prevent clipping on viewports between 1024px and 1280px.
+
+### 2. Public Frontend Default Light Theme Redesign
+- **Design Tokens (`lib/config/theme.dart`)**:
+  - `lightBackground`: Upgraded to rich, clean Slate-100 (`#F1F5F9`), giving strong contrast and physical depth against pure white card surfaces.
+  - `lightCardBackground`: Pure layered white (`#FFFFFF`) with multi-layered ambient drop shadows (`AppTheme.getCardShadow(context)`).
+  - `lightTextPrimary`: Upgraded to deep Slate-900 (`#0F172A`), eliminating washed-out text and achieving maximum readability.
+  - `lightTextSecondary`: Upgraded to Slate-700 (`#334155`) for clear, legible body text.
+  - `lightBorderColor`: Crisp Slate-300 (`#CBD5E1`) for elegant modern borders.
+  - `lightPrimaryGradient`: Upgraded from dark cyan/purple to rich Royal Indigo Blue (`#2563EB`) -> Vivid Violet (`#4F46E5`) -> Sky Blue (`#0284C7`).
+- **Interactive & Animated Components**:
+  - `GradientButton`: Converted to interactive stateful widget with hover lift (`-2px`), subtle glow, adaptive gradient (`AppTheme.getPrimaryGradient(context)`), and high-contrast text.
+  - `CustomAppBar`: Added anchored bottom border, subtle elevation, adaptive theme switcher button, and interactive nav buttons with hover pill highlights.
+  - `HeroSection`: Replaced invisible card containers with elevated glassmorphic white card, adaptive emerald "Open To Work" pill, and vibrant ambient glow.
+  - `HighlightsSection`: Transformed flat white slab into elevated interactive cards with hover lift (`-4px`), micro-glow, and Slate-100 canvas separation.
+  - `ProjectsSection`: Added light mode card shadows, clean Slate-300 borders, high-contrast category badges (resolving white-on-white text bug), and purple tech stack chips.
+  - `SkillsSection`: Added card elevation, refined borders, and Slate-100 skill chips.
+  - `ExperienceSection` & `EducationSection`: Added card shadows, crisp borders, and hover elevation.
+  - `SectionTitle`: Upgraded to use `AppTheme.getPrimaryGradient(context)` so section headers render bold and high-contrast in light mode.
+
+### 3. Verification & Quality Assurance
+- **Static Analysis**: `flutter analyze` passed with 0 issues / 0 warnings.
+- **Unit & Widget Tests**: All 103 tests passed with 0 failures (`flutter test`).
+- **Runtime Errors**: Connected via DTD, triggered `hot_restart`, verified `get_runtime_errors` returned 0 errors.
+

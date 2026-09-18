@@ -26,7 +26,7 @@ class SectionTitle extends StatelessWidget {
             width: 60,
             height: 4,
             decoration: BoxDecoration(
-              gradient: AppTheme.primaryGradient,
+              gradient: AppTheme.getPrimaryGradient(context),
               borderRadius: BorderRadius.circular(2),
             ),
           ),
@@ -34,11 +34,12 @@ class SectionTitle extends StatelessWidget {
           //Text
           ShaderMask(
             shaderCallback: (bounds) =>
-                AppTheme.primaryGradient.createShader(bounds),
+                AppTheme.getPrimaryGradient(context).createShader(bounds),
             child: Text(
               title,
-              style: Theme.of(context).textTheme.headlineLarge ?.copyWith(
+              style: Theme.of(context).textTheme.headlineLarge?.copyWith(
                 color: Colors.white,
+                fontWeight: FontWeight.w800,
               ),
               textAlign: centered ? TextAlign.center : TextAlign.left,
             ),

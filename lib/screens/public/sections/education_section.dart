@@ -6,6 +6,7 @@ import 'package:intl/intl.dart';
 import '../../../models/education_model.dart';
 import '../../../providers/portfolio_provider.dart';
 import '../../../widgets/comon/responsive_wrapper.dart';
+import '../../../config/theme.dart';
 
 class EducationSection extends StatelessWidget {
   const EducationSection({super.key});
@@ -96,15 +97,20 @@ class _EducationCard extends StatelessWidget {
         : (education.isCurrent ? 'Present' : '');
     final periodStr = startStr == endStr || endStr.isEmpty ? startStr : '$startStr — $endStr';
 
+    final isDark = AppTheme.isDark(context);
+
     return Container(
       margin: const EdgeInsets.only(bottom: 24),
       padding: EdgeInsets.all(isMobile ? 20 : 26),
       decoration: BoxDecoration(
-        color: Theme.of(context).cardColor,
+        color: isDark ? Theme.of(context).cardColor : Colors.white,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: Theme.of(context).colorScheme.secondary.withAlpha(50),
+          color: isDark
+              ? Theme.of(context).colorScheme.secondary.withAlpha(50)
+              : AppTheme.getBorderColor(context),
         ),
+        boxShadow: AppTheme.getCardShadow(context),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,

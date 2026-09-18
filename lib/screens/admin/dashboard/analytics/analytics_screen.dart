@@ -49,7 +49,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen>
     final padding = isMobile ? 16.0 : 28.0;
 
     return Scaffold(
-      backgroundColor: Colors.transparent,
+      backgroundColor: AppTheme.getScaffoldBackground(context),
       body: StreamBuilder<RealtimeAnalyticsData>(
         stream: RealtimeAnalyticsService.instance.streamAnalytics(),
         builder: (context, snapshot) {
@@ -135,7 +135,10 @@ class _AnalyticsScreenState extends State<AnalyticsScreen>
     final titleColumn = Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Row(
+        Wrap(
+          crossAxisAlignment: WrapCrossAlignment.center,
+          spacing: 12,
+          runSpacing: 8,
           children: [
             Text(
               'Analytics & Visitor Telemetry',
@@ -145,7 +148,6 @@ class _AnalyticsScreenState extends State<AnalyticsScreen>
                     letterSpacing: -0.5,
                   ),
             ),
-            const SizedBox(width: 12),
             // Live Pulsing Badge
             AnimatedBuilder(
               animation: _pulseAnimation,
@@ -194,7 +196,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen>
             ),
           ],
         ),
-        const SizedBox(height: 4),
+        const SizedBox(height: 6),
         Text(
           'Real-time visitor counts, daily traffic trends, and button interaction metrics.',
           style: TextStyle(fontSize: 13, color: textSecondary),
@@ -250,22 +252,29 @@ class _AnalyticsScreenState extends State<AnalyticsScreen>
       ],
     );
 
-    return isDesktop
-        ? Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Expanded(child: titleColumn),
-              controls,
-            ],
-          )
-        : Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              titleColumn,
-              const SizedBox(height: 16),
-              controls,
-            ],
-          );
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final isWide = constraints.maxWidth >= 900;
+        return isWide
+            ? Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Expanded(child: titleColumn),
+                  const SizedBox(width: 16),
+                  controls,
+                ],
+              )
+            : Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  titleColumn,
+                  const SizedBox(height: 16),
+                  controls,
+                ],
+              );
+      },
+    );
   }
 
   Widget _buildDatePill(BuildContext context, String range) {
@@ -388,18 +397,21 @@ class _AnalyticsScreenState extends State<AnalyticsScreen>
     return LayoutBuilder(
       builder: (context, constraints) {
         final width = constraints.maxWidth;
-        int crossAxisCount = 6;
-        double childAspectRatio = 1.65;
+        int crossAxisCount = 3;
+        double childAspectRatio = 2.1;
 
         if (width < 600) {
+          crossAxisCount = 1;
+          childAspectRatio = 2.8;
+        } else if (width < 960) {
           crossAxisCount = 2;
+          childAspectRatio = 1.9;
+        } else if (width < 1440) {
+          crossAxisCount = 3;
+          childAspectRatio = 2.1;
+        } else {
+          crossAxisCount = 6;
           childAspectRatio = 1.35;
-        } else if (width < 900) {
-          crossAxisCount = 3;
-          childAspectRatio = 1.45;
-        } else if (width < 1300) {
-          crossAxisCount = 3;
-          childAspectRatio = 1.6;
         }
 
         return GridView.builder(
@@ -681,9 +693,9 @@ class _AnalyticsScreenState extends State<AnalyticsScreen>
                         ),
                         const SizedBox(height: 6),
 
-                        // Animated Bar with Gradient
-                        FractionallySizedBox(
-                          heightFactor: ratio,
+                        // Animated Bar with Gradient (Explicit Height to prevent unbounded layout crashes)
+                        SizedBox(
+                          height: (110 * ratio).clamp(12.0, 110.0),
                           child: AnimatedContainer(
                             duration: const Duration(milliseconds: 300),
                             curve: Curves.easeOutCubic,

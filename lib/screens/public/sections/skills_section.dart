@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:futter_portfileo_website/models/skill_model.dart';
 import 'package:futter_portfileo_website/widgets/comon/section_title.dart';
+import '../../../config/theme.dart';
 import '../../../widgets/comon/responsive_wrapper.dart';
 import '../../../widgets/comon/material_icon_mapper.dart';
 import 'package:provider/provider.dart';
@@ -130,14 +131,20 @@ class SkillsSection extends StatelessWidget {
   Widget _buildSkillCard(BuildContext context, String categoryName, List<dynamic> skills) {
     final firstSkill = skills.first as SkillModel;
     final icon = MaterialIconMapper.fromCode(firstSkill.iconCode);
+    final isDark = AppTheme.isDark(context);
+    final primary = Theme.of(context).colorScheme.primary;
+
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: Theme.of(context).cardColor,
+        color: isDark ? Theme.of(context).cardColor : Colors.white,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: Theme.of(context).colorScheme.primary.withAlpha(25),
+          color: isDark
+              ? primary.withAlpha(40)
+              : AppTheme.getBorderColor(context),
         ),
+        boxShadow: AppTheme.getCardShadow(context),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -148,12 +155,12 @@ class SkillsSection extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(10),
                 decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.08),
+                  color: primary.withAlpha(isDark ? 25 : 18),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Icon(
                   icon,
-                  color: Theme.of(context).colorScheme.primary,
+                  color: primary,
                   size: 24,
                 ),
               ),
@@ -161,7 +168,9 @@ class SkillsSection extends StatelessWidget {
               Expanded(
                 child: Text(
                   categoryName,
-                  style: Theme.of(context).textTheme.titleLarge,
+                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ),
             ],
@@ -177,14 +186,21 @@ class SkillsSection extends StatelessWidget {
                   vertical: 6,
                 ),
                 decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.surfaceContainerHighest,
+                  color: isDark
+                      ? Theme.of(context).colorScheme.surfaceContainerHighest
+                      : const Color(0xFFF1F5F9),
                   borderRadius: BorderRadius.circular(20),
+                  border: Border.all(
+                    color: isDark
+                        ? Colors.transparent
+                        : AppTheme.getBorderColor(context).withAlpha(120),
+                  ),
                 ),
                 child: Text(
                   (skill as SkillModel).name,
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: Theme.of(context).colorScheme.primary,
-                    fontWeight: FontWeight.w500,
+                    color: primary,
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
               );

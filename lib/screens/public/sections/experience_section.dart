@@ -213,11 +213,12 @@ class _HighlightMetric extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       decoration: BoxDecoration(
-        color: Theme.of(context).cardColor,
+        color: isDark ? Theme.of(context).cardColor : Colors.white,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: primary.withAlpha(35),
+          color: isDark ? primary.withAlpha(35) : AppTheme.getBorderColor(context),
         ),
+        boxShadow: AppTheme.getCardShadow(context),
       ),
       child: Row(
         children: [
@@ -310,23 +311,23 @@ class _ExperienceCardState extends State<_ExperienceCard> {
             margin: EdgeInsets.only(bottom: widget.isLast ? 0 : 32),
             transform: Matrix4.translationValues(0, _isHovered ? -4 : 0, 0),
             decoration: BoxDecoration(
-              color: Theme.of(context).cardColor,
+              color: isDark ? Theme.of(context).cardColor : Colors.white,
               borderRadius: BorderRadius.circular(20),
               border: Border.all(
                 color: _isHovered
-                    ? primaryColor.withAlpha(120)
-                    : primaryColor.withAlpha(45),
+                    ? primaryColor.withAlpha(isDark ? 120 : 180)
+                    : (isDark ? primaryColor.withAlpha(45) : AppTheme.getBorderColor(context)),
                 width: _isHovered ? 1.5 : 1.0,
               ),
-              boxShadow: [
-                BoxShadow(
-                  color: _isHovered
-                      ? primaryColor.withAlpha(28)
-                      : Colors.black.withAlpha(isDark ? 30 : 10),
-                  blurRadius: _isHovered ? 28 : 14,
-                  offset: Offset(0, _isHovered ? 10 : 4),
-                ),
-              ],
+              boxShadow: _isHovered
+                  ? [
+                      BoxShadow(
+                        color: primaryColor.withAlpha(isDark ? 28 : 35),
+                        blurRadius: 28,
+                        offset: const Offset(0, 10),
+                      ),
+                    ]
+                  : AppTheme.getCardShadow(context),
             ),
             child: Padding(
               padding: EdgeInsets.all(isMobile ? 20 : 32),

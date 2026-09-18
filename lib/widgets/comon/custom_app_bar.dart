@@ -62,11 +62,22 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
       ),
       height: 80,
       decoration: BoxDecoration(
-        color: Theme.of(context).scaffoldBackgroundColor.withAlpha(242),
+        color: isDark
+            ? Theme.of(context).scaffoldBackgroundColor.withAlpha(242)
+            : Colors.white.withAlpha(245),
+        border: Border(
+          bottom: BorderSide(
+            color: AppTheme.getBorderColor(context).withAlpha(isDark ? 50 : 160),
+            width: 1,
+          ),
+        ),
         boxShadow: [
           BoxShadow(
-            color: Theme.of(context).shadowColor.withAlpha(isDark ? 127 : 20),
-            blurRadius: 10,
+            color: isDark
+                ? Theme.of(context).shadowColor.withAlpha(127)
+                : const Color(0xFF0F172A).withAlpha(12),
+            blurRadius: 14,
+            offset: const Offset(0, 3),
           ),
         ],
       ),
@@ -143,13 +154,12 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
               Container(
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: Theme.of(context).cardColor,
-                  boxShadow: [
-                    BoxShadow(
-                      color: Theme.of(context).shadowColor.withAlpha(isDark ? 50 : 20),
-                      blurRadius: 8,
-                    )
-                  ],
+                  color: isDark ? Theme.of(context).cardColor : Colors.white,
+                  border: Border.all(
+                    color: AppTheme.getBorderColor(context),
+                    width: 1,
+                  ),
+                  boxShadow: AppTheme.getCardShadow(context),
                 ),
                 child: IconButton(
                   onPressed: () {
@@ -164,7 +174,7 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
                     child: Icon(
                       isDark ? Icons.light_mode : Icons.dark_mode,
                       key: ValueKey(isDark),
-                      color: isDark ? Colors.amber : Colors.blueGrey,
+                      color: isDark ? Colors.amber : const Color(0xFF4F46E5),
                     ),
                   ),
                   tooltip: isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode',
@@ -181,22 +191,54 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
   Size get preferredSize => const Size.fromHeight(80);
 }
 
-class _NavButton extends StatelessWidget {
+class _NavButton extends StatefulWidget {
   final String text;
   final VoidCallback onTap;
 
   const _NavButton({required this.text, required this.onTap});
 
   @override
+  State<_NavButton> createState() => _NavButtonState();
+}
+
+class _NavButtonState extends State<_NavButton> {
+  bool _isHovered = false;
+
+  @override
   Widget build(BuildContext context) {
+    final isDark = AppTheme.isDark(context);
+    final primary = Theme.of(context).colorScheme.primary;
+
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 12),
-      child: TextButton(
-        onPressed: onTap,
-        style: TextButton.styleFrom(
-          foregroundColor: Theme.of(context).textTheme.bodyLarge?.color,
+      padding: const EdgeInsets.symmetric(horizontal: 4),
+      child: MouseRegion(
+        onEnter: (_) => setState(() => _isHovered = true),
+        onExit: (_) => setState(() => _isHovered = false),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 180),
+          decoration: BoxDecoration(
+            color: _isHovered
+                ? primary.withAlpha(isDark ? 28 : 18)
+                : Colors.transparent,
+            borderRadius: BorderRadius.circular(10),
+          ),
+          child: TextButton(
+            onPressed: widget.onTap,
+            style: TextButton.styleFrom(
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+              foregroundColor: _isHovered
+                  ? primary
+                  : (isDark ? AppTheme.textPrimary : AppTheme.lightTextPrimary),
+            ),
+            child: Text(
+              widget.text,
+              style: TextStyle(
+                fontWeight: _isHovered ? FontWeight.w700 : FontWeight.w600,
+                fontSize: 14.5,
+              ),
+            ),
+          ),
         ),
-        child: Text(text, style: Theme.of(context).textTheme.titleMedium),
       ),
     );
   }

@@ -87,44 +87,53 @@ class HeroSection extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         if (isOpenToWork)
-          Container(
-            margin: const EdgeInsets.only(bottom: 20),
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
-            decoration: BoxDecoration(
-              color: Colors.green.withAlpha(25),
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: Colors.green.withAlpha(120)),
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Container(
-                  width: 8,
-                  height: 8,
-                  decoration: const BoxDecoration(
-                    color: Color(0xFF22C55E),
-                    shape: BoxShape.circle,
-                    boxShadow: [
-                      BoxShadow(
-                        color: Color(0xFF22C55E),
-                        blurRadius: 6,
-                        spreadRadius: 1,
+          Builder(
+            builder: (context) {
+              final isDark = AppTheme.isDark(context);
+              final emeraldColor = isDark ? const Color(0xFF22C55E) : const Color(0xFF047857);
+              final emeraldBg = isDark ? const Color(0xFF22C55E).withAlpha(25) : const Color(0xFF059669).withAlpha(20);
+              final emeraldBorder = isDark ? const Color(0xFF22C55E).withAlpha(120) : const Color(0xFF059669).withAlpha(80);
+
+              return Container(
+                margin: const EdgeInsets.only(bottom: 20),
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
+                decoration: BoxDecoration(
+                  color: emeraldBg,
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(color: emeraldBorder),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      width: 8,
+                      height: 8,
+                      decoration: BoxDecoration(
+                        color: emeraldColor,
+                        shape: BoxShape.circle,
+                        boxShadow: [
+                          BoxShadow(
+                            color: emeraldColor.withAlpha(isDark ? 255 : 180),
+                            blurRadius: 6,
+                            spreadRadius: 1,
+                          ),
+                        ],
                       ),
-                    ],
-                  ),
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      openToWorkText,
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w700,
+                        color: emeraldColor,
+                        letterSpacing: 0.3,
+                      ),
+                    ),
+                  ],
                 ),
-                const SizedBox(width: 8),
-                Text(
-                  openToWorkText,
-                  style: const TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600,
-                    color: Color(0xFF22C55E),
-                    letterSpacing: 0.3,
-                  ),
-                ),
-              ],
-            ),
+              );
+            },
           ),
         Text(
           'Hi, I\'m',
@@ -292,73 +301,88 @@ class HeroSection extends StatelessWidget {
                 alignment: Alignment.center,
                 children: [
                   // Glowing
-                  Container(
-                    height: glowH,
-                    width: glowW,
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(40),
-                      border: Border.all(
-                        color: Theme.of(context).colorScheme.primary.withAlpha(25),
-                        width: 2,
-                      ),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Theme.of(context).colorScheme.primary.withAlpha(20),
-                          blurRadius: 60,
-                          spreadRadius: 10,
+                  Builder(
+                    builder: (context) {
+                      final isDark = AppTheme.isDark(context);
+                      final primary = Theme.of(context).colorScheme.primary;
+
+                      return Container(
+                        height: glowH,
+                        width: glowW,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(40),
+                          border: Border.all(
+                            color: primary.withAlpha(isDark ? 25 : 40),
+                            width: 2,
+                          ),
+                          boxShadow: [
+                            BoxShadow(
+                              color: primary.withAlpha(isDark ? 20 : 18),
+                              blurRadius: 50,
+                              spreadRadius: isDark ? 10 : 6,
+                            ),
+                          ],
                         ),
-                      ],
-                    ),
+                      );
+                    },
                   ),
 
                   // Background
-                  Container(
-                    height: cardH,
-                    width: cardW,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(35),
-                  color: Colors.white.withAlpha(7),
-                  border: Border.all(
-                    color: Colors.white.withAlpha(12),
-                    width: 1,
-                  ),
-                ),
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(35),
-                  child: Stack(
-                    children: [
-                      Positioned(
-                        top: -50,
-                        right: -50,
-                        child: Container(
-                          height: 200,
-                          width: 200,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            color: Theme.of(context).colorScheme.primary.withAlpha(25),
+                  Builder(
+                    builder: (context) {
+                      final isDark = AppTheme.isDark(context);
+                      final primary = Theme.of(context).colorScheme.primary;
+
+                      return Container(
+                        height: cardH,
+                        width: cardW,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(35),
+                          color: isDark ? Colors.white.withAlpha(7) : Colors.white,
+                          border: Border.all(
+                            color: isDark ? Colors.white.withAlpha(15) : AppTheme.getBorderColor(context),
+                            width: 1.2,
+                          ),
+                          boxShadow: AppTheme.getCardShadow(context),
+                        ),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(35),
+                          child: Stack(
+                            children: [
+                              Positioned(
+                                top: -50,
+                                right: -50,
+                                child: Container(
+                                  height: 200,
+                                  width: 200,
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    color: primary.withAlpha(isDark ? 25 : 12),
+                                  ),
+                                ),
+                              ),
+                              Center(
+                                child: Padding(
+                                  padding: const EdgeInsets.all(20.0),
+                                  child: CachedNetworkImage(
+                                    imageUrl: finalImageUrl,
+                                    fit: BoxFit.contain,
+                                    placeholder: (context, url) => const Center(
+                                      child: CircularProgressIndicator(strokeWidth: 2),
+                                    ),
+                                    errorWidget: (context, url, error) =>
+                                        _buildFallbackImage(context),
+                                  ),
+                                ),
+                              ),
+                            ],
                           ),
                         ),
-                      ),
-                      Center(
-                        child: Padding(
-                          padding: const EdgeInsets.all(20.0),
-                          child: CachedNetworkImage(
-                            imageUrl: finalImageUrl,
-                            fit: BoxFit.contain,
-                            placeholder: (context, url) => const Center(
-                              child: CircularProgressIndicator(strokeWidth: 2),
-                            ),
-                            errorWidget: (context, url, error) =>
-                                _buildFallbackImage(context),
-                          ),
-                        ),
-                      ),
-                    ],
+                      );
+                    },
                   ),
-                ),
+                ],
               ),
-            ],
-          ),
             );
           },
         );
