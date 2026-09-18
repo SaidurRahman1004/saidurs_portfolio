@@ -8,7 +8,7 @@ import '../../../../models/project_model.dart';
 import '../../../../services/image_upload_service.dart';
 
 class AddProjectDialog extends StatefulWidget {
-  const AddProjectDialog({Key? key}) : super(key: key);
+  const AddProjectDialog({super.key});
 
   @override
   State<AddProjectDialog> createState() => _AddProjectDialogState();
@@ -207,6 +207,8 @@ class _AddProjectDialogState extends State<AddProjectDialog> {
         createdAt: DateTime.now(),
       );
 
+      if (!mounted) return;
+
       //Save to Firebase
       final portfolioProvider = Provider.of<PortfolioProvider>(
         context,
@@ -256,7 +258,7 @@ class _AddProjectDialogState extends State<AddProjectDialog> {
           gradient: AppTheme.cardGradient,
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
-            color: AppTheme.primaryColor.withOpacity(0.3),
+            color: AppTheme.primaryColor.withValues(alpha: 0.3),
             width: 1,
           ),
         ),
@@ -317,7 +319,7 @@ class _AddProjectDialogState extends State<AddProjectDialog> {
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: AppTheme.primaryColor.withOpacity(0.2),
+              color: AppTheme.primaryColor.withValues(alpha: 0.2),
               borderRadius: BorderRadius.circular(12),
             ),
             child: Icon(
@@ -385,9 +387,9 @@ class _AddProjectDialogState extends State<AddProjectDialog> {
           height: 200,
           width: double.infinity,
           decoration: BoxDecoration(
-            color: AppTheme.darkBackground.withOpacity(0.5),
+            color: AppTheme.darkBackground.withValues(alpha: 0.5),
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: AppTheme.primaryColor.withOpacity(0.3)),
+            border: Border.all(color: AppTheme.primaryColor.withValues(alpha: 0.3)),
           ),
           child: _selectedImageBytes != null
               ? Stack(
@@ -488,7 +490,7 @@ class _AddProjectDialogState extends State<AddProjectDialog> {
             hintText: 'e.g., TravelSnap, Task Manager',
             prefixIcon: const Icon(Icons.title),
             filled: true,
-            fillColor: AppTheme.darkBackground.withOpacity(0.5),
+            fillColor: AppTheme.darkBackground.withValues(alpha: 0.5),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
               borderSide: BorderSide.none,
@@ -527,7 +529,7 @@ class _AddProjectDialogState extends State<AddProjectDialog> {
           decoration: InputDecoration(
             hintText: 'Describe your project... ',
             filled: true,
-            fillColor: AppTheme.darkBackground.withOpacity(0.5),
+            fillColor: AppTheme.darkBackground.withValues(alpha: 0.5),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
               borderSide: BorderSide.none,
@@ -573,7 +575,7 @@ class _AddProjectDialogState extends State<AddProjectDialog> {
                 decoration: InputDecoration(
                   hintText: 'e.g., Flutter, Firebase',
                   filled: true,
-                  fillColor: AppTheme.darkBackground.withOpacity(0.5),
+                  fillColor: AppTheme.darkBackground.withValues(alpha: 0.5),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
                     borderSide: BorderSide.none,
@@ -598,7 +600,7 @@ class _AddProjectDialogState extends State<AddProjectDialog> {
                 label: Text(tech),
                 deleteIcon: const Icon(Icons.close, size: 18),
                 onDeleted: () => _removeTech(tech),
-                backgroundColor: AppTheme.secondaryColor.withOpacity(0.2),
+                backgroundColor: AppTheme.secondaryColor.withValues(alpha: 0.2),
                 labelStyle: TextStyle(color: AppTheme.secondaryColor),
               );
             }).toList(),
@@ -626,7 +628,7 @@ class _AddProjectDialogState extends State<AddProjectDialog> {
             hintText: 'https://github.com/username/repo',
             prefixIcon: const Icon(Icons.code),
             filled: true,
-            fillColor: AppTheme.darkBackground.withOpacity(0.5),
+            fillColor: AppTheme.darkBackground.withValues(alpha: 0.5),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
               borderSide: BorderSide.none,
@@ -679,7 +681,7 @@ class _AddProjectDialogState extends State<AddProjectDialog> {
             hintText: 'https://yourapp.com',
             prefixIcon: const Icon(Icons.launch),
             filled: true,
-            fillColor: AppTheme.darkBackground.withOpacity(0.5),
+            fillColor: AppTheme.darkBackground.withValues(alpha: 0.5),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
               borderSide: BorderSide.none,
@@ -722,7 +724,7 @@ class _AddProjectDialogState extends State<AddProjectDialog> {
           decoration: InputDecoration(
             prefixIcon: const Icon(Icons.sort),
             filled: true,
-            fillColor: AppTheme.darkBackground.withOpacity(0.5),
+            fillColor: AppTheme.darkBackground.withValues(alpha: 0.5),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
               borderSide: BorderSide.none,
@@ -742,13 +744,13 @@ class _AddProjectDialogState extends State<AddProjectDialog> {
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
             color: _isFeatured
-                ? Colors.amber.withOpacity(0.1)
-                : AppTheme.darkBackground.withOpacity(0.5),
+                ? Colors.amber.withValues(alpha: 0.1)
+                : AppTheme.darkBackground.withValues(alpha: 0.5),
             borderRadius: BorderRadius.circular(12),
             border: Border.all(
               color: _isFeatured
-                  ? Colors.amber.withOpacity(0.3)
-                  : AppTheme.surfaceColor.withOpacity(0.3),
+                  ? Colors.amber.withValues(alpha: 0.3)
+                  : AppTheme.surfaceColor.withValues(alpha: 0.3),
             ),
           ),
           child: Row(
@@ -771,7 +773,7 @@ class _AddProjectDialogState extends State<AddProjectDialog> {
                     _isFeatured = value;
                   });
                 },
-                activeColor: Colors.amber,
+                activeThumbColor: Colors.amber,
               ),
             ],
           ),
@@ -784,13 +786,13 @@ class _AddProjectDialogState extends State<AddProjectDialog> {
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
             color: _isVisible
-                ? Colors.green.withOpacity(0.1)
-                : Colors.orange.withOpacity(0.1),
+                ? Colors.green.withValues(alpha: 0.1)
+                : Colors.orange.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(12),
             border: Border.all(
               color: _isVisible
-                  ? Colors.green.withOpacity(0.3)
-                  : Colors.orange.withOpacity(0.3),
+                  ? Colors.green.withValues(alpha: 0.3)
+                  : Colors.orange.withValues(alpha: 0.3),
             ),
           ),
           child: Row(
@@ -813,7 +815,7 @@ class _AddProjectDialogState extends State<AddProjectDialog> {
                     _isVisible = value;
                   });
                 },
-                activeColor: Colors.green,
+                activeThumbColor: Colors.green,
               ),
             ],
           ),
@@ -828,7 +830,7 @@ class _AddProjectDialogState extends State<AddProjectDialog> {
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
         border: Border(
-          top: BorderSide(color: AppTheme.surfaceColor.withOpacity(0.3)),
+          top: BorderSide(color: AppTheme.surfaceColor.withValues(alpha: 0.3)),
         ),
       ),
       child: Row(

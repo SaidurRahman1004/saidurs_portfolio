@@ -3,6 +3,7 @@ import 'package:futter_portfileo_website/widgets/comon/responsive_wrapper.dart';
 import 'package:provider/provider.dart';
 import '../../config/theme.dart';
 import '../../providers/theme_provider.dart';
+import '../../services/analytics/analytics_service.dart';
 
 class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
   final GlobalKey herokey;
@@ -24,12 +25,25 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
     required this.contactkey,
   });
 
-  void _scrollToSection(GlobalKey key) {
-    Scrollable.ensureVisible(
-      key.currentContext!,
-      duration: const Duration(seconds: 1),
-      curve: Curves.easeInOut,
+  void _scrollToSection(GlobalKey key, String sectionName) {
+    AnalyticsService.instance.logNavClick(
+      itemTitle: sectionName,
+      destination: sectionName.toLowerCase(),
+      source: 'desktop_navbar',
     );
+    AnalyticsService.instance.logSectionView(
+      sectionId: sectionName.toLowerCase(),
+      sectionName: sectionName,
+      source: 'nav_click',
+    );
+
+    if (key.currentContext != null) {
+      Scrollable.ensureVisible(
+        key.currentContext!,
+        duration: const Duration(seconds: 1),
+        curve: Curves.easeInOut,
+      );
+    }
   }
 
   @override
@@ -80,31 +94,31 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
                   children: [
                     _NavButton(
                       text: 'Home',
-                      onTap: () => _scrollToSection(herokey),
+                      onTap: () => _scrollToSection(herokey, 'Home'),
                     ),
                     _NavButton(
                       text: 'About',
-                      onTap: () => _scrollToSection(aboutkey),
+                      onTap: () => _scrollToSection(aboutkey, 'About'),
                     ),
                     _NavButton(
                       text: 'Experience',
-                      onTap: () => _scrollToSection(experiencekey),
+                      onTap: () => _scrollToSection(experiencekey, 'Experience'),
                     ),
                     _NavButton(
                       text: 'Skills',
-                      onTap: () => _scrollToSection(skillskey),
+                      onTap: () => _scrollToSection(skillskey, 'Skills'),
                     ),
                     _NavButton(
                       text: 'Projects',
-                      onTap: () => _scrollToSection(projectskey),
+                      onTap: () => _scrollToSection(projectskey, 'Projects'),
                     ),
                     _NavButton(
                       text: 'Education',
-                      onTap: () => _scrollToSection(educationkey),
+                      onTap: () => _scrollToSection(educationkey, 'Education'),
                     ),
                     _NavButton(
                       text: 'Contact',
-                      onTap: () => _scrollToSection(contactkey),
+                      onTap: () => _scrollToSection(contactkey, 'Contact'),
                     ),
                   ],
                 ),
@@ -112,6 +126,10 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
                 Builder(
                   builder: (context) => IconButton(
                     onPressed: () {
+                      AnalyticsService.instance.logMobileMenu(
+                        isOpen: true,
+                        source: 'app_bar_hamburger',
+                      );
                       Scaffold.of(context).openDrawer();
                     },
                     icon: Icon(Icons.menu,
@@ -134,7 +152,11 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
                   ],
                 ),
                 child: IconButton(
-                  onPressed: () => context.read<ThemeProvider>().toggleTheme(),
+                  onPressed: () {
+                    final nextDark = !isDark;
+                    context.read<ThemeProvider>().toggleTheme();
+                    AnalyticsService.instance.logThemeToggle(isDark: nextDark);
+                  },
                   icon: AnimatedSwitcher(
                     duration: const Duration(milliseconds: 300),
                     transitionBuilder: (child, animation) =>

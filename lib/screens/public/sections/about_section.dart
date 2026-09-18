@@ -148,46 +148,64 @@ class AboutSection extends StatelessWidget {
 
   //About Content
   Widget _buildContent(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          AppConstants.aboutMe,
-          style: Theme.of(context).textTheme.bodyLarge?.copyWith(height: 1.8),
-        ),
+    return Consumer<PortfolioProvider>(
+      builder: (context, provider, child) {
+        final contact = provider.contactInfo;
+        final aboutText = contact?.aboutMe.isNotEmpty == true
+            ? contact!.aboutMe
+            : AppConstants.aboutMe;
+        final educationFact = contact?.educationFact.isNotEmpty == true
+            ? contact!.educationFact
+            : 'Diploma in CST - Dhaka Polytechnic Institute';
+        final locationFact = contact?.locationFact.isNotEmpty == true
+            ? contact!.locationFact
+            : (contact?.location.isNotEmpty == true ? contact!.location : 'Dhaka, Bangladesh');
+        final focusFact = contact?.focusFact.isNotEmpty == true
+            ? contact!.focusFact
+            : 'Flutter + Firebase + Django';
+        final goalFact = contact?.goalFact.isNotEmpty == true
+            ? contact!.goalFact
+            : 'Full-Stack Mobile Developer';
 
-        const SizedBox(height: 32),
-        // Quick Facts
-        _buildFactItem(
-          context,
-          icon: Icons.school_outlined,
-          title: 'Education',
-          value: 'Diploma in CST - Dhaka Polytechnic Institute',
-        ),
-        const SizedBox(height: 16),
-        _buildFactItem(
-          context,
-          icon: Icons.location_on_outlined,
-          title: 'Location',
-          value: 'Bangladesh',
-        ),
-        const SizedBox(height: 16),
-
-        _buildFactItem(
-          context,
-          icon: Icons.code_outlined,
-          title: 'Focus',
-          value: 'Flutter + Firebase + Django',
-        ),
-        const SizedBox(height: 16),
-
-        _buildFactItem(
-          context,
-          icon: Icons.emoji_events_outlined,
-          title: 'Goal',
-          value: 'Full-Stack Mobile Developer',
-        ),
-      ],
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              aboutText,
+              style: Theme.of(context).textTheme.bodyLarge?.copyWith(height: 1.8),
+            ),
+            const SizedBox(height: 32),
+            // Quick Facts
+            _buildFactItem(
+              context,
+              icon: Icons.school_outlined,
+              title: 'Education',
+              value: educationFact,
+            ),
+            const SizedBox(height: 16),
+            _buildFactItem(
+              context,
+              icon: Icons.location_on_outlined,
+              title: 'Location',
+              value: locationFact,
+            ),
+            const SizedBox(height: 16),
+            _buildFactItem(
+              context,
+              icon: Icons.code_outlined,
+              title: 'Focus',
+              value: focusFact,
+            ),
+            const SizedBox(height: 16),
+            _buildFactItem(
+              context,
+              icon: Icons.emoji_events_outlined,
+              title: 'Goal',
+              value: goalFact,
+            ),
+          ],
+        );
+      },
     );
   }
 

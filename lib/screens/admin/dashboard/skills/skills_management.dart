@@ -223,10 +223,14 @@ class _SkillsManagementState extends State<SkillsManagement> {
               )
             : null,
         filled: true,
-        fillColor: AppTheme.cardBackground,
+        fillColor: AppTheme.getCardBackground(context),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide.none,
+          borderSide: BorderSide(color: AppTheme.getBorderColor(context)),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: AppTheme.getBorderColor(context)),
         ),
       ),
       onChanged: (value) {
@@ -242,12 +246,14 @@ class _SkillsManagementState extends State<SkillsManagement> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       decoration: BoxDecoration(
-        color: AppTheme.cardBackground,
+        color: AppTheme.getCardBackground(context),
         borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppTheme.getBorderColor(context)),
       ),
       child: DropdownButtonHideUnderline(
         child: DropdownButton<String>(
           value: _selectedCategory,
+          dropdownColor: AppTheme.getCardBackground(context),
           isExpanded: true,
           icon: const Icon(Icons.arrow_drop_down),
           items: categories.map((category) {
@@ -273,11 +279,21 @@ class _SkillsManagementState extends State<SkillsManagement> {
 
   /// Desktop:  Table view
   Widget _buildSkillsTable(List<SkillModel> skills) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Container(
       decoration: BoxDecoration(
-        gradient: AppTheme.cardGradient,
+        color: AppTheme.getCardBackground(context),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppTheme.primaryColor.withAlpha(51)),
+        border: Border.all(color: AppTheme.getBorderColor(context)),
+        boxShadow: isDark
+            ? null
+            : [
+                BoxShadow(
+                  color: Colors.black.withAlpha(10),
+                  blurRadius: 10,
+                  offset: const Offset(0, 4),
+                ),
+              ],
       ),
       child: Column(
         children: [
@@ -285,7 +301,9 @@ class _SkillsManagementState extends State<SkillsManagement> {
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: AppTheme.primaryColor.withAlpha(25),
+              color: isDark
+                  ? AppTheme.surfaceColor.withAlpha(120)
+                  : const Color(0xFFF1F5F9),
               borderRadius: const BorderRadius.only(
                 topLeft: Radius.circular(16),
                 topRight: Radius.circular(16),
@@ -332,7 +350,9 @@ class _SkillsManagementState extends State<SkillsManagement> {
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         border: Border(
-          bottom: BorderSide(color: AppTheme.surfaceColor.withAlpha(76)),
+          bottom: BorderSide(
+            color: AppTheme.getBorderColor(context).withAlpha(100),
+          ),
         ),
       ),
       child: Row(
@@ -431,13 +451,23 @@ class _SkillsManagementState extends State<SkillsManagement> {
   }
 
   Widget _buildSkillCard(BuildContext context, SkillModel skill) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        gradient: AppTheme.cardGradient,
+        color: AppTheme.getCardBackground(context),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppTheme.primaryColor.withAlpha(51)),
+        border: Border.all(color: AppTheme.getBorderColor(context)),
+        boxShadow: isDark
+            ? null
+            : [
+                BoxShadow(
+                  color: Colors.black.withAlpha(8),
+                  blurRadius: 8,
+                  offset: const Offset(0, 2),
+                ),
+              ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -626,7 +656,7 @@ class _SkillsManagementState extends State<SkillsManagement> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: AppTheme.cardBackground,
+        backgroundColor: AppTheme.getCardBackground(context),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: Row(
           children: [

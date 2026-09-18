@@ -1,13 +1,19 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../config/theme.dart';
 import '../../models/project_model.dart';
+import '../../services/analytics/analytics_constants.dart';
+import '../../services/analytics/analytics_service.dart';
 
 class ProjectDetailsModal extends StatelessWidget {
   final ProjectModel project;
 
   const ProjectDetailsModal({super.key, required this.project});
+
+  String get _slug => project.title.toLowerCase().replaceAll(RegExp(r'[^a-z0-9]+'), '-');
 
   Future<void> _launchUrl(String url) async {
     final uri = Uri.tryParse(url);
@@ -23,6 +29,18 @@ class ProjectDetailsModal extends StatelessWidget {
   Widget build(BuildContext context) {
     final width = MediaQuery.sizeOf(context).width;
     final isMobile = width < 600;
+
+    final screenshots = project.screenshots.where((url) => url.trim().isNotEmpty).toList();
+    if (screenshots.isNotEmpty) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        AnalyticsService.instance.logProjectGalleryOpen(
+          projectId: project.id,
+          projectSlug: _slug,
+          imageCount: screenshots.length,
+          sourceSection: 'details_modal',
+        );
+      });
+    }
 
     return Dialog(
       backgroundColor: AppTheme.darkBackground,
@@ -130,6 +148,43 @@ class ProjectDetailsModal extends StatelessWidget {
             ),
           ),
           IconButton(
+            tooltip: 'Copy Project Link',
+            icon: const Icon(Icons.link, size: 20),
+            onPressed: () {
+              Clipboard.setData(ClipboardData(text: 'https://saidurs.me/#project-${project.id}'));
+              AnalyticsService.instance.logProjectCopyLink(
+                projectId: project.id,
+                projectSlug: _slug,
+              );
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('Project link copied to clipboard!'),
+                  duration: Duration(seconds: 2),
+                ),
+              );
+            },
+          ),
+          IconButton(
+            tooltip: 'Share Project',
+            icon: const Icon(Icons.share_outlined, size: 19),
+            onPressed: () {
+              AnalyticsService.instance.logProjectShare(
+                projectId: project.id,
+                projectSlug: _slug,
+                method: 'clipboard_share',
+              );
+              Clipboard.setData(ClipboardData(
+                text: 'Check out ${project.title}: https://saidurs.me/#project-${project.id}',
+              ));
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('Share link copied to clipboard!'),
+                  duration: Duration(seconds: 2),
+                ),
+              );
+            },
+          ),
+          IconButton(
             tooltip: 'Close',
             icon: const Icon(Icons.close),
             onPressed: () => Navigator.of(context).pop(),
@@ -154,15 +209,14 @@ class ProjectDetailsModal extends StatelessWidget {
 
     return ClipRRect(
       borderRadius: BorderRadius.circular(16),
-      child: Image.network(
-        project.imageUrl!,
+      child: CachedNetworkImage(
+        imageUrl: project.imageUrl!,
         width: double.infinity,
         height: 220,
         fit: BoxFit.cover,
-        loadingBuilder: (context, child, progress) => progress == null
-            ? child
-            : _imagePlaceholder(height: 220, label: 'Loading project image...'),
-        errorBuilder: (_, _, _) =>
+        placeholder: (context, url) =>
+            _imagePlaceholder(height: 220, label: 'Loading project image...'),
+        errorWidget: (context, url, error) =>
             _imagePlaceholder(height: 220, label: 'Project image unavailable'),
       ),
     );
@@ -249,16 +303,26 @@ class ProjectDetailsModal extends StatelessWidget {
                 mainAxisSpacing: 12,
                 childAspectRatio: columns == 1 ? 1.6 : 1.45,
               ),
-              itemBuilder: (context, index) => ClipRRect(
+              itemBuilder: (context, index) => InkWell(
+                onTap: () {
+                  AnalyticsService.instance.logProjectGalleryImageView(
+                    projectId: project.id,
+                    projectSlug: _slug,
+                    imageIndex: index,
+                    sourceSection: 'details_modal',
+                  );
+                },
                 borderRadius: BorderRadius.circular(12),
-                child: Image.network(
-                  images[index],
-                  fit: BoxFit.cover,
-                  loadingBuilder: (context, child, progress) => progress == null
-                      ? child
-                      : _imagePlaceholder(label: 'Loading screenshot...'),
-                  errorBuilder: (_, _, _) =>
-                      _imagePlaceholder(label: 'Screenshot unavailable'),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(12),
+                  child: CachedNetworkImage(
+                    imageUrl: images[index],
+                    fit: BoxFit.cover,
+                    placeholder: (context, url) =>
+                        _imagePlaceholder(label: 'Loading screenshot...'),
+                    errorWidget: (context, url, error) =>
+                        _imagePlaceholder(label: 'Screenshot unavailable'),
+                  ),
                 ),
               ),
             );
@@ -291,20 +355,31 @@ class ProjectDetailsModal extends StatelessWidget {
       runSpacing: 10,
       children: [
         if (_hasUrl(project.githubUrl))
-          _action(context, 'GitHub', Icons.code, project.githubUrl!),
+          _action(context, 'GitHub', Icons.code, project.githubUrl!, AnalyticsLinkTypes.github),
         if (_hasUrl(project.liveUrl))
-          _action(context, 'Live Demo', Icons.open_in_browser, project.liveUrl!),
+          _action(context, 'Live Demo', Icons.open_in_browser, project.liveUrl!, AnalyticsLinkTypes.liveDemo),
         if (_hasUrl(project.playStoreUrl))
-          _action(context, 'Google Play', Icons.shop, project.playStoreUrl!),
+          _action(context, 'Google Play', Icons.shop, project.playStoreUrl!, AnalyticsLinkTypes.googlePlay),
         if (_hasUrl(project.appStoreUrl))
-          _action(context, 'App Store', Icons.apple, project.appStoreUrl!),
+          _action(context, 'App Store', Icons.apple, project.appStoreUrl!, AnalyticsLinkTypes.appStore),
       ],
     );
   }
 
-  Widget _action(BuildContext context, String label, IconData icon, String url) {
+  Widget _action(BuildContext context, String label, IconData icon, String url, String linkType) {
     return ElevatedButton.icon(
-      onPressed: () => _launchUrl(url),
+      onPressed: () {
+        AnalyticsService.instance.logProjectLinkClick(
+          projectId: project.id,
+          linkType: linkType,
+          url: url,
+          projectTitle: project.title,
+          projectSlug: _slug,
+          category: project.category,
+          sourceSection: 'details_modal',
+        );
+        _launchUrl(url);
+      },
       icon: Icon(icon),
       label: Text(label),
     );

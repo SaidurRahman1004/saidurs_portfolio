@@ -27,6 +27,8 @@ linter:
 analyzer:
   errors:
     non_const_argument_for_const_parameter: ignore
+    deprecated_member_use: ignore
+    unnecessary_underscores: ignore
 
 # Additional information about this file can be found at
 # https://dart.dev/guides/language/analysis-options

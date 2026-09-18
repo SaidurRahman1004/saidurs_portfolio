@@ -88,5 +88,43 @@ void main() {
       expect(updated.email, 'new@test.com');
       expect(updated.updatedAt, now);
     });
+
+    test('fromFirestore and toFirestore handle dynamic profile and hero CMS fields', () {
+      final data = {
+        'email': 'saidur@example.com',
+        'phone': '+8801795664122',
+        'githubUrl': 'https://github.com/SaidurRahman1004',
+        'location': 'Dhaka, Bangladesh',
+        'whatsappNumber': '+8801795664122',
+        'fullName': 'Custom Name',
+        'title': 'Senior Flutter Engineer',
+        'tagline': 'High Performance Apps',
+        'heroDescription': 'Building mobile apps with 99.9% crash-free sessions',
+        'aboutMe': 'Passionate engineer with experience in Flutter and backend.',
+        'isOpenToWork': true,
+        'openToWorkText': 'Available for Freelance & Full-time',
+        'animatedRoles': ['Flutter Architect', 'Firebase Specialist'],
+        'educationFact': 'Dhaka Poly',
+        'locationFact': 'Dhaka',
+        'focusFact': 'Flutter & Cloud',
+        'goalFact': 'Lead Mobile Architect',
+      };
+
+      final contact = ContactModel.fromFirestore('info', data);
+
+      expect(contact.fullName, 'Custom Name');
+      expect(contact.title, 'Senior Flutter Engineer');
+      expect(contact.tagline, 'High Performance Apps');
+      expect(contact.isOpenToWork, isTrue);
+      expect(contact.openToWorkText, 'Available for Freelance & Full-time');
+      expect(contact.animatedRoles, ['Flutter Architect', 'Firebase Specialist']);
+      expect(contact.educationFact, 'Dhaka Poly');
+
+      final serialized = contact.toFirestore();
+      expect(serialized['fullName'], 'Custom Name');
+      expect(serialized['title'], 'Senior Flutter Engineer');
+      expect(serialized['isOpenToWork'], isTrue);
+      expect(serialized['animatedRoles'], ['Flutter Architect', 'Firebase Specialist']);
+    });
   });
 }

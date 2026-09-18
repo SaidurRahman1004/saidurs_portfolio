@@ -78,7 +78,7 @@ class SkillsSection extends StatelessWidget {
           .map(
             (cat) => Padding(
               padding: const EdgeInsets.only(bottom: 16),
-              child: _buildSkillCard(context,cat.key, cat.value),
+              child: _buildSkillCard(context, cat.key, cat.value),
             ),
           )
           .toList(),
@@ -96,7 +96,7 @@ class SkillsSection extends StatelessWidget {
         crossAxisCount: 2,
         crossAxisSpacing: 20,
         mainAxisSpacing: 20,
-         mainAxisExtent: 300,
+        mainAxisExtent: 280,
       ),
       itemCount: categories.length,
       itemBuilder: (context, index){
@@ -117,7 +117,7 @@ class SkillsSection extends StatelessWidget {
         crossAxisCount: 3,
         crossAxisSpacing: 24,
         mainAxisSpacing: 24,
-         mainAxisExtent: 300,
+        mainAxisExtent: 265,
       ),
       itemCount: categories.length,
       itemBuilder: (context, index) {
@@ -130,7 +130,6 @@ class SkillsSection extends StatelessWidget {
   Widget _buildSkillCard(BuildContext context, String categoryName, List<dynamic> skills) {
     final firstSkill = skills.first as SkillModel;
     final icon = MaterialIconMapper.fromCode(firstSkill.iconCode);
-    
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
@@ -149,7 +148,7 @@ class SkillsSection extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(10),
                 decoration: BoxDecoration(
-                  color: Theme.of(context).cardColor,
+                  color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.08),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Icon(
@@ -167,7 +166,7 @@ class SkillsSection extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(height: 24),
+          const SizedBox(height: 20),
           Wrap(
             spacing: 8,
             runSpacing: 8,
@@ -178,7 +177,7 @@ class SkillsSection extends StatelessWidget {
                   vertical: 6,
                 ),
                 decoration: BoxDecoration(
-                  color: Theme.of(context).cardColor,
+                  color: Theme.of(context).colorScheme.surfaceContainerHighest,
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: Text(
@@ -196,4 +195,3 @@ class SkillsSection extends StatelessWidget {
     );
   }
 }
-

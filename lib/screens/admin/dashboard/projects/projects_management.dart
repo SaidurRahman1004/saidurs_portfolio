@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:provider/provider.dart';
 import '../../../../config/theme.dart';
 import '../../../../models/project_model.dart';
@@ -210,10 +211,14 @@ class _ProjectsManagementState extends State<ProjectsManagement> {
               )
             : null,
         filled: true,
-        fillColor: AppTheme.cardBackground,
+        fillColor: AppTheme.getCardBackground(context),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide.none,
+          borderSide: BorderSide(color: AppTheme.getBorderColor(context)),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: AppTheme.getBorderColor(context)),
         ),
       ),
       onChanged: (value) {
@@ -238,7 +243,12 @@ class _ProjectsManagementState extends State<ProjectsManagement> {
                 _filterType = filter;
               });
             },
-            backgroundColor: AppTheme.cardBackground,
+            backgroundColor: AppTheme.getCardBackground(context),
+            side: BorderSide(
+              color: isSelected
+                  ? AppTheme.primaryColor
+                  : AppTheme.getBorderColor(context),
+            ),
             selectedColor: AppTheme.primaryColor.withAlpha(51),
             checkmarkColor: AppTheme.primaryColor,
           ),
@@ -271,20 +281,30 @@ class _ProjectsManagementState extends State<ProjectsManagement> {
   /// Project Card
   Widget _buildProjectCard(BuildContext context, ProjectModel project) {
     bool isMobile = ResponsiveWrapper.isMobile(context);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Container(
       constraints: BoxConstraints(
         minHeight: 400,
-        maxHeight: isMobile ? 500 : 450,
+        maxHeight: isMobile ? 520 : 470,
       ), // Desktop: no constraint
       decoration: BoxDecoration(
-        gradient: AppTheme.cardGradient,
+        color: AppTheme.getCardBackground(context),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
           color: project.isFeatured
-              ? AppTheme.primaryColor.withAlpha(127)
-              : AppTheme.primaryColor.withAlpha(51),
+              ? AppTheme.primaryColor
+              : AppTheme.getBorderColor(context),
           width: project.isFeatured ? 2 : 1,
         ),
+        boxShadow: isDark
+            ? null
+            : [
+                BoxShadow(
+                  color: Colors.black.withAlpha(10),
+                  blurRadius: 10,
+                  offset: const Offset(0, 4),
+                ),
+              ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -296,22 +316,20 @@ class _ProjectsManagementState extends State<ProjectsManagement> {
               borderRadius: const BorderRadius.vertical(
                 top: Radius.circular(16),
               ),
-              child: Image.network(
-                project.imageUrl!,
+              child: CachedNetworkImage(
+                imageUrl: project.imageUrl!,
                 height: 150,
                 width: double.infinity,
                 fit: BoxFit.cover,
-                errorBuilder: (context, error, stackTrace) {
-                  return Container(
-                    height: 150,
-                    color: AppTheme.surfaceColor,
-                    child: Icon(
-                      Icons.broken_image,
-                      size: 48,
-                      color: AppTheme.textHint,
-                    ),
-                  );
-                },
+                placeholder: (context, url) => const SizedBox(
+                  height: 150,
+                  child: Center(child: CircularProgressIndicator()),
+                ),
+                errorWidget: (context, url, error) => Container(
+                  height: 150,
+                  color: AppTheme.surfaceColor,
+                  child: const Icon(Icons.broken_image, size: 48),
+                ),
               ),
             )
           else
@@ -511,6 +529,7 @@ class _ProjectsManagementState extends State<ProjectsManagement> {
         crossAxisCount: crossAxisCount,
         crossAxisSpacing: 20,
         mainAxisSpacing: 20,
+        mainAxisExtent: 470,
       ),
       itemCount: projects.length,
       itemBuilder: (context, index) =>
@@ -630,7 +649,7 @@ class _ProjectsManagementState extends State<ProjectsManagement> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: AppTheme.cardBackground,
+        backgroundColor: AppTheme.getCardBackground(context),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: Row(
           children: [

@@ -13,9 +13,34 @@ import 'package:provider/provider.dart';
 import 'providers/admin_provider.dart';
 import 'config/env.dart';
 import 'package:flutter_web_plugins/url_strategy.dart';
+import 'package:flutter/foundation.dart';
+import 'services/analytics/analytics_service.dart';
+import 'services/crashlytics/crashlytics_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Configure Flutter framework error capture (widget render pipeline)
+  FlutterError.onError = (FlutterErrorDetails details) {
+    CrashlyticsService.instance.recordFlutterError(details, fatal: true);
+    FlutterError.presentError(details);
+  };
+
+  // Configure unhandled asynchronous platform error capture
+  PlatformDispatcher.instance.onError = (Object error, StackTrace stack) {
+    // Gracefully ignore Flutter Web CanvasKit context-loss hot-restart artifact
+    if (error.toString().contains('_handledContextLostEvent')) {
+      return true;
+    }
+    CrashlyticsService.instance.recordError(
+      error,
+      stack,
+      fatal: true,
+      reason: 'Unhandled asynchronous platform error',
+    );
+    return true;
+  };
+
   //Url Strategy Clean Url
   usePathUrlStrategy();
 
@@ -29,6 +54,10 @@ void main() async {
       options: DefaultFirebaseOptions.currentPlatform,
     );
     isFirebaseInitialized = true;
+    // Safely initialize Analytics without blocking startup or crashing on error
+    await AnalyticsService.instance.initialize();
+    // Safely initialize Crashlytics without blocking startup or crashing on error
+    await CrashlyticsService.instance.initialize();
   } catch (error) {
     debugPrint('Firebase init error: $error');
   }
@@ -43,6 +72,39 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (!isFirebaseInitialized) {
+      return MaterialApp(
+        title: 'Saidur - Portfolio',
+        debugShowCheckedModeBanner: false,
+        theme: AppTheme.darkTheme(),
+        home: Scaffold(
+          body: Center(
+            child: Padding(
+              padding: const EdgeInsets.all(24.0),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(Icons.cloud_off_rounded, size: 56, color: Colors.orange),
+                  const SizedBox(height: 16),
+                  const Text(
+                    'Unable to connect to cloud services.',
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 8),
+                  const Text(
+                    'Please check your internet connection and refresh the page.',
+                    textAlign: TextAlign.center,
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+
+    final observer = AnalyticsService.instance.navigatorObserver;
+
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(
@@ -65,6 +127,9 @@ class MyApp extends StatelessWidget {
               theme: AppTheme.lightTheme(),
               darkTheme: AppTheme.darkTheme(),
               themeMode: themeProvider.themeMode,
+              navigatorObservers: [
+                if (observer != null) observer,
+              ],
               initialRoute: '/',
               routes: {
                 '/': (context) => const HomeScreen(),

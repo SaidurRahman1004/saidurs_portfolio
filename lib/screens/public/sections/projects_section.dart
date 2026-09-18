@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:futter_portfileo_website/models/project_model.dart';
 import 'package:futter_portfileo_website/widgets/comon/section_title.dart';
 import '../../../config/theme.dart';
@@ -7,11 +8,20 @@ import 'package:provider/provider.dart';
 import '../../../providers/portfolio_provider.dart';
 import 'all_projects_page.dart';
 import 'package:url_launcher/url_launcher.dart';
+import '../../../services/analytics/analytics_constants.dart';
+import '../../../services/analytics/analytics_service.dart';
 
 import '../../../widgets/comon/project_details_modal.dart';
 
-class ProjectsSection extends StatelessWidget {
+class ProjectsSection extends StatefulWidget {
   const ProjectsSection({super.key});
+
+  @override
+  State<ProjectsSection> createState() => _ProjectsSectionState();
+}
+
+class _ProjectsSectionState extends State<ProjectsSection> {
+  final Set<String> _viewedProjectIds = {};
 
   @override
   Widget build(BuildContext context) {
@@ -136,6 +146,11 @@ class ProjectsSection extends StatelessWidget {
     return Center(
       child: OutlinedButton.icon(
         onPressed: () {
+          AnalyticsService.instance.logNavClick(
+            itemTitle: 'View All Projects',
+            destination: 'all_projects_page',
+            source: 'featured_projects',
+          );
           Navigator.push(
             context,
             MaterialPageRoute(builder: (context) => const AllProjectsPage()),
@@ -172,7 +187,7 @@ class ProjectsSection extends StatelessWidget {
       itemBuilder: (context, index) {
         return Padding(
           padding: const EdgeInsets.only(bottom: 20),
-          child: _buildProjectCard(context, projects[index]),
+          child: _buildProjectCard(context, projects[index], index),
         );
       },
     );
@@ -187,11 +202,11 @@ class ProjectsSection extends StatelessWidget {
         crossAxisCount: 2,
         crossAxisSpacing: 20,
         mainAxisSpacing: 20,
-        mainAxisExtent: 420,
+        mainAxisExtent: 470,
       ),
       itemCount: projects.length,
       itemBuilder: (context, index) =>
-          _buildProjectCard(context, projects[index]),
+          _buildProjectCard(context, projects[index], index),
     );
   }
 
@@ -204,17 +219,30 @@ class ProjectsSection extends StatelessWidget {
         crossAxisCount: 3,
         crossAxisSpacing: 24,
         mainAxisSpacing: 24,
-        mainAxisExtent: 420,
+        mainAxisExtent: 470,
       ),
       itemCount: projects.length,
       itemBuilder: (context, index) =>
-          _buildProjectCard(context, projects[index]),
+          _buildProjectCard(context, projects[index], index),
     );
   }
 
   // Projects Card
-  Widget _buildProjectCard(BuildContext context, ProjectModel project) {
+  Widget _buildProjectCard(BuildContext context, ProjectModel project, int position) {
     final isMobile = MediaQuery.of(context).size.width < 600;
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (_viewedProjectIds.add(project.id)) {
+        AnalyticsService.instance.logProjectCardView(
+          projectId: project.id,
+          projectTitle: project.name,
+          projectSlug: project.name.toLowerCase().replaceAll(RegExp(r'[^a-z0-9]+'), '-'),
+          category: project.category,
+          sourceSection: 'featured_projects',
+          position: position,
+        );
+      }
+    });
 
     return Container(
       decoration: BoxDecoration(
@@ -238,12 +266,16 @@ class ProjectsSection extends StatelessWidget {
                   borderRadius: const BorderRadius.vertical(
                     top: Radius.circular(20),
                   ),
-                  child: Image.network(
-                    project.imageUrl!,
+                  child: CachedNetworkImage(
+                    imageUrl: project.imageUrl!,
                     height: 150,
                     width: double.infinity,
                     fit: BoxFit.cover,
-                    errorBuilder: (context, error, stackTrace) =>
+                    placeholder: (context, url) => const SizedBox(
+                      height: 150,
+                      child: Center(child: CircularProgressIndicator()),
+                    ),
+                    errorWidget: (context, url, error) =>
                         _buildFallbackBanner(context, project),
                   ),
                 )
@@ -391,6 +423,14 @@ class ProjectsSection extends StatelessWidget {
                 Expanded(
                   child: ElevatedButton.icon(
                     onPressed: () {
+                      AnalyticsService.instance.logProjectDetailsOpen(
+                        projectId: project.id,
+                        projectTitle: project.name,
+                        projectSlug: project.name.toLowerCase().replaceAll(RegExp(r'[^a-z0-9]+'), '-'),
+                        category: project.category,
+                        sourceSection: 'featured_projects',
+                        position: position,
+                      );
                       showDialog(
                         context: context,
                         builder: (context) =>
@@ -409,10 +449,70 @@ class ProjectsSection extends StatelessWidget {
                     ),
                   ),
                 ),
-                if (project.githubUrl != null && project.githubUrl!.isNotEmpty) ...[
-                  const SizedBox(width: 8),
+                if (project.playStoreUrl != null && project.playStoreUrl!.isNotEmpty) ...[
+                  const SizedBox(width: 6),
                   IconButton(
-                    onPressed: () => _launchURL(project.githubUrl!),
+                    onPressed: () {
+                      AnalyticsService.instance.logProjectLinkClick(
+                        projectId: project.id,
+                        linkType: AnalyticsLinkTypes.googlePlay,
+                        url: project.playStoreUrl,
+                        projectTitle: project.name,
+                        projectSlug: project.name.toLowerCase().replaceAll(RegExp(r'[^a-z0-9]+'), '-'),
+                        category: project.category,
+                        sourceSection: 'featured_projects',
+                        position: position,
+                      );
+                      _launchURL(project.playStoreUrl!);
+                    },
+                    icon: const Icon(Icons.shop, size: 18),
+                    tooltip: 'Google Play Store',
+                    style: IconButton.styleFrom(
+                      backgroundColor: Theme.of(context).colorScheme.primary.withAlpha(40),
+                      foregroundColor: Theme.of(context).colorScheme.primary,
+                    ),
+                  ),
+                ],
+                if (project.appStoreUrl != null && project.appStoreUrl!.isNotEmpty) ...[
+                  const SizedBox(width: 6),
+                  IconButton(
+                    onPressed: () {
+                      AnalyticsService.instance.logProjectLinkClick(
+                        projectId: project.id,
+                        linkType: AnalyticsLinkTypes.appStore,
+                        url: project.appStoreUrl,
+                        projectTitle: project.name,
+                        projectSlug: project.name.toLowerCase().replaceAll(RegExp(r'[^a-z0-9]+'), '-'),
+                        category: project.category,
+                        sourceSection: 'featured_projects',
+                        position: position,
+                      );
+                      _launchURL(project.appStoreUrl!);
+                    },
+                    icon: const Icon(Icons.apple, size: 18),
+                    tooltip: 'Apple App Store',
+                    style: IconButton.styleFrom(
+                      backgroundColor: Theme.of(context).cardColor,
+                      foregroundColor: (Theme.of(context).textTheme.bodyLarge?.color ?? Colors.white),
+                    ),
+                  ),
+                ],
+                if (project.githubUrl != null && project.githubUrl!.isNotEmpty) ...[
+                  const SizedBox(width: 6),
+                  IconButton(
+                    onPressed: () {
+                      AnalyticsService.instance.logProjectLinkClick(
+                        projectId: project.id,
+                        linkType: AnalyticsLinkTypes.github,
+                        url: project.githubUrl,
+                        projectTitle: project.name,
+                        projectSlug: project.name.toLowerCase().replaceAll(RegExp(r'[^a-z0-9]+'), '-'),
+                        category: project.category,
+                        sourceSection: 'featured_projects',
+                        position: position,
+                      );
+                      _launchURL(project.githubUrl!);
+                    },
                     icon: const Icon(Icons.code, size: 18),
                     tooltip: 'GitHub Repository',
                     style: IconButton.styleFrom(
@@ -422,14 +522,26 @@ class ProjectsSection extends StatelessWidget {
                   ),
                 ],
                 if (project.liveUrl != null && project.liveUrl!.isNotEmpty) ...[
-                  const SizedBox(width: 8),
+                  const SizedBox(width: 6),
                   IconButton(
-                    onPressed: () => _launchURL(project.liveUrl!),
+                    onPressed: () {
+                      AnalyticsService.instance.logProjectLinkClick(
+                        projectId: project.id,
+                        linkType: AnalyticsLinkTypes.liveDemo,
+                        url: project.liveUrl,
+                        projectTitle: project.name,
+                        projectSlug: project.name.toLowerCase().replaceAll(RegExp(r'[^a-z0-9]+'), '-'),
+                        category: project.category,
+                        sourceSection: 'featured_projects',
+                        position: position,
+                      );
+                      _launchURL(project.liveUrl!);
+                    },
                     icon: const Icon(Icons.launch, size: 18),
                     tooltip: 'Live Demo',
                     style: IconButton.styleFrom(
-                      backgroundColor: Theme.of(context).colorScheme.primary.withAlpha(50),
-                      foregroundColor: Theme.of(context).colorScheme.primary,
+                      backgroundColor: Theme.of(context).colorScheme.secondary.withAlpha(40),
+                      foregroundColor: Theme.of(context).colorScheme.secondary,
                     ),
                   ),
                 ],
@@ -483,7 +595,3 @@ class ProjectsSection extends StatelessWidget {
     }
   }
 }
-
-
-
-

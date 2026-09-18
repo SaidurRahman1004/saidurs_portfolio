@@ -5,6 +5,7 @@ class EducationModel {
   final String degree;
   final String field;
   final String institution;
+  final String? institutionUrl;
   final String location;
   final DateTime startDate;
   final DateTime? endDate;
@@ -20,6 +21,7 @@ class EducationModel {
     required this.degree,
     this.field = '',
     required this.institution,
+    this.institutionUrl,
     required this.location,
     required this.startDate,
     this.endDate,
@@ -50,6 +52,7 @@ class EducationModel {
       degree: data['degree'] ?? '',
       field: data['field'] ?? '',
       institution: data['institution'] ?? '',
+      institutionUrl: data['institutionUrl'],
       location: data['location'] ?? '',
       startDate: parseDate(data['startDate']),
       endDate: parseOptionalDate(data['endDate']),
@@ -67,6 +70,7 @@ class EducationModel {
       'degree': degree,
       'field': field,
       'institution': institution,
+      'institutionUrl': institutionUrl,
       'location': location,
       'startDate': Timestamp.fromDate(startDate),
       'endDate': endDate != null ? Timestamp.fromDate(endDate!) : null,
@@ -84,6 +88,7 @@ class EducationModel {
     String? degree,
     String? field,
     String? institution,
+    String? institutionUrl,
     String? location,
     DateTime? startDate,
     DateTime? endDate,
@@ -99,6 +104,7 @@ class EducationModel {
       degree: degree ?? this.degree,
       field: field ?? this.field,
       institution: institution ?? this.institution,
+      institutionUrl: institutionUrl ?? this.institutionUrl,
       location: location ?? this.location,
       startDate: startDate ?? this.startDate,
       endDate: endDate ?? this.endDate,

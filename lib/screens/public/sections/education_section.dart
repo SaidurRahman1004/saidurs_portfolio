@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'package:intl/intl.dart';
+
+import '../../../models/education_model.dart';
 import '../../../providers/portfolio_provider.dart';
 import '../../../widgets/comon/responsive_wrapper.dart';
-import 'package:intl/intl.dart';
 
 class EducationSection extends StatelessWidget {
   const EducationSection({super.key});
@@ -19,7 +22,16 @@ class EducationSection extends StatelessWidget {
           children: [
             Text(
               'Education',
-              style: Theme.of(context).textTheme.headlineMedium,
+              style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+            ),
+            const SizedBox(height: 12),
+            Text(
+              'Academic qualifications and engineering foundations',
+              style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                    color: Theme.of(context).hintColor,
+                  ),
             ),
             const SizedBox(height: 40),
             Consumer<PortfolioProvider>(
@@ -31,7 +43,12 @@ class EducationSection extends StatelessWidget {
                 final educationList = provider.education;
 
                 if (educationList.isEmpty) {
-                  return const Text('No education details found.');
+                  return const Center(
+                    child: Padding(
+                      padding: EdgeInsets.all(40),
+                      child: Text('No education details found.'),
+                    ),
+                  );
                 }
 
                 return ListView.builder(
@@ -40,18 +57,7 @@ class EducationSection extends StatelessWidget {
                   itemCount: educationList.length,
                   itemBuilder: (context, index) {
                     final edu = educationList[index];
-                    final dateFormat = DateFormat('yyyy');
-                    final startStr = dateFormat.format(edu.startDate);
-                    final endStr = edu.endDate != null
-                        ? dateFormat.format(edu.endDate!)
-                        : 'Present';
-
-                    return _EducationCard(
-                      degree: edu.degree,
-                      institution: edu.institution,
-                      period: '$startStr – $endStr',
-                      description: edu.description,
-                    );
+                    return _EducationCard(education: edu);
                   },
                 );
               },
@@ -64,94 +70,197 @@ class EducationSection extends StatelessWidget {
 }
 
 class _EducationCard extends StatelessWidget {
-  final String degree;
-  final String institution;
-  final String period;
-  final String? description;
+  final EducationModel education;
 
-  const _EducationCard({
-    required this.degree,
-    required this.institution,
-    required this.period,
-    this.description,
-  });
+  const _EducationCard({required this.education});
+
+  Future<void> _launchUrl(String? url) async {
+    if (url == null || url.trim().isEmpty) return;
+    try {
+      final uri = Uri.parse(url);
+      if (await canLaunchUrl(uri)) {
+        await launchUrl(uri, mode: LaunchMode.externalApplication);
+      }
+    } catch (e) {
+      debugPrint('Error launching URL: $e');
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    final isMobile = MediaQuery.of(context).size.width < 600;
-    
+    final isMobile = MediaQuery.of(context).size.width < 650;
+    final dateFormat = DateFormat('yyyy');
+    final startStr = dateFormat.format(education.startDate);
+    final endStr = education.endDate != null
+        ? dateFormat.format(education.endDate!)
+        : (education.isCurrent ? 'Present' : '');
+    final periodStr = startStr == endStr || endStr.isEmpty ? startStr : '$startStr — $endStr';
+
     return Container(
       margin: const EdgeInsets.only(bottom: 24),
-      padding: const EdgeInsets.all(24),
+      padding: EdgeInsets.all(isMobile ? 20 : 26),
       decoration: BoxDecoration(
         color: Theme.of(context).cardColor,
-        borderRadius: BorderRadius.circular(12),
-        border: Border(
-          left: BorderSide(
-            color: Theme.of(context).colorScheme.secondary,
-            width: 4,
-          ),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: Theme.of(context).colorScheme.secondary.withAlpha(50),
         ),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Theme.of(context).colorScheme.secondary.withAlpha(25),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(
+                  Icons.school_rounded,
+                  color: Theme.of(context).colorScheme.secondary,
+                  size: 26,
+                ),
+              ),
+              const SizedBox(width: 16),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      degree,
+                      education.degree,
                       style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                        color: (Theme.of(context).textTheme.bodyLarge?.color ?? Colors.white),
-                        fontWeight: FontWeight.bold,
-                      ),
+                            fontWeight: FontWeight.bold,
+                            fontSize: isMobile ? 18 : 20,
+                          ),
                     ),
-                    const SizedBox(height: 4),
-                    Text(
-                      institution,
-                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        color: Theme.of(context).colorScheme.primary,
+                    const SizedBox(height: 6),
+                    InkWell(
+                      onTap: education.institutionUrl != null
+                          ? () => _launchUrl(education.institutionUrl)
+                          : null,
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Flexible(
+                            child: Text(
+                              education.institution,
+                              style: TextStyle(
+                                fontSize: 15,
+                                fontWeight: FontWeight.w600,
+                                color: Theme.of(context).colorScheme.primary,
+                                decoration: education.institutionUrl != null
+                                    ? TextDecoration.underline
+                                    : TextDecoration.none,
+                              ),
+                            ),
+                          ),
+                          if (education.institutionUrl != null) ...[
+                            const SizedBox(width: 4),
+                            Icon(
+                              Icons.open_in_new,
+                              size: 13,
+                              color: Theme.of(context).colorScheme.primary,
+                            ),
+                          ],
+                        ],
                       ),
                     ),
                   ],
                 ),
               ),
-              if (!isMobile)
-                Text(
-                  period,
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: Theme.of(context).hintColor,
-                    fontWeight: FontWeight.w600,
+              if (!isMobile) ...[
+                const SizedBox(width: 16),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).colorScheme.secondary.withAlpha(20),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Text(
+                    periodStr,
+                    style: TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                      color: Theme.of(context).colorScheme.secondary,
+                    ),
                   ),
                 ),
+              ],
             ],
           ),
+
           if (isMobile) ...[
             const SizedBox(height: 12),
-            Text(
-              period,
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: Theme.of(context).hintColor,
-                fontWeight: FontWeight.w600,
-              ),
+            Row(
+              children: [
+                Icon(Icons.calendar_today, size: 14, color: Theme.of(context).hintColor),
+                const SizedBox(width: 6),
+                Text(
+                  periodStr,
+                  style: TextStyle(
+                    fontSize: 13,
+                    color: Theme.of(context).hintColor,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ],
             ),
           ],
-          if (description != null && description!.isNotEmpty) ...[
-            const SizedBox(height: 12),
-            Text(
-              description!,
-              style: Theme.of(context).textTheme.bodyMedium,
+
+          if (education.field.isNotEmpty || education.location.isNotEmpty) ...[
+            const SizedBox(height: 10),
+            Wrap(
+              spacing: 12,
+              runSpacing: 6,
+              children: [
+                if (education.field.isNotEmpty)
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.category_outlined, size: 14, color: Theme.of(context).hintColor),
+                      const SizedBox(width: 4),
+                      Text(
+                        education.field,
+                        style: TextStyle(
+                          fontSize: 13,
+                          color: Theme.of(context).hintColor,
+                        ),
+                      ),
+                    ],
+                  ),
+                if (education.location.isNotEmpty)
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.location_on_outlined, size: 14, color: Theme.of(context).hintColor),
+                      const SizedBox(width: 4),
+                      Text(
+                        education.location,
+                        style: TextStyle(
+                          fontSize: 13,
+                          color: Theme.of(context).hintColor,
+                        ),
+                      ),
+                    ],
+                  ),
+              ],
             ),
-          ]
+          ],
+
+          if (education.description.isNotEmpty) ...[
+            const SizedBox(height: 14),
+            Text(
+              education.description,
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    height: 1.5,
+                  ),
+            ),
+          ],
         ],
       ),
     );
   }
 }
-
-

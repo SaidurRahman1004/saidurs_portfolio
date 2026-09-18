@@ -8,6 +8,7 @@ import '../../../widgets/comon/responsive_wrapper.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../../providers/portfolio_provider.dart';
+import '../../../services/analytics/analytics_service.dart';
 
 class HeroSection extends StatelessWidget {
   final VoidCallback onProjectClick;
@@ -35,12 +36,11 @@ class HeroSection extends StatelessWidget {
   }
 
   //_buildMobileLayout for mobile View
-
   Widget _buildMobileLayout(BuildContext context) {
     return Column(
       children: [
         _buildIllustration(context),
-        const SizedBox(width: 40),
+        const SizedBox(height: 40),
         _buildContent(context),
       ],
     );
@@ -57,32 +57,100 @@ class HeroSection extends StatelessWidget {
     );
   }
 
-  //Widget For Main HEro Content and Button
+  //Widget For Main Hero Content and Button
   Widget _buildContent(BuildContext context) {
     final txtTheme = Theme.of(context).textTheme;
+    final isMobile = ResponsiveWrapper.isMobile(context);
+    final provider = context.watch<PortfolioProvider>();
+    final contact = provider.contactInfo;
+
+    final displayName = contact?.fullName.isNotEmpty == true
+        ? contact!.fullName
+        : AppConstants.name;
+    final roles = (contact != null && contact.animatedRoles.isNotEmpty)
+        ? contact.animatedRoles
+        : [
+            'Junior Executive, Mobile App',
+            'Junior Flutter Developer',
+            'Production Mobile Engineer',
+          ];
+    final description = contact?.heroDescription.isNotEmpty == true
+        ? contact!.heroDescription
+        : AppConstants.heroDescription;
+    final isOpenToWork = contact?.isOpenToWork ?? true;
+    final openToWorkText = contact?.openToWorkText.isNotEmpty == true
+        ? contact!.openToWorkText
+        : 'Available for Opportunities';
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
+        if (isOpenToWork)
+          Container(
+            margin: const EdgeInsets.only(bottom: 20),
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
+            decoration: BoxDecoration(
+              color: Colors.green.withAlpha(25),
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(color: Colors.green.withAlpha(120)),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 8,
+                  height: 8,
+                  decoration: const BoxDecoration(
+                    color: Color(0xFF22C55E),
+                    shape: BoxShape.circle,
+                    boxShadow: [
+                      BoxShadow(
+                        color: Color(0xFF22C55E),
+                        blurRadius: 6,
+                        spreadRadius: 1,
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  openToWorkText,
+                  style: const TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                    color: Color(0xFF22C55E),
+                    letterSpacing: 0.3,
+                  ),
+                ),
+              ],
+            ),
+          ),
         Text(
           'Hi, I\'m',
           style: txtTheme.headlineMedium?.copyWith(
             color: (Theme.of(context).textTheme.bodyMedium?.color ?? Colors.grey),
+            fontSize: isMobile ? 22 : 28,
           ),
         ),
         const SizedBox(height: 8),
-        ShaderMask(
-          shaderCallback: (bounds) =>
-              AppTheme.getPrimaryGradient(context).createShader(bounds),
-          child: Text(
-            AppConstants.name,
-            style: txtTheme.displayLarge?.copyWith(
-              color: Colors.white,
-              fontSize: Responsive.value(
-                context: context,
-                mobile: 36,
-                tablet: 48,
-                desktop: 56,
+        FittedBox(
+          fit: BoxFit.scaleDown,
+          alignment: Alignment.centerLeft,
+          child: ShaderMask(
+            shaderCallback: (bounds) =>
+                AppTheme.getPrimaryGradient(context).createShader(bounds),
+            child: Text(
+              displayName,
+              style: txtTheme.displayLarge?.copyWith(
+                color: Colors.white,
+                fontWeight: FontWeight.w800,
+                fontSize: Responsive.value(
+                  context: context,
+                  mobile: 34,
+                  tablet: 46,
+                  desktop: 54,
+                ),
               ),
             ),
           ),
@@ -91,54 +159,56 @@ class HeroSection extends StatelessWidget {
         Wrap(
           crossAxisAlignment: WrapCrossAlignment.center,
           children: [
-            Text('A', style: txtTheme.headlineMedium),
-            const SizedBox(width: 8),
-            //Animated Textkit
+            Text(
+              'A ',
+              style: txtTheme.headlineMedium?.copyWith(
+                fontSize: isMobile ? 18 : 24,
+              ),
+            ),
             AnimatedTextKit(
+              key: ValueKey(roles.join('|')),
               repeatForever: true,
-              animatedTexts: [
-                TypewriterAnimatedText(
-                  'Flutter Developer',
+              animatedTexts: roles.asMap().entries.map((entry) {
+                final isOdd = entry.key % 2 == 1;
+                return TypewriterAnimatedText(
+                  entry.value,
                   textStyle: txtTheme.headlineMedium?.copyWith(
-                    color: Theme.of(context).colorScheme.primary,
+                    color: isOdd
+                        ? Theme.of(context).colorScheme.secondary
+                        : Theme.of(context).colorScheme.primary,
                     fontWeight: FontWeight.bold,
+                    fontSize: isMobile ? 18 : 24,
                   ),
                   speed: const Duration(milliseconds: 100),
-                ),
-                TypewriterAnimatedText(
-                  'Problem Solver',
-                  textStyle: txtTheme.headlineMedium?.copyWith(
-                    color: Theme.of(context).colorScheme.error,
-                    fontWeight: FontWeight.bold,
-                  ),
-                  speed: const Duration(milliseconds: 100),
-                ),
-                TypewriterAnimatedText(
-                  'Django Developer',
-                  textStyle: txtTheme.headlineMedium?.copyWith(
-                    color: Theme.of(context).colorScheme.secondary,
-                    fontWeight: FontWeight.bold,
-                  ),
-                  speed: const Duration(milliseconds: 100),
-                ),
-              ],
+                );
+              }).toList(),
             ),
           ],
         ),
-        //Description
+        const SizedBox(height: 16),
         Text(
-          AppConstants.heroDescription,
-          style: txtTheme.bodyLarge,
-          maxLines: 4,
+          description,
+          style: txtTheme.bodyLarge?.copyWith(
+            fontSize: isMobile ? 14 : 16,
+            height: 1.5,
+          ),
+          maxLines: 5,
         ),
-        const SizedBox(height: 40),
-        //Butons
+        const SizedBox(height: 36),
+        //Buttons
         Wrap(
-          spacing: 16,
-          runSpacing: 16,
+          spacing: 14,
+          runSpacing: 14,
           children: [
             GradientButton(
-              onPressed: onProjectClick,
+              onPressed: () {
+                AnalyticsService.instance.logCtaClick(
+                  itemTitle: 'View Project',
+                  destination: 'projects',
+                  source: 'hero_section',
+                );
+                onProjectClick();
+              },
               text: 'View Project',
               icon: Icons.work_outline,
             ),
@@ -146,7 +216,13 @@ class HeroSection extends StatelessWidget {
               text: 'Contact Me',
               icon: Icons.email_outlined,
               isOutlined: true,
-              onPressed: onContentClick,
+              onPressed: () {
+                AnalyticsService.instance.logContactCtaClick(
+                  source: 'hero',
+                  ctaLocation: 'hero_section',
+                );
+                onContentClick();
+              },
             ),
             //Resume Button
             Consumer<PortfolioProvider>(
@@ -158,7 +234,19 @@ class HeroSection extends StatelessWidget {
                   icon: Icons.description_outlined,
                   isOutlined: true,
                   onPressed: resumeUrl != null && resumeUrl.isNotEmpty
-                      ? () => _launchURL(resumeUrl)
+                      ? () {
+                          AnalyticsService.instance.logResumeView(
+                            source: 'hero',
+                            ctaLocation: 'hero_section',
+                            fileType: 'pdf',
+                          );
+                          AnalyticsService.instance.logResumeDownload(
+                            source: 'hero',
+                            ctaLocation: 'hero_section',
+                            fileType: 'pdf',
+                          );
+                          _launchURL(resumeUrl);
+                        }
                       : () {
                           ScaffoldMessenger.of(context).showSnackBar(
                             const SnackBar(
@@ -175,48 +263,58 @@ class HeroSection extends StatelessWidget {
     );
   }
 
-  //  Dynamic Hero Image from Firebase
-
+  // Dynamic Hero Image from Firebase
   Widget _buildIllustration(BuildContext context) {
     return Consumer<PortfolioProvider>(
       builder: (context, provider, child) {
         final firebaseUrl = provider.contactInfo?.heroImageUrl;
         final String finalImageUrl =
             (firebaseUrl != null && firebaseUrl.isNotEmpty)
-            ? firebaseUrl
-            : AppConstants.imgUrl2;
+                ? firebaseUrl
+                : AppConstants.imgUrl2;
 
         final bool isMobile = ResponsiveWrapper.isMobile(context);
 
-        return Center(
-          child: Stack(
-            alignment: Alignment.center,
-            children: [
-              //glowing
-              Container(
-                height: isMobile ? 300 : 420,
-                width: isMobile ? 320 : 550,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(40),
-                  border: Border.all(
-                    color: Theme.of(context).colorScheme.primary.withAlpha(25),
-                    width: 2,
-                  ),
-                  // Effect
-                  boxShadow: [
-                    BoxShadow(
-                      color: Theme.of(context).colorScheme.primary.withAlpha(20),
-                      blurRadius: 60,
-                      spreadRadius: 10,
-                    ),
-                  ],
-                ),
-              ),
+        return LayoutBuilder(
+          builder: (context, constraints) {
+            final maxW = constraints.maxWidth;
+            final double cardW = isMobile
+                ? (maxW * 0.94).clamp(240.0, 360.0)
+                : 500.0;
+            final double cardH = isMobile
+                ? (cardW * 0.85).clamp(220.0, 300.0)
+                : 380.0;
+            final double glowW = cardW + (isMobile ? 16 : 30);
+            final double glowH = cardH + (isMobile ? 16 : 40);
 
-              // Background
-              Container(
-                height: isMobile ? 280 : 380,
-                width: isMobile ? 300 : 520,
+            return Center(
+              child: Stack(
+                alignment: Alignment.center,
+                children: [
+                  // Glowing
+                  Container(
+                    height: glowH,
+                    width: glowW,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(40),
+                      border: Border.all(
+                        color: Theme.of(context).colorScheme.primary.withAlpha(25),
+                        width: 2,
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Theme.of(context).colorScheme.primary.withAlpha(20),
+                          blurRadius: 60,
+                          spreadRadius: 10,
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  // Background
+                  Container(
+                    height: cardH,
+                    width: cardW,
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(35),
                   color: Colors.white.withAlpha(7),
@@ -241,7 +339,6 @@ class HeroSection extends StatelessWidget {
                           ),
                         ),
                       ),
-
                       Center(
                         child: Padding(
                           padding: const EdgeInsets.all(20.0),
@@ -262,6 +359,8 @@ class HeroSection extends StatelessWidget {
               ),
             ],
           ),
+            );
+          },
         );
       },
     );
@@ -290,19 +389,17 @@ class HeroSection extends StatelessWidget {
     );
   }
 
-  //  Launch URL helper
+  // Launch URL helper
   Future<void> _launchURL(String url) async {
     try {
       final uri = Uri.parse(url);
       if (await canLaunchUrl(uri)) {
         await launchUrl(uri, mode: LaunchMode.externalApplication);
+      } else {
+        throw 'Could not launch $url';
       }
     } catch (e) {
       debugPrint('Error launching URL: $e');
     }
   }
 }
-
-
-
-

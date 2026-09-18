@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:futter_portfileo_website/widgets/comon/section_title.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -8,6 +9,7 @@ import '../../../widgets/comon/responsive_wrapper.dart';
 import '../../../providers/portfolio_provider.dart';
 import '../../../models/contact_model.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import '../../../services/analytics/analytics_service.dart';
 
 class ContactSection extends StatelessWidget {
   const ContactSection({super.key});
@@ -25,7 +27,7 @@ class ContactSection extends StatelessWidget {
           children: [
             SectionTitle(
               title: 'Get In Touch',
-              subtitle: "Have a project in mind? Let's collaborate!",
+              subtitle: "Have a project in mind or an opportunity? Let's talk!",
             ),
             const SizedBox(height: 60),
             Consumer<PortfolioProvider>(
@@ -95,7 +97,7 @@ class ContactSection extends StatelessWidget {
                     const SizedBox(height: 60),
                     _buildFooter(context),
                   ],
-                ); // data loaded success
+                );
               },
             ),
           ],
@@ -104,24 +106,39 @@ class ContactSection extends StatelessWidget {
     );
   }
 
-  //Contact Dektop laout
   Widget _buildDesktopLayout(BuildContext context, ContactModel contact) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Expanded(child: _buildContactInfo(context, contact)),
-        const SizedBox(width: 60),
-        Expanded(child: _buildSocialLinks(context, contact)),
+        Expanded(
+          flex: 5,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _buildContactInfo(context, contact),
+              const SizedBox(height: 32),
+              _buildSocialLinks(context, contact),
+            ],
+          ),
+        ),
+        const SizedBox(width: 48),
+        const Expanded(
+          flex: 6,
+          child: _DirectMessageForm(),
+        ),
       ],
     );
   }
 
   Widget _buildMobileLayout(BuildContext context, ContactModel contact) {
     return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         _buildContactInfo(context, contact),
-        const SizedBox(height: 40),
+        const SizedBox(height: 32),
         _buildSocialLinks(context, contact),
+        const SizedBox(height: 48),
+        const _DirectMessageForm(),
       ],
     );
   }
@@ -131,29 +148,64 @@ class ContactSection extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Contact Information',
-          style: Theme.of(context).textTheme.titleLarge,
+          'Direct Contact',
+          style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                fontWeight: FontWeight.bold,
+              ),
         ),
-        const SizedBox(height: 32),
+        const SizedBox(height: 8),
+        Text(
+          'Feel free to connect directly via email or WhatsApp',
+          style: TextStyle(
+            color: AppTheme.getTextHint(context),
+            fontSize: 14,
+          ),
+        ),
+        const SizedBox(height: 24),
         _buildContactItem(
           context,
           icon: Icons.email_outlined,
           title: 'Email',
           value: contact.email,
           onTap: () => _launchEmail(contact.email),
+          trailing: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              IconButton(
+                tooltip: 'Copy Email',
+                icon: const Icon(Icons.copy_rounded, size: 16),
+                color: Theme.of(context).colorScheme.primary,
+                onPressed: () {
+                  Clipboard.setData(ClipboardData(text: contact.email));
+                  AnalyticsService.instance.logCopyEmail(
+                    source: 'contact_section',
+                    ctaLocation: 'direct_contact_card',
+                  );
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Email address copied to clipboard!'),
+                      duration: Duration(seconds: 2),
+                    ),
+                  );
+                },
+              ),
+              Icon(
+                Icons.arrow_forward_ios_rounded,
+                size: 14,
+                color: Theme.of(context).colorScheme.primary,
+              ),
+            ],
+          ),
         ),
-        const SizedBox(height: 20),
-
+        const SizedBox(height: 16),
         _buildContactItem(
           context,
           icon: Icons.phone_outlined,
-          title: 'WhatsApp',
+          title: 'WhatsApp / Phone',
           value: contact.whatsappNumber,
           onTap: () => _launchWhatsApp(contact.whatsappNumber),
         ),
-
-        const SizedBox(height: 20),
-
+        const SizedBox(height: 16),
         _buildContactItem(
           context,
           icon: Icons.location_on_outlined,
@@ -170,46 +222,69 @@ class ContactSection extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Connect With Me',
-          style: Theme.of(context).textTheme.headlineMedium,
+          'Professional Profiles',
+          style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                fontWeight: FontWeight.bold,
+              ),
         ),
-
-        const SizedBox(height: 32),
+        const SizedBox(height: 20),
         _buildSocialButton(
           context,
-           icon: FaIcon(
-             FontAwesomeIcons.github,
-             color: Colors.white,
-           ),
-          label: 'GitHub',
+          icon: const FaIcon(
+            FontAwesomeIcons.github,
+            color: Colors.white,
+            size: 18,
+          ),
+          label: 'GitHub Profile',
           color: const Color(0xFF181717),
-          onTap: () => _launchURL(contact.githubUrl),
+          onTap: () {
+            AnalyticsService.instance.logGithubClick(
+              source: 'contact_section',
+              ctaLocation: 'social_profiles',
+            );
+            _launchURL(contact.githubUrl);
+          },
         ),
-
-        const SizedBox(height: 16),
-
+        const SizedBox(height: 12),
         _buildSocialButton(
           context,
-           icon: FaIcon(
-             FontAwesomeIcons.linkedin,
-             color: const Color(0xFF0A66C2),
-           ),
-          label: 'LinkedIn',
+          icon: const FaIcon(
+            FontAwesomeIcons.linkedin,
+            color: Color(0xFF0A66C2),
+            size: 18,
+          ),
+          label: 'LinkedIn Profile',
           color: const Color(0xFF0A66C2),
-          onTap: contact.linkedinUrl != null
-              ? () => _launchURL(contact.linkedinUrl!)
+          onTap: contact.linkedinUrl != null && contact.linkedinUrl!.isNotEmpty
+              ? () {
+                  AnalyticsService.instance.logLinkedinClick(
+                    source: 'contact_section',
+                    ctaLocation: 'social_profiles',
+                  );
+                  _launchURL(contact.linkedinUrl!);
+                }
               : null,
         ),
-
-        const SizedBox(height: 16),
-
+        const SizedBox(height: 12),
         _buildSocialButton(
           context,
-           icon: const Icon(Icons.picture_as_pdf),
-          label: 'Download Resume',
-          color: Theme.of(context).colorScheme.error,
-          onTap: contact.resumeUrl != null
-              ? () => _launchURL(contact.resumeUrl!)
+          icon: const Icon(Icons.description_outlined, size: 20),
+          label: 'View / Download CV',
+          color: Theme.of(context).colorScheme.primary,
+          onTap: contact.resumeUrl != null && contact.resumeUrl!.isNotEmpty
+              ? () {
+                  AnalyticsService.instance.logResumeView(
+                    source: 'contact',
+                    ctaLocation: 'social_profiles',
+                    fileType: 'pdf',
+                  );
+                  AnalyticsService.instance.logResumeDownload(
+                    source: 'contact',
+                    ctaLocation: 'social_profiles',
+                    fileType: 'pdf',
+                  );
+                  _launchURL(contact.resumeUrl!);
+                }
               : () {
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(content: Text('Resume not available yet')),
@@ -220,13 +295,13 @@ class ContactSection extends StatelessWidget {
     );
   }
 
-  //Contact Contents
   Widget _buildContactItem(
     BuildContext context, {
     required dynamic icon,
     required String title,
     required String value,
     VoidCallback? onTap,
+    Widget? trailing,
   }) {
     return InkWell(
       onTap: onTap,
@@ -234,9 +309,11 @@ class ContactSection extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          gradient: AppTheme.getCardGradient(context),
+          color: AppTheme.getCardBackground(context),
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: Theme.of(context).colorScheme.primary.withAlpha(51)),
+          border: Border.all(
+            color: AppTheme.getBorderColor(context),
+          ),
         ),
         child: Row(
           children: [
@@ -255,19 +332,27 @@ class ContactSection extends StatelessWidget {
                 children: [
                   Text(
                     title,
-                    style: Theme.of(
-                      context,
-                    ).textTheme.bodyMedium?.copyWith(color: Theme.of(context).hintColor),
+                    style: TextStyle(
+                      fontSize: 13,
+                      color: AppTheme.getTextHint(context),
+                    ),
                   ),
                   const SizedBox(height: 4),
-                  Text(value, style: Theme.of(context).textTheme.titleMedium),
+                  SelectableText(
+                    value,
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.w600,
+                        ),
+                  ),
                 ],
               ),
             ),
-            if (onTap != null)
+            if (trailing != null)
+              trailing
+            else if (onTap != null)
               Icon(
-                Icons.arrow_forward_ios,
-                size: 16,
+                Icons.arrow_forward_ios_rounded,
+                size: 14,
                 color: Theme.of(context).colorScheme.primary,
               ),
           ],
@@ -281,84 +366,67 @@ class ContactSection extends StatelessWidget {
     required Widget icon,
     required String label,
     required Color color,
-    required onTap,
+    required VoidCallback? onTap,
   }) {
-    final isDisabled = onTap == null; //Disible State HAndling
+    final isDisabled = onTap == null;
+    final isDark = AppTheme.isDark(context);
+
     return SizedBox(
       width: double.infinity,
-      child: ElevatedButton.icon(
+      child: OutlinedButton.icon(
         onPressed: onTap,
         icon: icon,
-        label: Row(
-          children: [
-            Text(
-              label,
-              style: TextStyle(
-                color: label == 'GitHub'
-                    ? (isDisabled ? Colors.grey : Colors.white)
-                    : null,
-              ),
-            ),
-            if (isDisabled) ...[
-              const SizedBox(width: 8),
-              Text(
-                '(Coming soon)',
-                style: Theme.of(
-                  context,
-                ).textTheme.bodySmall?.copyWith(color: Theme.of(context).hintColor),
-              ),
-            ],
-          ],
+        label: Text(
+          label,
+          style: TextStyle(
+            fontWeight: FontWeight.w600,
+            color: isDisabled
+                ? AppTheme.getTextHint(context)
+                : AppTheme.getTextPrimary(context),
+          ),
         ),
-        style: ElevatedButton.styleFrom(
-          backgroundColor: label == 'GitHub'
-              ? (isDisabled ? Colors.grey.shade800 : const Color(0xFF181717))
-              : color.withValues(alpha: isDisabled ? 0.05 : 0.1),
-          foregroundColor: label == 'GitHub'
-              ? Colors.white
-              : (isDisabled ? color.withAlpha(76) : color),
-          padding: const EdgeInsets.all(20),
-          alignment: Alignment.centerLeft,
+        style: OutlinedButton.styleFrom(
+          backgroundColor: isDark
+              ? const Color(0xFF1E293B)
+              : Colors.white,
           side: BorderSide(
-            color: label == 'GitHub'
-                ? Colors.grey.shade700
-                : color.withAlpha(76),
-            width: 1,
+            color: AppTheme.getBorderColor(context),
+          ),
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+          alignment: Alignment.centerLeft,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
           ),
         ),
       ),
     );
   }
 
-  //Footer Sections
   Widget _buildFooter(BuildContext context) {
     final currentYear = DateTime.now().year;
 
     return Column(
       children: [
-        Divider(color: Theme.of(context).cardColor, thickness: 1),
+        Divider(color: AppTheme.getBorderColor(context), thickness: 1),
         const SizedBox(height: 32),
-
-        // Main footer text
         Text(
-          '© $currentYear Saidur Rahman.  All rights reserved.',
-          style: Theme.of(
-            context,
-          ).textTheme.bodyMedium?.copyWith(color: (Theme.of(context).textTheme.bodyMedium?.color ?? Colors.grey)),
+          '© $currentYear Saidur Rahman. All rights reserved.',
+          style: TextStyle(
+            color: AppTheme.getTextSecondary(context),
+          ),
           textAlign: TextAlign.center,
         ),
-
         const SizedBox(height: 8),
-
-        // Tagline
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
+        Wrap(
+          alignment: WrapAlignment.center,
+          crossAxisAlignment: WrapCrossAlignment.center,
           children: [
             Text(
               'Crafted with ',
-              style: Theme.of(
-                context,
-              ).textTheme.bodySmall?.copyWith(color: Theme.of(context).hintColor),
+              style: TextStyle(
+                fontSize: 13,
+                color: AppTheme.getTextHint(context),
+              ),
             ),
             ShaderMask(
               shaderCallback: (bounds) =>
@@ -367,33 +435,34 @@ class ContactSection extends StatelessWidget {
             ),
             Text(
               ' using Flutter & Firebase',
-              style: Theme.of(
-                context,
-              ).textTheme.bodySmall?.copyWith(color: Theme.of(context).hintColor),
+              style: TextStyle(
+                fontSize: 13,
+                color: AppTheme.getTextHint(context),
+              ),
             ),
           ],
         ),
-
         const SizedBox(height: 8),
-
-        // Location
         Text(
           'Dhaka, Bangladesh',
-          style: Theme.of(
-            context,
-          ).textTheme.bodySmall?.copyWith(color: Theme.of(context).hintColor),
+          style: TextStyle(
+            fontSize: 13,
+            color: AppTheme.getTextHint(context),
+          ),
         ),
-
         const SizedBox(height: 24),
       ],
     );
   }
 
-  //Lanch Url
   void _launchEmail(String email) async {
+    AnalyticsService.instance.logEmailClick(
+      source: 'contact_section',
+      ctaLocation: 'direct_contact',
+    );
     final uri = Uri(
       scheme: 'mailto',
-      path: AppConstants.email,
+      path: email.isNotEmpty ? email : AppConstants.email,
       query: 'subject=Portfolio Inquiry',
     );
     if (await canLaunchUrl(uri)) {
@@ -402,20 +471,436 @@ class ContactSection extends StatelessWidget {
   }
 
   void _launchWhatsApp(String phone) async {
-    final uri = Uri.parse(
-      'https://wa.me/${AppConstants.phone.replaceAll('+', '')}',
+    AnalyticsService.instance.logWhatsappClick(
+      source: 'contact_section',
+      ctaLocation: 'direct_contact',
     );
+    AnalyticsService.instance.logPhoneClick(
+      source: 'contact_section',
+      ctaLocation: 'direct_contact',
+    );
+    final rawNumber = (phone.isNotEmpty ? phone : AppConstants.phone)
+        .replaceAll(RegExp(r'[^0-9]'), '');
+    final uri = Uri.parse('https://wa.me/$rawNumber');
     if (await canLaunchUrl(uri)) {
       await launchUrl(uri, mode: LaunchMode.externalApplication);
     }
   }
 
   void _launchURL(String url) async {
-    final uri = Uri.parse(url);
-    if (await canLaunchUrl(uri)) {
-      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    final uri = Uri.tryParse(url);
+    if (uri != null) {
+      if (uri.host.isNotEmpty) {
+        AnalyticsService.instance.logExternalLinkClick(
+          destinationDomain: uri.host,
+          source: 'contact_section',
+        );
+      }
+      if (await canLaunchUrl(uri)) {
+        await launchUrl(uri, mode: LaunchMode.externalApplication);
+      }
     }
   }
 }
 
+/// Interactive Direct Message Form
+class _DirectMessageForm extends StatefulWidget {
+  const _DirectMessageForm();
 
+  @override
+  State<_DirectMessageForm> createState() => _DirectMessageFormState();
+}
+
+class _DirectMessageFormState extends State<_DirectMessageForm> {
+  final _formKey = GlobalKey<FormState>();
+  final _nameController = TextEditingController();
+  final _emailController = TextEditingController();
+  final _phoneController = TextEditingController();
+  final _subjectController = TextEditingController();
+  final _messageController = TextEditingController();
+
+  String _selectedType = 'Job Opportunity';
+  bool _isSubmitting = false;
+  bool _isSuccess = false;
+  bool _formStarted = false;
+
+  final List<String> _projectTypes = [
+    'Job Opportunity',
+    'Mobile App Development',
+    'Full-Stack Project',
+    'Consultation / Other',
+  ];
+
+  @override
+  void initState() {
+    super.initState();
+    _nameController.addListener(_onFieldTouched);
+    _emailController.addListener(_onFieldTouched);
+    _subjectController.addListener(_onFieldTouched);
+    _messageController.addListener(_onFieldTouched);
+  }
+
+  void _onFieldTouched() {
+    if (!_formStarted) {
+      _formStarted = true;
+      AnalyticsService.instance.logContactFormStart(sourceSection: 'contact_section');
+    }
+  }
+
+  @override
+  void dispose() {
+    _nameController.removeListener(_onFieldTouched);
+    _emailController.removeListener(_onFieldTouched);
+    _subjectController.removeListener(_onFieldTouched);
+    _messageController.removeListener(_onFieldTouched);
+    _nameController.dispose();
+    _emailController.dispose();
+    _phoneController.dispose();
+    _subjectController.dispose();
+    _messageController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _submit() async {
+    if (!_formKey.currentState!.validate()) {
+      AnalyticsService.instance.logContactFormFailure(
+        projectType: _selectedType,
+        errorType: 'validation_error',
+      );
+      return;
+    }
+
+    AnalyticsService.instance.logContactFormSubmit(
+      projectType: _selectedType,
+      hasPhone: _phoneController.text.trim().isNotEmpty,
+    );
+
+    setState(() {
+      _isSubmitting = true;
+    });
+
+    final provider = context.read<PortfolioProvider>();
+    final success = await provider.submitInquiry(
+      name: _nameController.text.trim(),
+      email: _emailController.text.trim(),
+      phone: _phoneController.text.trim().isNotEmpty
+          ? _phoneController.text.trim()
+          : null,
+      subject: _subjectController.text.trim(),
+      message: _messageController.text.trim(),
+      projectType: _selectedType,
+    );
+
+    if (!mounted) return;
+
+    setState(() {
+      _isSubmitting = false;
+    });
+
+    if (success) {
+      AnalyticsService.instance.logContactFormSuccess(
+        projectType: _selectedType,
+      );
+      _formStarted = false;
+      setState(() {
+        _isSuccess = true;
+      });
+      _nameController.clear();
+      _emailController.clear();
+      _phoneController.clear();
+      _subjectController.clear();
+      _messageController.clear();
+    } else {
+      AnalyticsService.instance.logContactFormFailure(
+        projectType: _selectedType,
+        errorType: 'submission_error',
+      );
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Failed to send message. Please try WhatsApp or email.'),
+          backgroundColor: Colors.redAccent,
+        ),
+      );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = AppTheme.isDark(context);
+    final borderColor = AppTheme.getBorderColor(context);
+    final primary = AppTheme.getPrimaryColor(context);
+
+    return Container(
+      padding: const EdgeInsets.all(28),
+      decoration: BoxDecoration(
+        color: AppTheme.getCardBackground(context),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: borderColor),
+        boxShadow: [
+          BoxShadow(
+            color: isDark ? Colors.black.withAlpha(60) : Colors.black.withAlpha(15),
+            blurRadius: 20,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
+      child: _isSuccess ? _buildSuccessView(context) : _buildFormView(context, primary, borderColor),
+    );
+  }
+
+  Widget _buildSuccessView(BuildContext context) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Container(
+          width: 64,
+          height: 64,
+          decoration: BoxDecoration(
+            color: Colors.green.withAlpha(30),
+            shape: BoxShape.circle,
+          ),
+          child: const Icon(
+            Icons.check_circle_rounded,
+            color: Colors.green,
+            size: 38,
+          ),
+        ),
+        const SizedBox(height: 20),
+        Text(
+          'Message Received!',
+          style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                fontWeight: FontWeight.bold,
+              ),
+        ),
+        const SizedBox(height: 10),
+        Text(
+          'Thank you for reaching out. I have received your message and will get back to you shortly.',
+          style: TextStyle(
+            color: AppTheme.getTextSecondary(context),
+            fontSize: 15,
+            height: 1.5,
+          ),
+          textAlign: TextAlign.center,
+        ),
+        const SizedBox(height: 24),
+        OutlinedButton.icon(
+          onPressed: () {
+            setState(() {
+              _isSuccess = false;
+            });
+          },
+          icon: const Icon(Icons.refresh_rounded),
+          label: const Text('Send Another Message'),
+          style: OutlinedButton.styleFrom(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildFormView(BuildContext context, Color primary, Color borderColor) {
+    return Form(
+      key: _formKey,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  gradient: AppTheme.getPrimaryGradient(context).scale(0.3),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Icon(Icons.send_rounded, color: primary, size: 20),
+              ),
+              const SizedBox(width: 12),
+              Text(
+                'Send a Direct Message',
+                style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Recruiters & clients: Leave a note and I will get back to you within 24 hours.',
+            style: TextStyle(
+              fontSize: 13,
+              color: AppTheme.getTextHint(context),
+            ),
+          ),
+          const SizedBox(height: 24),
+
+          // Project/Inquiry Type Dropdown
+          Text(
+            'Inquiry Type',
+            style: TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.w600,
+              color: AppTheme.getTextPrimary(context),
+            ),
+          ),
+          const SizedBox(height: 8),
+          DropdownButtonFormField<String>(
+            initialValue: _selectedType,
+            decoration: _inputDecoration('Select Type', borderColor),
+            items: _projectTypes
+                .map((type) => DropdownMenuItem(value: type, child: Text(type)))
+                .toList(),
+            onChanged: (val) {
+              if (val != null) {
+                setState(() => _selectedType = val);
+              }
+            },
+          ),
+          const SizedBox(height: 16),
+
+          // Name and Email
+          LayoutBuilder(
+            builder: (context, constraints) {
+              if (constraints.maxWidth > 500) {
+                return Row(
+                  children: [
+                    Expanded(child: _buildNameField(borderColor)),
+                    const SizedBox(width: 16),
+                    Expanded(child: _buildEmailField(borderColor)),
+                  ],
+                );
+              }
+              return Column(
+                children: [
+                  _buildNameField(borderColor),
+                  const SizedBox(height: 16),
+                  _buildEmailField(borderColor),
+                ],
+              );
+            },
+          ),
+          const SizedBox(height: 16),
+
+          // Subject Field
+          TextFormField(
+            controller: _subjectController,
+            decoration: _inputDecoration('Subject / Opportunity Title', borderColor),
+            validator: (val) {
+              if (val == null || val.trim().isEmpty) return 'Subject is required';
+              return null;
+            },
+          ),
+          const SizedBox(height: 16),
+
+          // Message Field
+          TextFormField(
+            controller: _messageController,
+            maxLines: 4,
+            decoration: _inputDecoration('Your message or project scope...', borderColor),
+            validator: (val) {
+              if (val == null || val.trim().isEmpty) return 'Message cannot be empty';
+              if (val.trim().length < 10) return 'Please write at least 10 characters';
+              return null;
+            },
+          ),
+          const SizedBox(height: 24),
+
+          // Submit Button
+          SizedBox(
+            width: double.infinity,
+            height: 52,
+            child: ElevatedButton(
+              onPressed: _isSubmitting ? null : _submit,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: primary,
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                elevation: 4,
+              ),
+              child: _isSubmitting
+                  ? const SizedBox(
+                      width: 22,
+                      height: 22,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2.5,
+                        color: Colors.white,
+                      ),
+                    )
+                  : const Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.send_rounded, size: 18),
+                        SizedBox(width: 10),
+                        Text(
+                          'Send Message',
+                          style: TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildNameField(Color borderColor) {
+    return TextFormField(
+      controller: _nameController,
+      decoration: _inputDecoration('Your Name', borderColor),
+      validator: (val) {
+        if (val == null || val.trim().isEmpty) return 'Name is required';
+        return null;
+      },
+    );
+  }
+
+  Widget _buildEmailField(Color borderColor) {
+    return TextFormField(
+      controller: _emailController,
+      decoration: _inputDecoration('Email Address', borderColor),
+      keyboardType: TextInputType.emailAddress,
+      validator: (val) {
+        if (val == null || val.trim().isEmpty) return 'Email is required';
+        final emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
+        if (!emailRegex.hasMatch(val.trim())) return 'Enter a valid email';
+        return null;
+      },
+    );
+  }
+
+  InputDecoration _inputDecoration(String hint, Color borderColor) {
+    return InputDecoration(
+      hintText: hint,
+      hintStyle: TextStyle(fontSize: 14, color: AppTheme.getTextHint(context)),
+      filled: true,
+      fillColor: AppTheme.isDark(context)
+          ? const Color(0xFF0F172A).withAlpha(120)
+          : const Color(0xFFF1F5F9),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: BorderSide(color: borderColor),
+      ),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: BorderSide(color: borderColor),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: BorderSide(
+          color: AppTheme.getPrimaryColor(context),
+          width: 1.5,
+        ),
+      ),
+    );
+  }
+}
