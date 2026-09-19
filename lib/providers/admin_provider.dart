@@ -2,15 +2,25 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../services/auth_service.dart';
 import '../services/security/audit_service.dart';
+import '../services/biometric_service.dart';
+import '../services/secure_storage_service.dart';
 
 class AdminProvider extends ChangeNotifier {
   final AuthService _authService = AuthService.instance;
+  final BiometricService _biometricService = BiometricService.instance;
+  final SecureStorageService _secureStorage = SecureStorageService.instance;
 
   // Current logged in User
   User? _currentUser;
 
   bool _isCheckingAdmin = true;
   bool _isAdmin = false;
+
+  bool _biometricAvailable = false;
+  bool _biometricEnabled = false;
+
+  bool get biometricAvailable => _biometricAvailable;
+  bool get biometricEnabled => _biometricEnabled;
 
   User? get currentUser => _currentUser;
 
@@ -35,6 +45,7 @@ class AdminProvider extends ChangeNotifier {
   // Check auth state when provider created
   AdminProvider() {
     _initializeAuthListener();
+    checkBiometricStatus();
   }
 
   // Listen Auth State Changes
@@ -202,6 +213,75 @@ class AdminProvider extends ChangeNotifier {
       return parts[0][0].toUpperCase();
     }
     return 'AD';
+  }
+
+  /// Biometric Authentication Methods
+  Future<void> checkBiometricStatus() async {
+    try {
+      _biometricAvailable = await _biometricService.canAuthenticate();
+      _biometricEnabled = await _secureStorage.isBiometricEnabled();
+      notifyListeners();
+    } catch (e) {
+      debugPrint('Error in checkBiometricStatus: $e');
+    }
+  }
+
+  Future<bool> loginWithBiometrics() async {
+    try {
+      _setLoading(true);
+      _clearMassege();
+
+      final creds = await _secureStorage.getSavedCredentials();
+      if (creds == null) {
+        _errorMessage = 'No saved biometric credentials found. Please login with password first.';
+        _setLoading(false);
+        return false;
+      }
+
+      final didAuth = await _biometricService.authenticate(
+        reason: 'Scan your fingerprint to access Saidur Admin Dashboard',
+      );
+
+      if (!didAuth) {
+        _errorMessage = 'Biometric authentication cancelled or failed.';
+        _setLoading(false);
+        return false;
+      }
+
+      return await login(email: creds['email']!, password: creds['password']!);
+    } catch (e) {
+      _setLoading(false);
+      _errorMessage = 'Biometric login error: $e';
+      return false;
+    }
+  }
+
+  Future<bool> enableBiometricLogin({required String password}) async {
+    if (_currentUser?.email == null) return false;
+    try {
+      await _secureStorage.saveCredentials(
+        email: _currentUser!.email!,
+        password: password,
+      );
+      await _secureStorage.setBiometricEnabled(true);
+      _biometricEnabled = true;
+      notifyListeners();
+      return true;
+    } catch (e) {
+      debugPrint('Failed to enable biometrics: $e');
+      return false;
+    }
+  }
+
+  Future<void> disableBiometricLogin() async {
+    try {
+      await _secureStorage.clearCredentials();
+      await _secureStorage.setBiometricEnabled(false);
+      _biometricEnabled = false;
+      notifyListeners();
+    } catch (e) {
+      debugPrint('Failed to disable biometrics: $e');
+    }
   }
 
   /// Helper Methods

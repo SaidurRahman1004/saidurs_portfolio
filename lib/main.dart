@@ -17,6 +17,9 @@ import 'package:flutter_web_plugins/url_strategy.dart';
 import 'package:flutter/foundation.dart';
 import 'services/analytics/analytics_service.dart';
 import 'services/crashlytics/crashlytics_service.dart';
+import 'screens/mobile_admin/splash/mobile_splash_screen.dart';
+import 'screens/mobile_admin/auth/mobile_login_screen.dart';
+import 'screens/mobile_admin/layout/mobile_admin_shell.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -42,8 +45,10 @@ void main() async {
     return true;
   };
 
-  //Url Strategy Clean Url
-  usePathUrlStrategy();
+  //Url Strategy Clean Url (Web only)
+  if (kIsWeb) {
+    usePathUrlStrategy();
+  }
 
   //Env
   Env.validateConfig();
@@ -122,7 +127,7 @@ class MyApp extends StatelessWidget {
         child: Consumer<ThemeProvider>(
           builder: (context, themeProvider, child) {
             return MaterialApp(
-              title: 'Saidur- Flutter Developer',
+              title: kIsWeb ? 'Saidur - Flutter Developer' : 'Saidur Admin',
               debugShowCheckedModeBanner: false,
               theme: AppTheme.lightTheme(),
               darkTheme: AppTheme.darkTheme(),
@@ -130,15 +135,19 @@ class MyApp extends StatelessWidget {
               navigatorObservers: [
                 if (observer != null) observer,
               ],
-              initialRoute: '/',
+              home: kIsWeb ? null : const MobileSplashScreen(),
+              initialRoute: kIsWeb ? '/' : null,
               routes: {
-                '/': (context) => const HomeScreen(),
+                '/': (context) => kIsWeb ? const HomeScreen() : const MobileSplashScreen(),
                 '/admin/login': (context) => const LoginScreen(),
                 '/admin': (context) => const AuthGuard(child: AdminLayout()),
-                // Protected by AuthGuard
+                '/mobile/login': (context) => const MobileLoginScreen(),
+                '/mobile/dashboard': (context) => const MobileAdminShell(),
               },
               onUnknownRoute: (settings) {
-                return MaterialPageRoute(builder: (_) => const HomeScreen());
+                return MaterialPageRoute(
+                  builder: (_) => kIsWeb ? const HomeScreen() : const MobileSplashScreen(),
+                );
               },
             );
           },
