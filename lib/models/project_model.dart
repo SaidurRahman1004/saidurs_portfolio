@@ -1,101 +1,197 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-class ProjectModel{
+
+class ProjectModel {
   final String id;
-  final String name;
-  final String description;
-  final List<String> techStack;   // which fetuers use
-  final String githubUrl;
-  final String?  liveUrl;          // Optional
-  final String? imageUrl;         // Optional
-  final bool isFeatured;          // Featured = homepage এ highlight
+  final String title;
+  final String slug;
+  final String shortDescription;
+  final String fullDescription;
+  final String? role;
+  final List<String> technologies;
+  final List<String> keyFeatures;
+  final String? challenges;
+  final String? category;
+  final bool featured;
+  final String? status;
+  final String? imageUrl;
+  final List<String> screenshots;
+  final String? githubUrl;
+  final String? liveUrl;
+  final String? playStoreUrl;
+  final String? appStoreUrl;
+  final int sortOrder;
   final bool isVisible;
-  final int order;
   final DateTime createdAt;
+  final DateTime? updatedAt;
+
+  // Legacy Getters to not break existing UI
+  String get name => title;
+  String get description => fullDescription;
+  List<String> get techStack => technologies;
+  bool get isFeatured => featured;
+  int get order => sortOrder;
+
   ProjectModel({
     required this.id,
-    required this.name,
-    required this.description,
-    required this. techStack,
-    required this. githubUrl,
-    this. liveUrl,
-    this. imageUrl,
-    this.isFeatured = false,
+    String? title,
+    String? name,
+    this.slug = '',
+    this.shortDescription = '',
+    String? fullDescription,
+    String? description,
+    this.role,
+    List<String>? technologies,
+    List<String>? techStack,
+    this.keyFeatures = const [],
+    this.challenges,
+    this.category,
+    bool? featured,
+    bool? isFeatured,
+    this.status,
+    this.imageUrl,
+    this.screenshots = const [],
+    this.githubUrl,
+    this.liveUrl,
+    this.playStoreUrl,
+    this.appStoreUrl,
+    int? sortOrder,
+    int? order,
     this.isVisible = true,
-    this.order = 0,
     required this.createdAt,
-  });
+    this.updatedAt,
+  }) : 
+    title = title ?? name ?? '',
+    fullDescription = fullDescription ?? description ?? '',
+    technologies = technologies ?? techStack ?? [],
+    featured = featured ?? isFeatured ?? false,
+    sortOrder = sortOrder ?? order ?? 0;
 
-  ////json to dart model Map<String, dynamic> formet,Receved Data from Firebase
-  factory ProjectModel.fromFirestore(String id, Map<String, dynamic> data){
-    //Dynamic Logics for CreatedAt
-
+  factory ProjectModel.fromFirestore(String id, Map<String, dynamic> data) {
     DateTime parsedDate;
     if (data['createdAt'] is Timestamp) {
       parsedDate = (data['createdAt'] as Timestamp).toDate();
     } else if (data['createdAt'] is String) {
-      parsedDate = DateTime.parse(data['createdAt']);
+      parsedDate = DateTime.tryParse(data['createdAt']) ?? DateTime.now();
     } else {
       parsedDate = DateTime.now();
     }
 
+    DateTime? parsedUpdateDate;
+    if (data['updatedAt'] is Timestamp) {
+      parsedUpdateDate = (data['updatedAt'] as Timestamp).toDate();
+    } else if (data['updatedAt'] is String) {
+      parsedUpdateDate = DateTime.tryParse(data['updatedAt']);
+    }
+
     return ProjectModel(
       id: id,
-      name: data['name'] ??  '',
-      description: data['description'] ?? '',
-      techStack: List<String>.from(data['techStack'] ?? []),
-
-      githubUrl: data['githubUrl'] ?? '',
-      liveUrl: data['liveUrl'],  // Nullable,no default value
+      title: data['title'] ?? data['name'] ?? '',
+      slug: data['slug'] ?? '',
+      shortDescription: data['shortDescription'] ?? '',
+      fullDescription: data['fullDescription'] ?? data['description'] ?? '',
+      role: data['role'],
+      technologies: List<String>.from(data['technologies'] ?? data['techStack'] ?? []),
+      keyFeatures: List<String>.from(data['keyFeatures'] ?? []),
+      challenges: data['challenges'],
+      category: data['category'],
+      featured: data['featured'] ?? data['isFeatured'] ?? false,
+      status: data['status'],
       imageUrl: data['imageUrl'],
-      isFeatured: data['isFeatured'] ?? false,
-      isVisible:  data['isVisible'] ?? true,
-      order: data['order'] ?? 0,
-
+      screenshots: List<String>.from(data['screenshots'] ?? []),
+      githubUrl: data['githubUrl'],
+      liveUrl: data['liveUrl'],
+      playStoreUrl: data['playStoreUrl'],
+      appStoreUrl: data['appStoreUrl'],
+      sortOrder: data['sortOrder'] ?? data['order'] ?? 0,
+      isVisible: data['isVisible'] ?? true,
       createdAt: parsedDate,
+      updatedAt: parsedUpdateDate,
     );
   }
-//dart to json Sent Data to Firebase //admin panel modification functions
+
   Map<String, dynamic> toFirestore() {
     return {
-      'name': name,
-      'description': description,
-      'techStack': techStack,  // Save list Directly
-      'githubUrl':  githubUrl,
-      'liveUrl': liveUrl,
+      'title': title,
+      'name': title, // Keeping legacy for DB compatibility if needed
+      'slug': slug,
+      'shortDescription': shortDescription,
+      'fullDescription': fullDescription,
+      'description': fullDescription, // Keeping legacy
+      'role': role,
+      'technologies': technologies,
+      'techStack': technologies, // Keeping legacy
+      'keyFeatures': keyFeatures,
+      'challenges': challenges,
+      'category': category,
+      'featured': featured,
+      'isFeatured': featured, // Keeping legacy
+      'status': status,
       'imageUrl': imageUrl,
-      'isFeatured':  isFeatured,
+      'screenshots': screenshots,
+      'githubUrl': githubUrl,
+      'liveUrl': liveUrl,
+      'playStoreUrl': playStoreUrl,
+      'appStoreUrl': appStoreUrl,
+      'sortOrder': sortOrder,
+      'order': sortOrder, // Keeping legacy
       'isVisible': isVisible,
-      'order': order,
-      'createdAt': createdAt. toIso8601String(),  // convert DateTime to String
-      'updatedAt': DateTime.now().toIso8601String(),
+      'createdAt': Timestamp.fromDate(createdAt),
+      'updatedAt': FieldValue.serverTimestamp(),
     };
   }
-//change Some feild by copying object ,immutable pattern ,use it state management,visibility changes
+
   ProjectModel copyWith({
     String? id,
-    String?  name,
-    String? description,
-    List<String>? techStack,
+    String? title,
+    String? name, // Support old copyWith calls
+    String? slug,
+    String? shortDescription,
+    String? fullDescription,
+    String? description, // Support old copyWith calls
+    String? role,
+    List<String>? technologies,
+    List<String>? techStack, // Support old copyWith calls
+    List<String>? keyFeatures,
+    String? challenges,
+    String? category,
+    bool? featured,
+    bool? isFeatured, // Support old copyWith calls
+    String? status,
+    String? imageUrl,
+    List<String>? screenshots,
     String? githubUrl,
     String? liveUrl,
-    String? imageUrl,
-    bool? isFeatured,
+    String? playStoreUrl,
+    String? appStoreUrl,
+    int? sortOrder,
+    int? order, // Support old copyWith calls
     bool? isVisible,
-    int? order,
     DateTime? createdAt,
+    DateTime? updatedAt,
   }) {
     return ProjectModel(
       id: id ?? this.id,
-      name: name ?? this.name,
-      description: description ?? this.description,
-      techStack: techStack ?? this.techStack,
-      githubUrl: githubUrl ?? this. githubUrl,
-      liveUrl: liveUrl ?? this. liveUrl,
+      title: title ?? name ?? this.title,
+      slug: slug ?? this.slug,
+      shortDescription: shortDescription ?? this.shortDescription,
+      fullDescription: fullDescription ?? description ?? this.fullDescription,
+      role: role ?? this.role,
+      technologies: technologies ?? techStack ?? this.technologies,
+      keyFeatures: keyFeatures ?? this.keyFeatures,
+      challenges: challenges ?? this.challenges,
+      category: category ?? this.category,
+      featured: featured ?? isFeatured ?? this.featured,
+      status: status ?? this.status,
       imageUrl: imageUrl ?? this.imageUrl,
-      isFeatured:  isFeatured ?? this.isFeatured,
+      screenshots: screenshots ?? this.screenshots,
+      githubUrl: githubUrl ?? this.githubUrl,
+      liveUrl: liveUrl ?? this.liveUrl,
+      playStoreUrl: playStoreUrl ?? this.playStoreUrl,
+      appStoreUrl: appStoreUrl ?? this.appStoreUrl,
+      sortOrder: sortOrder ?? order ?? this.sortOrder,
       isVisible: isVisible ?? this.isVisible,
-      order: order ?? this.order,
       createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
     );
   }
 }

@@ -5,7 +5,7 @@ import '../../../../providers/admin_provider.dart';
 import '../../../../widgets/comon/responsive_wrapper.dart';
 
 class AdminSettings extends StatelessWidget {
-  const AdminSettings({Key? key}) : super(key: key);
+  const AdminSettings({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -53,12 +53,22 @@ class AdminSettings extends StatelessWidget {
   Widget _buildAccountInfo(BuildContext context) {
     return Consumer<AdminProvider>(
       builder: (context, adminProvider, child) {
+        final isDark = Theme.of(context).brightness == Brightness.dark;
         return Container(
           padding: const EdgeInsets.all(24),
           decoration: BoxDecoration(
-            gradient: AppTheme.cardGradient,
+            color: AppTheme.getCardBackground(context),
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: AppTheme.primaryColor.withOpacity(0.2)),
+            border: Border.all(color: AppTheme.getBorderColor(context)),
+            boxShadow: isDark
+                ? null
+                : [
+                    BoxShadow(
+                      color: Colors.black.withAlpha(10),
+                      blurRadius: 10,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -136,12 +146,22 @@ class AdminSettings extends StatelessWidget {
   }
 
   Widget _buildSecuritySection(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        gradient: AppTheme.cardGradient,
+        color: AppTheme.getCardBackground(context),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppTheme.primaryColor.withOpacity(0.2)),
+        border: Border.all(color: AppTheme.getBorderColor(context)),
+        boxShadow: isDark
+            ? null
+            : [
+                BoxShadow(
+                  color: Colors.black.withAlpha(10),
+                  blurRadius: 10,
+                  offset: const Offset(0, 4),
+                ),
+              ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -168,12 +188,22 @@ class AdminSettings extends StatelessWidget {
   }
 
   Widget _buildAboutSection(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        gradient: AppTheme.cardGradient,
+        color: AppTheme.getCardBackground(context),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppTheme.primaryColor.withOpacity(0.2)),
+        border: Border.all(color: AppTheme.getBorderColor(context)),
+        boxShadow: isDark
+            ? null
+            : [
+                BoxShadow(
+                  color: Colors.black.withAlpha(10),
+                  blurRadius: 10,
+                  offset: const Offset(0, 4),
+                ),
+              ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -207,7 +237,7 @@ class AdminSettings extends StatelessWidget {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: AppTheme.cardBackground,
+        backgroundColor: AppTheme.getCardBackground(context),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: const Text('Change Password'),
         content: Column(

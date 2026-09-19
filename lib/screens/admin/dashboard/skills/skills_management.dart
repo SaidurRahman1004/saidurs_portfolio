@@ -4,6 +4,7 @@ import '../../../../config/theme.dart';
 import '../../../../providers/portfolio_provider.dart';
 import '../../../../models/skill_model.dart';
 import '../../../../widgets/comon/responsive_wrapper.dart';
+import '../../../../widgets/comon/material_icon_mapper.dart';
 import 'add_skill_dialog.dart';
 import 'edit_skill_dialog.dart';
 
@@ -222,10 +223,14 @@ class _SkillsManagementState extends State<SkillsManagement> {
               )
             : null,
         filled: true,
-        fillColor: AppTheme.cardBackground,
+        fillColor: AppTheme.getCardBackground(context),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide.none,
+          borderSide: BorderSide(color: AppTheme.getBorderColor(context)),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: AppTheme.getBorderColor(context)),
         ),
       ),
       onChanged: (value) {
@@ -241,12 +246,14 @@ class _SkillsManagementState extends State<SkillsManagement> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       decoration: BoxDecoration(
-        color: AppTheme.cardBackground,
+        color: AppTheme.getCardBackground(context),
         borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppTheme.getBorderColor(context)),
       ),
       child: DropdownButtonHideUnderline(
         child: DropdownButton<String>(
           value: _selectedCategory,
+          dropdownColor: AppTheme.getCardBackground(context),
           isExpanded: true,
           icon: const Icon(Icons.arrow_drop_down),
           items: categories.map((category) {
@@ -272,11 +279,21 @@ class _SkillsManagementState extends State<SkillsManagement> {
 
   /// Desktop:  Table view
   Widget _buildSkillsTable(List<SkillModel> skills) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Container(
       decoration: BoxDecoration(
-        gradient: AppTheme.cardGradient,
+        color: AppTheme.getCardBackground(context),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppTheme.primaryColor.withOpacity(0.2)),
+        border: Border.all(color: AppTheme.getBorderColor(context)),
+        boxShadow: isDark
+            ? null
+            : [
+                BoxShadow(
+                  color: Colors.black.withAlpha(10),
+                  blurRadius: 10,
+                  offset: const Offset(0, 4),
+                ),
+              ],
       ),
       child: Column(
         children: [
@@ -284,7 +301,9 @@ class _SkillsManagementState extends State<SkillsManagement> {
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: AppTheme.primaryColor.withOpacity(0.1),
+              color: isDark
+                  ? AppTheme.surfaceColor.withAlpha(120)
+                  : const Color(0xFFF1F5F9),
               borderRadius: const BorderRadius.only(
                 topLeft: Radius.circular(16),
                 topRight: Radius.circular(16),
@@ -331,7 +350,9 @@ class _SkillsManagementState extends State<SkillsManagement> {
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         border: Border(
-          bottom: BorderSide(color: AppTheme.surfaceColor.withOpacity(0.3)),
+          bottom: BorderSide(
+            color: AppTheme.getBorderColor(context).withAlpha(100),
+          ),
         ),
       ),
       child: Row(
@@ -341,11 +362,11 @@ class _SkillsManagementState extends State<SkillsManagement> {
             width: 40,
             height: 40,
             decoration: BoxDecoration(
-              color: AppTheme.primaryColor.withOpacity(0.1),
+              color: AppTheme.primaryColor.withAlpha(25),
               borderRadius: BorderRadius.circular(8),
             ),
             child: Icon(
-              IconData(skill.iconCode, fontFamily: 'MaterialIcons'),
+              MaterialIconMapper.fromCode(skill.iconCode),
               color: AppTheme.primaryColor,
               size: 20,
             ),
@@ -430,13 +451,23 @@ class _SkillsManagementState extends State<SkillsManagement> {
   }
 
   Widget _buildSkillCard(BuildContext context, SkillModel skill) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        gradient: AppTheme.cardGradient,
+        color: AppTheme.getCardBackground(context),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppTheme.primaryColor.withOpacity(0.2)),
+        border: Border.all(color: AppTheme.getBorderColor(context)),
+        boxShadow: isDark
+            ? null
+            : [
+                BoxShadow(
+                  color: Colors.black.withAlpha(8),
+                  blurRadius: 8,
+                  offset: const Offset(0, 2),
+                ),
+              ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -447,11 +478,11 @@ class _SkillsManagementState extends State<SkillsManagement> {
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: AppTheme.primaryColor.withOpacity(0.1),
+                  color: AppTheme.primaryColor.withAlpha(25),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Icon(
-                  IconData(skill.iconCode, fontFamily: 'MaterialIcons'),
+                  MaterialIconMapper.fromCode(skill.iconCode),
                   color: AppTheme.primaryColor,
                 ),
               ),
@@ -527,8 +558,8 @@ class _SkillsManagementState extends State<SkillsManagement> {
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
         color: isVisible
-            ? Colors.green.withOpacity(0.1)
-            : Colors.orange.withOpacity(0.1),
+            ? Colors.green.withAlpha(25)
+            : Colors.orange.withAlpha(25),
         borderRadius: BorderRadius.circular(6),
       ),
       child: Text(
@@ -596,7 +627,7 @@ class _SkillsManagementState extends State<SkillsManagement> {
 
       await portfolioProvider.toggleSkillVisibility(skill);
 
-      if (mounted) {
+      if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
@@ -609,7 +640,7 @@ class _SkillsManagementState extends State<SkillsManagement> {
         );
       }
     } catch (e) {
-      if (mounted) {
+      if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Error:  $e'),
@@ -625,7 +656,7 @@ class _SkillsManagementState extends State<SkillsManagement> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: AppTheme.cardBackground,
+        backgroundColor: AppTheme.getCardBackground(context),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: Row(
           children: [
@@ -667,7 +698,7 @@ class _SkillsManagementState extends State<SkillsManagement> {
 
       await portfolioProvider.deleteSkill(skill.id);
 
-      if (mounted) {
+      if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Skill deleted successfully'),
@@ -676,7 +707,7 @@ class _SkillsManagementState extends State<SkillsManagement> {
         );
       }
     } catch (e) {
-      if (mounted) {
+      if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Error deleting skill: $e'),

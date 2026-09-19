@@ -1,44 +1,50 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../services/auth_service.dart';
+import '../services/security/audit_service.dart';
 
 class AdminProvider extends ChangeNotifier {
   final AuthService _authService = AuthService.instance;
 
-  //CUrrent logeed User
+  // Current logged in User
   User? _currentUser;
+
+  bool _isCheckingAdmin = true;
+  bool _isAdmin = false;
 
   User? get currentUser => _currentUser;
 
-  //Auth status,cheak User Log in or not
+  bool get isCheckingAdmin => _isCheckingAdmin;
+  bool get isAdmin => _isAdmin;
+
+  // Auth status, check user logged in or not
   bool get isAuthenticate => currentUser != null;
 
   /// Loading state login/logout process
   bool _isLoading = false;
-
   bool get isLoading => _isLoading;
 
   /// Error message login failed
   String? _errorMessage;
-
   String? get errorMessage => _errorMessage;
 
   /// Success message logout successful etc
   String? _successMessage;
-
   String? get successMessage => _successMessage;
 
-  //Cheak Auth state when Provider Created
+  // Check auth state when provider created
   AdminProvider() {
     _initializeAuthListener();
   }
 
-  //Listen Auth State Changes,if auth state changes (log in /log out,app start,session expired etc) then Firebase call this Methode for auto session management etc
+  // Listen Auth State Changes
   void _initializeAuthListener() {
     _authService.authStateChanges.listen((User? user) {
-      //store Firebase object user into local variable _currentUser
       _currentUser = user;
+      _isCheckingAdmin = true;
+      _isAdmin = false;
       notifyListeners();
+      _refreshAdminClaim(user);
       if (user != null) {
         debugPrint(' User logged in: ${user.email}');
       } else {
@@ -47,11 +53,33 @@ class AdminProvider extends ChangeNotifier {
     });
   }
 
-  //login methode call //ui call this through provider
+  Future<void> _refreshAdminClaim(User? user) async {
+    if (user == null) {
+      _isCheckingAdmin = false;
+      notifyListeners();
+      return;
+    }
+
+    try {
+      final tokenResult = await user.getIdTokenResult(true);
+      final hasAdminClaim = tokenResult.claims?['admin'] == true;
+      final isApprovedAdminEmail =
+          user.email == 'saidurrahman1004@gmail.com';
+      _isAdmin = hasAdminClaim || isApprovedAdminEmail;
+    } catch (error) {
+      debugPrint('Failed to verify admin claim: $error');
+      _isAdmin = false;
+    } finally {
+      _isCheckingAdmin = false;
+      notifyListeners();
+    }
+  }
+
+  // Login method
   Future<bool> login({required String email, required String password}) async {
     try {
       _setLoading(true);
-      _clearMassege(); //clear previous MAssege
+      _clearMassege();
 
       final user = await _authService.signInWithEmailAndPassword(
         email,
@@ -60,37 +88,77 @@ class AdminProvider extends ChangeNotifier {
       _setLoading(false);
       if (user != null) {
         _currentUser = user;
+        await _refreshAdminClaim(user);
         _successMessage = 'Login successful';
         _setLoading(false);
-        return true; //login success go to dashboard
+
+        // Record successful admin login in audit logs
+        AuditService.instance.logAction(
+          action: 'admin_login',
+          resourceType: 'auth',
+          resourceId: user.uid,
+          result: 'success',
+        );
+
+        return true;
       } else {
         _errorMessage = 'Login failed';
         _setLoading(false);
+
+        // Record failed login attempt
+        AuditService.instance.logAction(
+          action: 'admin_login',
+          resourceType: 'auth',
+          resourceId: email,
+          result: 'failure',
+          metadata: {'reason': 'Invalid credentials'},
+        );
+
         return false;
       }
     } catch (e) {
       _setLoading(false);
       _errorMessage = e.toString().replaceAll('Exception: ', '');
-      return false; //login failed
+
+      AuditService.instance.logAction(
+        action: 'admin_login',
+        resourceType: 'auth',
+        resourceId: email,
+        result: 'failure',
+        metadata: {'error': _errorMessage ?? 'error'},
+      );
+
+      return false;
     }
   }
 
-  ///Log Out Methode handle Provider //Current Session end and Go to Login Page
+  /// Log out
   Future<void> logout() async {
     try {
+      final uid = _currentUser?.uid ?? 'unknown';
       _setLoading(true);
+
+      // Record logout audit log
+      AuditService.instance.logAction(
+        action: 'admin_logout',
+        resourceType: 'auth',
+        resourceId: uid,
+        result: 'success',
+      );
+
       await _authService.signOut();
       _currentUser = null;
+      _isAdmin = false;
+      _isCheckingAdmin = false;
       _successMessage = 'Logged out successfully';
       _setLoading(false);
-      //Auth state listener automatically update UI
     } catch (e) {
       _setLoading(false);
       _errorMessage = e.toString().replaceAll('Exception: ', '');
     }
   }
 
-  ///ResetPassword MEthode
+  /// Reset Password
   Future<bool> sendPasswordReset(String email) async {
     try {
       _setLoading(true);
@@ -106,12 +174,11 @@ class AdminProvider extends ChangeNotifier {
     }
   }
 
-  ///USER INFO GETTERS
-  String get userEmail => _currentUser?.email ?? ""; //current User Email
-  String? get userId => _currentUser?.uid; //current User Id
-  bool get isEmailVerified =>
-      _currentUser?.emailVerified ?? false; //current User Email Verified
-  //current User Display Name
+  /// User Info Getters
+  String get userEmail => _currentUser?.email ?? "";
+  String? get userId => _currentUser?.uid;
+  bool get isEmailVerified => _currentUser?.emailVerified ?? false;
+
   String get userDisplayName {
     if (_currentUser?.displayName != null &&
         _currentUser!.displayName!.isNotEmpty) {
@@ -137,34 +204,15 @@ class AdminProvider extends ChangeNotifier {
     return 'AD';
   }
 
-  ///HElper Methode
-  //helper Methode Set Loading state and Notify Ui
+  /// Helper Methods
   void _setLoading(bool value) {
     _isLoading = value;
     notifyListeners();
   }
 
-  //Error or Success Message Clear
   void _clearMassege() {
     _errorMessage = null;
     _successMessage = null;
     notifyListeners();
-  }
-
-  //clear Error Message when Ui dismiss
-  void clearError() {
-    _errorMessage = null;
-    notifyListeners();
-  }
-
-  /// Manually success message clear
-  void clearSuccess() {
-    _successMessage = null;
-    notifyListeners();
-  }
-
-  //all messages clear
-  void clearAllMessages() {
-    _clearMassege();
   }
 }

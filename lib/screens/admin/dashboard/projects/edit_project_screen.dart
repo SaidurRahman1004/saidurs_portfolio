@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:image_picker/image_picker.dart';
@@ -10,7 +11,7 @@ import '../../../../services/image_upload_service.dart';
 class EditProjectDialog extends StatefulWidget {
   final ProjectModel project;
 
-  const EditProjectDialog({Key? key, required this.project});
+  const EditProjectDialog({super.key, required this.project});
 
   @override
   State<EditProjectDialog> createState() => _EditProjectDialogState();
@@ -33,6 +34,7 @@ class _EditProjectDialogState extends State<EditProjectDialog> {
   late bool _isVisible;
   bool _isLoading = false;
   bool _isUploadingImage = false;
+  double _uploadProgress = 0.0;
 
   final ImagePicker _picker = ImagePicker();
   final ImageUploadService _uploadService = ImageUploadService.instance;
@@ -118,12 +120,18 @@ class _EditProjectDialogState extends State<EditProjectDialog> {
     try {
       setState(() {
         _isUploadingImage = true;
+        _uploadProgress = 0.0;
       });
 
       final imageUrl = await _uploadService.uploadImage(
         imageBytes: _selectedImageBytes!,
         fileName:
-            'project_${widget.project.id}_${DateTime.now().millisecondsSinceEpoch}',
+            'project_${widget.project.id}_${DateTime.now().millisecondsSinceEpoch}.jpg',
+        onProgress: (progress) {
+          setState(() {
+            _uploadProgress = progress;
+          });
+        },
       );
 
       setState(() {
@@ -214,6 +222,8 @@ class _EditProjectDialogState extends State<EditProjectDialog> {
         createdAt: widget.project.createdAt, // Keep original date
       );
 
+      if (!mounted) return;
+
       final portfolioProvider = Provider.of<PortfolioProvider>(
         context,
         listen: false,
@@ -261,7 +271,7 @@ class _EditProjectDialogState extends State<EditProjectDialog> {
           gradient: AppTheme.cardGradient,
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
-            color: AppTheme.primaryColor.withOpacity(0.3),
+            color: AppTheme.primaryColor.withValues(alpha: 0.3),
             width: 1,
           ),
         ),
@@ -321,7 +331,7 @@ class _EditProjectDialogState extends State<EditProjectDialog> {
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: AppTheme.secondaryColor.withOpacity(0.2),
+              color: AppTheme.secondaryColor.withValues(alpha: 0.2),
               borderRadius: BorderRadius.circular(12),
             ),
             child: Icon(Icons.edit, color: AppTheme.secondaryColor, size: 28),
@@ -382,9 +392,9 @@ class _EditProjectDialogState extends State<EditProjectDialog> {
         Container(
           height: 200,
           decoration: BoxDecoration(
-            color: AppTheme.darkBackground.withOpacity(0.5),
+            color: AppTheme.darkBackground.withValues(alpha: 0.5),
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: AppTheme.primaryColor.withOpacity(0.3)),
+            border: Border.all(color: AppTheme.primaryColor.withValues(alpha: 0.3)),
           ),
           child: _selectedImageBytes != null
               ? Stack(
@@ -402,7 +412,7 @@ class _EditProjectDialogState extends State<EditProjectDialog> {
                       top: 8,
                       right: 8,
                       child: IconButton(
-                        onPressed: () {
+                        onPressed: _isUploadingImage ? null : () {
                           setState(() {
                             _selectedImageBytes = null;
                           });
@@ -414,6 +424,18 @@ class _EditProjectDialogState extends State<EditProjectDialog> {
                         ),
                       ),
                     ),
+                    if (_isUploadingImage)
+                      Positioned(
+                        bottom: 0,
+                        left: 0,
+                        right: 0,
+                        child: LinearProgressIndicator(
+                          value: _uploadProgress,
+                          backgroundColor: Colors.black54,
+                          color: AppTheme.primaryColor,
+                          minHeight: 6,
+                        ),
+                      ),
                   ],
                 )
               : _imageUrl != null
@@ -421,12 +443,12 @@ class _EditProjectDialogState extends State<EditProjectDialog> {
                   children: [
                     ClipRRect(
                       borderRadius: BorderRadius.circular(12),
-                      child: Image.network(
-                        _imageUrl!,
+                      child: CachedNetworkImage(
+                        imageUrl: _imageUrl!,
                         width: double.infinity,
                         height: 200,
                         fit: BoxFit.cover,
-                        errorBuilder: (context, error, stackTrace) {
+                        errorWidget: (context, url, error) {
                           return Center(
                             child: Icon(
                               Icons.broken_image,
@@ -518,7 +540,7 @@ class _EditProjectDialogState extends State<EditProjectDialog> {
             hintText: 'e.g., TravelSnap',
             prefixIcon: const Icon(Icons.title),
             filled: true,
-            fillColor: AppTheme.darkBackground.withOpacity(0.5),
+            fillColor: AppTheme.darkBackground.withValues(alpha: 0.5),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
               borderSide: BorderSide.none,
@@ -553,17 +575,19 @@ class _EditProjectDialogState extends State<EditProjectDialog> {
           decoration: InputDecoration(
             hintText: 'Describe your project...',
             filled: true,
-            fillColor: AppTheme.darkBackground.withOpacity(0.5),
+            fillColor: AppTheme.darkBackground.withValues(alpha: 0.5),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
               borderSide: BorderSide.none,
             ),
           ),
           validator: (value) {
-            if (value == null || value.trim().isEmpty)
+            if (value == null || value.trim().isEmpty) {
               return 'Please enter description';
-            if (value.trim().length < 20)
+            }
+            if (value.trim().length < 20) {
               return 'Description must be at least 20 characters';
+            }
             return null;
           },
         ),
@@ -590,7 +614,7 @@ class _EditProjectDialogState extends State<EditProjectDialog> {
                 decoration: InputDecoration(
                   hintText: 'e.g., Flutter',
                   filled: true,
-                  fillColor: AppTheme.darkBackground.withOpacity(0.5),
+                  fillColor: AppTheme.darkBackground.withValues(alpha: 0.5),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
                     borderSide: BorderSide.none,
@@ -613,7 +637,7 @@ class _EditProjectDialogState extends State<EditProjectDialog> {
                 label: Text(tech),
                 deleteIcon: const Icon(Icons.close, size: 18),
                 onDeleted: () => _removeTech(tech),
-                backgroundColor: AppTheme.secondaryColor.withOpacity(0.2),
+                backgroundColor: AppTheme.secondaryColor.withValues(alpha: 0.2),
               );
             }).toList(),
           ),
@@ -639,17 +663,19 @@ class _EditProjectDialogState extends State<EditProjectDialog> {
             hintText: 'https://github.com/username/repo',
             prefixIcon: const Icon(Icons.code),
             filled: true,
-            fillColor: AppTheme.darkBackground.withOpacity(0.5),
+            fillColor: AppTheme.darkBackground.withValues(alpha: 0.5),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
               borderSide: BorderSide.none,
             ),
           ),
           validator: (value) {
-            if (value == null || value.trim().isEmpty)
+            if (value == null || value.trim().isEmpty) {
               return 'Please enter GitHub URL';
-            if (!value.contains('github.com'))
+            }
+            if (!value.contains('github.com')) {
               return 'Please enter a valid GitHub URL';
+            }
             return null;
           },
         ),
@@ -685,7 +711,7 @@ class _EditProjectDialogState extends State<EditProjectDialog> {
             hintText: 'https://yourapp.com',
             prefixIcon: const Icon(Icons.launch),
             filled: true,
-            fillColor: AppTheme.darkBackground.withOpacity(0.5),
+            fillColor: AppTheme.darkBackground.withValues(alpha: 0.5),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
               borderSide: BorderSide.none,
@@ -714,7 +740,7 @@ class _EditProjectDialogState extends State<EditProjectDialog> {
           decoration: InputDecoration(
             prefixIcon: const Icon(Icons.sort),
             filled: true,
-            fillColor: AppTheme.darkBackground.withOpacity(0.5),
+            fillColor: AppTheme.darkBackground.withValues(alpha: 0.5),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
               borderSide: BorderSide.none,
@@ -732,8 +758,8 @@ class _EditProjectDialogState extends State<EditProjectDialog> {
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
             color: _isFeatured
-                ? Colors.amber.withOpacity(0.1)
-                : AppTheme.darkBackground.withOpacity(0.5),
+                ? Colors.amber.withValues(alpha: 0.1)
+                : AppTheme.darkBackground.withValues(alpha: 0.5),
             borderRadius: BorderRadius.circular(12),
           ),
           child: Row(
@@ -749,7 +775,7 @@ class _EditProjectDialogState extends State<EditProjectDialog> {
               Switch(
                 value: _isFeatured,
                 onChanged: (v) => setState(() => _isFeatured = v),
-                activeColor: Colors.amber,
+                activeThumbColor: Colors.amber,
               ),
             ],
           ),
@@ -759,8 +785,8 @@ class _EditProjectDialogState extends State<EditProjectDialog> {
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
             color: _isVisible
-                ? Colors.green.withOpacity(0.1)
-                : Colors.orange.withOpacity(0.1),
+                ? Colors.green.withValues(alpha: 0.1)
+                : Colors.orange.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(12),
           ),
           child: Row(
@@ -778,7 +804,7 @@ class _EditProjectDialogState extends State<EditProjectDialog> {
               Switch(
                 value: _isVisible,
                 onChanged: (v) => setState(() => _isVisible = v),
-                activeColor: Colors.green,
+                activeThumbColor: Colors.green,
               ),
             ],
           ),
@@ -792,7 +818,7 @@ class _EditProjectDialogState extends State<EditProjectDialog> {
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
         border: Border(
-          top: BorderSide(color: AppTheme.surfaceColor.withOpacity(0.3)),
+          top: BorderSide(color: AppTheme.surfaceColor.withValues(alpha: 0.3)),
         ),
       ),
       child: Row(
@@ -817,13 +843,22 @@ class _EditProjectDialogState extends State<EditProjectDialog> {
                 foregroundColor: Colors.white,
               ),
               child: _isLoading
-                  ? const SizedBox(
-                      height: 20,
-                      width: 20,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                      ),
+                  ? Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const SizedBox(
+                          height: 20,
+                          width: 20,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                          ),
+                        ),
+                        if (_isUploadingImage) ...[
+                          const SizedBox(width: 12),
+                          Text('Uploading Image... ${(_uploadProgress * 100).toInt()}%'),
+                        ],
+                      ],
                     )
                   : const Text('Save Changes'),
             ),

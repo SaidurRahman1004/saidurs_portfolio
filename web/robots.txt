@@ -3,4 +3,4 @@ Allow: /
 Disallow: /admin/
 Disallow: /admin/login
 
-Sitemap: https://saidur-portfolio.web.app/sitemap.xml
+Sitemap: https://saidurs-portfolio.web.app/sitemap.xml

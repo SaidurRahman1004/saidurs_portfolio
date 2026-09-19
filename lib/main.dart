@@ -8,13 +8,39 @@ import 'package:futter_portfileo_website/widgets/comon/error_boundary.dart';
 import 'firebase_options.dart';
 import 'config/theme.dart';
 import 'providers/portfolio_provider.dart';
+import 'providers/theme_provider.dart';
 import 'package:provider/provider.dart';
 import 'providers/admin_provider.dart';
 import 'config/env.dart';
 import 'package:flutter_web_plugins/url_strategy.dart';
+import 'package:flutter/foundation.dart';
+import 'services/analytics/analytics_service.dart';
+import 'services/crashlytics/crashlytics_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Configure Flutter framework error capture (widget render pipeline)
+  FlutterError.onError = (FlutterErrorDetails details) {
+    CrashlyticsService.instance.recordFlutterError(details, fatal: true);
+    FlutterError.presentError(details);
+  };
+
+  // Configure unhandled asynchronous platform error capture
+  PlatformDispatcher.instance.onError = (Object error, StackTrace stack) {
+    // Gracefully ignore Flutter Web CanvasKit context-loss hot-restart artifact
+    if (error.toString().contains('_handledContextLostEvent')) {
+      return true;
+    }
+    CrashlyticsService.instance.recordError(
+      error,
+      stack,
+      fatal: true,
+      reason: 'Unhandled asynchronous platform error',
+    );
+    return true;
+  };
+
   //Url Strategy Clean Url
   usePathUrlStrategy();
 
@@ -22,26 +48,63 @@ void main() async {
   Env.validateConfig();
 
   // Firebase Initialize
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  ).catchError((error) {
+  bool isFirebaseInitialized = false;
+  try {
+    await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform,
+    );
+    isFirebaseInitialized = true;
+    // Safely initialize Analytics without blocking startup or crashing on error
+    await AnalyticsService.instance.initialize();
+    // Safely initialize Crashlytics without blocking startup or crashing on error
+    await CrashlyticsService.instance.initialize();
+  } catch (error) {
     debugPrint('Firebase init error: $error');
-  });
-  //app cheak
-  // await FirebaseAppCheck.instance.activate(
-  //   webProvider: ReCaptchaV3Provider('your-recaptcha-site-key'),
-  //   androidProvider: AndroidProvider.debug,
-  //   appleProvider: AppleProvider.debug,
-  // );
+  }
 
-  runApp(const MyApp());
+  runApp(MyApp(isFirebaseInitialized: isFirebaseInitialized));
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({Key? key}) : super(key: key);
+  final bool isFirebaseInitialized;
+
+  const MyApp({super.key, required this.isFirebaseInitialized});
 
   @override
   Widget build(BuildContext context) {
+    if (!isFirebaseInitialized) {
+      return MaterialApp(
+        title: 'Saidur - Portfolio',
+        debugShowCheckedModeBanner: false,
+        theme: AppTheme.darkTheme(),
+        home: Scaffold(
+          body: Center(
+            child: Padding(
+              padding: const EdgeInsets.all(24.0),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(Icons.cloud_off_rounded, size: 56, color: Colors.orange),
+                  const SizedBox(height: 16),
+                  const Text(
+                    'Unable to connect to cloud services.',
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 8),
+                  const Text(
+                    'Please check your internet connection and refresh the page.',
+                    textAlign: TextAlign.center,
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+
+    final observer = AnalyticsService.instance.navigatorObserver;
+
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(
@@ -53,21 +116,31 @@ class MyApp extends StatelessWidget {
           lazy: false,
         ),
         ChangeNotifierProvider(create: (_) => AdminProvider(), lazy: true),
+        ChangeNotifierProvider(create: (_) => ThemeProvider(), lazy: false),
       ],
       child: ErrorBoundary(
-        child: MaterialApp(
-          title: 'Saidur- Flutter Developer',
-          debugShowCheckedModeBanner: false,
-          theme: AppTheme.darkTheme(),
-          initialRoute: '/',
-          routes: {
-            '/': (context) => const HomeScreen(),
-            '/admin/login': (context) => const LoginScreen(),
-            '/admin': (context) => const AuthGuard(child: AdminLayout()),
-            // Protected by AuthGuard
-          },
-          onUnknownRoute: (settings) {
-            return MaterialPageRoute(builder: (_) => const HomeScreen());
+        child: Consumer<ThemeProvider>(
+          builder: (context, themeProvider, child) {
+            return MaterialApp(
+              title: 'Saidur- Flutter Developer',
+              debugShowCheckedModeBanner: false,
+              theme: AppTheme.lightTheme(),
+              darkTheme: AppTheme.darkTheme(),
+              themeMode: themeProvider.themeMode,
+              navigatorObservers: [
+                if (observer != null) observer,
+              ],
+              initialRoute: '/',
+              routes: {
+                '/': (context) => const HomeScreen(),
+                '/admin/login': (context) => const LoginScreen(),
+                '/admin': (context) => const AuthGuard(child: AdminLayout()),
+                // Protected by AuthGuard
+              },
+              onUnknownRoute: (settings) {
+                return MaterialPageRoute(builder: (_) => const HomeScreen());
+              },
+            );
           },
         ),
       ),

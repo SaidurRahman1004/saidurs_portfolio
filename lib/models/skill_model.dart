@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class SkillModel {
   final String id;
@@ -6,7 +7,8 @@ class SkillModel {
   final int iconCode; //numerical code for Material Icon
   final int order; //sorting
   final bool isVisible; //Show Hide
-
+  final DateTime? createdAt;
+  final DateTime? updatedAt;
 
   SkillModel({
     required this.id,
@@ -15,22 +17,37 @@ class SkillModel {
     required this.iconCode,
     this.order = 0,
     this.isVisible = true,
+    this.createdAt,
+    this.updatedAt,
   });
 
-//json to dart model Map<String, dynamic> formet,Receved Data from Firebase
-  factory SkillModel.fromFirestore(String id, Map<String, dynamic> data){
+  factory SkillModel.fromFirestore(String id, Map<String, dynamic> data) {
+    DateTime? parsedCreatedDate;
+    if (data['createdAt'] is Timestamp) {
+      parsedCreatedDate = (data['createdAt'] as Timestamp).toDate();
+    } else if (data['createdAt'] is String) {
+      parsedCreatedDate = DateTime.tryParse(data['createdAt']);
+    }
+
+    DateTime? parsedUpdateDate;
+    if (data['updatedAt'] is Timestamp) {
+      parsedUpdateDate = (data['updatedAt'] as Timestamp).toDate();
+    } else if (data['updatedAt'] is String) {
+      parsedUpdateDate = DateTime.tryParse(data['updatedAt']);
+    }
+
     return SkillModel(
       id: id,
       name: data['name'] ?? '',
       category: data['category'] ?? '',
       iconCode: data['iconCode'] is int ? data['iconCode'] : (int.tryParse(data['iconCode']?.toString() ?? '58240') ?? 58240),
-      // Default icon code
       order: data['order'] ?? 0,
       isVisible: data['isVisible'] ?? true,
+      createdAt: parsedCreatedDate,
+      updatedAt: parsedUpdateDate,
     );
   }
 
-  //dart to json Sent Data to Firebase //admin panel modification functions
   Map<String, dynamic> toFirestoreMapJson() {
     return {
       'name': name,
@@ -38,11 +55,11 @@ class SkillModel {
       'iconCode': iconCode,
       'order': order,
       'isVisible': isVisible,
-      'updatedAt': DateTime.now().toIso8601String(), // Last update time track
+      if (createdAt != null) 'createdAt': Timestamp.fromDate(createdAt!),
+      'updatedAt': FieldValue.serverTimestamp(),
     };
   }
 
-  //change Some feild by copying object ,immutable pattern ,use it state management,visibility changes
   SkillModel copyWith({
     String? id,
     String? name,
@@ -50,15 +67,18 @@ class SkillModel {
     int? iconCode,
     int? order,
     bool? isVisible,
+    DateTime? createdAt,
+    DateTime? updatedAt,
   }) {
     return SkillModel(
-      id: id ??  this.id,
+      id: id ?? this.id,
       name: name ?? this.name,
       category: category ?? this.category,
-      iconCode: iconCode ??  this.iconCode,
+      iconCode: iconCode ?? this.iconCode,
       order: order ?? this.order,
       isVisible: isVisible ?? this.isVisible,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
     );
   }
-
 }

@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../../../../config/theme.dart';
 import '../../../../providers/portfolio_provider.dart';
 import '../../../../models/skill_model.dart';
+import '../../../../widgets/comon/material_icon_mapper.dart';
 
 class EditSkillDialog extends StatefulWidget {
   final SkillModel skill;
@@ -151,7 +152,7 @@ class _EditSkillDialogState extends State<EditSkillDialog> {
           gradient: AppTheme.cardGradient,
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
-            color: AppTheme.primaryColor.withOpacity(0.3),
+            color: AppTheme.primaryColor.withAlpha(76),
             width: 1,
           ),
         ),
@@ -206,7 +207,7 @@ class _EditSkillDialogState extends State<EditSkillDialog> {
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: AppTheme.secondaryColor.withOpacity(0.2),
+              color: AppTheme.secondaryColor.withAlpha(51),
               borderRadius: BorderRadius.circular(12),
             ),
             child: Icon(Icons.edit, color: AppTheme.secondaryColor, size: 28),
@@ -262,7 +263,7 @@ class _EditSkillDialogState extends State<EditSkillDialog> {
             hintText: 'e.g., Flutter, Firebase, Django',
             prefixIcon: const Icon(Icons.label_outline),
             filled: true,
-            fillColor: AppTheme.darkBackground.withOpacity(0.5),
+            fillColor: AppTheme.darkBackground.withAlpha(127),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
               borderSide: BorderSide.none,
@@ -297,7 +298,7 @@ class _EditSkillDialogState extends State<EditSkillDialog> {
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 16),
           decoration: BoxDecoration(
-            color: AppTheme.darkBackground.withOpacity(0.5),
+            color: AppTheme.darkBackground.withAlpha(127),
             borderRadius: BorderRadius.circular(12),
           ),
           child: DropdownButtonHideUnderline(
@@ -333,9 +334,9 @@ class _EditSkillDialogState extends State<EditSkillDialog> {
         Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: AppTheme.darkBackground.withOpacity(0.5),
+            color: AppTheme.darkBackground.withAlpha(127),
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: AppTheme.primaryColor.withOpacity(0.3)),
+            border: Border.all(color: AppTheme.primaryColor.withAlpha(76)),
           ),
           child: Row(
             children: [
@@ -346,7 +347,7 @@ class _EditSkillDialogState extends State<EditSkillDialog> {
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Icon(
-                  IconData(_selectedIconCode, fontFamily: 'MaterialIcons'),
+                  MaterialIconMapper.fromCode(_selectedIconCode),
                   color: AppTheme.primaryColor,
                   size: 32,
                 ),
@@ -390,7 +391,7 @@ class _EditSkillDialogState extends State<EditSkillDialog> {
           decoration: InputDecoration(
             prefixIcon: const Icon(Icons.sort),
             filled: true,
-            fillColor: AppTheme.darkBackground.withOpacity(0.5),
+            fillColor: AppTheme.darkBackground.withAlpha(127),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
               borderSide: BorderSide.none,
@@ -406,8 +407,8 @@ class _EditSkillDialogState extends State<EditSkillDialog> {
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: _isVisible
-            ? Colors.green.withOpacity(0.1)
-            : Colors.orange.withOpacity(0.1),
+            ? Colors.green.withAlpha(25)
+            : Colors.orange.withAlpha(25),
         borderRadius: BorderRadius.circular(12),
       ),
       child: Row(
@@ -430,7 +431,7 @@ class _EditSkillDialogState extends State<EditSkillDialog> {
                 _isVisible = value;
               });
             },
-            activeColor: Colors.green,
+            activeThumbColor: Colors.green,
           ),
         ],
       ),
@@ -443,7 +444,7 @@ class _EditSkillDialogState extends State<EditSkillDialog> {
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
         border: Border(
-          top: BorderSide(color: AppTheme.surfaceColor.withOpacity(0.3)),
+          top: BorderSide(color: AppTheme.surfaceColor.withAlpha(76)),
         ),
       ),
       child: Row(
@@ -538,8 +539,8 @@ class _EditSkillDialogState extends State<EditSkillDialog> {
                       child: Container(
                         decoration: BoxDecoration(
                           color: isSelected
-                              ? AppTheme.primaryColor.withOpacity(0.2)
-                              : AppTheme.darkBackground.withOpacity(0.5),
+                              ? AppTheme.primaryColor.withAlpha(51)
+                              : AppTheme.darkBackground.withAlpha(127),
                           borderRadius: BorderRadius.circular(12),
                           border: Border.all(
                             color: isSelected
@@ -549,7 +550,7 @@ class _EditSkillDialogState extends State<EditSkillDialog> {
                           ),
                         ),
                         child: Icon(
-                          IconData(entry.value, fontFamily: 'MaterialIcons'),
+                          MaterialIconMapper.fromCode(entry.value),
                           color: isSelected
                               ? AppTheme.primaryColor
                               : AppTheme.textSecondary,

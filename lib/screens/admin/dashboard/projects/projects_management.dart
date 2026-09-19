@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:provider/provider.dart';
 import '../../../../config/theme.dart';
 import '../../../../models/project_model.dart';
@@ -8,7 +9,7 @@ import 'add_project_screen.dart';
 import 'edit_project_screen.dart';
 
 class ProjectsManagement extends StatefulWidget {
-  const ProjectsManagement({Key? key}) : super(key: key);
+  const ProjectsManagement({super.key});
 
   @override
   State<ProjectsManagement> createState() => _ProjectsManagementState();
@@ -210,10 +211,14 @@ class _ProjectsManagementState extends State<ProjectsManagement> {
               )
             : null,
         filled: true,
-        fillColor: AppTheme.cardBackground,
+        fillColor: AppTheme.getCardBackground(context),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide.none,
+          borderSide: BorderSide(color: AppTheme.getBorderColor(context)),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: AppTheme.getBorderColor(context)),
         ),
       ),
       onChanged: (value) {
@@ -238,8 +243,13 @@ class _ProjectsManagementState extends State<ProjectsManagement> {
                 _filterType = filter;
               });
             },
-            backgroundColor: AppTheme.cardBackground,
-            selectedColor: AppTheme.primaryColor.withOpacity(0.2),
+            backgroundColor: AppTheme.getCardBackground(context),
+            side: BorderSide(
+              color: isSelected
+                  ? AppTheme.primaryColor
+                  : AppTheme.getBorderColor(context),
+            ),
+            selectedColor: AppTheme.primaryColor.withAlpha(51),
             checkmarkColor: AppTheme.primaryColor,
           ),
         );
@@ -271,20 +281,30 @@ class _ProjectsManagementState extends State<ProjectsManagement> {
   /// Project Card
   Widget _buildProjectCard(BuildContext context, ProjectModel project) {
     bool isMobile = ResponsiveWrapper.isMobile(context);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Container(
       constraints: BoxConstraints(
         minHeight: 400,
-        maxHeight: isMobile ? 500 : 450,
+        maxHeight: isMobile ? 520 : 470,
       ), // Desktop: no constraint
       decoration: BoxDecoration(
-        gradient: AppTheme.cardGradient,
+        color: AppTheme.getCardBackground(context),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
           color: project.isFeatured
-              ? AppTheme.primaryColor.withOpacity(0.5)
-              : AppTheme.primaryColor.withOpacity(0.2),
+              ? AppTheme.primaryColor
+              : AppTheme.getBorderColor(context),
           width: project.isFeatured ? 2 : 1,
         ),
+        boxShadow: isDark
+            ? null
+            : [
+                BoxShadow(
+                  color: Colors.black.withAlpha(10),
+                  blurRadius: 10,
+                  offset: const Offset(0, 4),
+                ),
+              ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -296,22 +316,20 @@ class _ProjectsManagementState extends State<ProjectsManagement> {
               borderRadius: const BorderRadius.vertical(
                 top: Radius.circular(16),
               ),
-              child: Image.network(
-                project.imageUrl!,
+              child: CachedNetworkImage(
+                imageUrl: project.imageUrl!,
                 height: 150,
                 width: double.infinity,
                 fit: BoxFit.cover,
-                errorBuilder: (context, error, stackTrace) {
-                  return Container(
-                    height: 150,
-                    color: AppTheme.surfaceColor,
-                    child: Icon(
-                      Icons.broken_image,
-                      size: 48,
-                      color: AppTheme.textHint,
-                    ),
-                  );
-                },
+                placeholder: (context, url) => const SizedBox(
+                  height: 150,
+                  child: Center(child: CircularProgressIndicator()),
+                ),
+                errorWidget: (context, url, error) => Container(
+                  height: 150,
+                  color: AppTheme.surfaceColor,
+                  child: const Icon(Icons.broken_image, size: 48),
+                ),
               ),
             )
           else
@@ -371,8 +389,8 @@ class _ProjectsManagementState extends State<ProjectsManagement> {
                   ),
                   decoration: BoxDecoration(
                     color: project.isVisible
-                        ? Colors.green.withOpacity(0.2)
-                        : Colors.orange.withOpacity(0.2),
+                        ? Colors.green.withAlpha(51)
+                        : Colors.orange.withAlpha(51),
                     borderRadius: BorderRadius.circular(6),
                   ),
                   child: Text(
@@ -429,7 +447,7 @@ class _ProjectsManagementState extends State<ProjectsManagement> {
                           vertical: 4,
                         ),
                         decoration: BoxDecoration(
-                          color: AppTheme.secondaryColor.withOpacity(0.2),
+                          color: AppTheme.secondaryColor.withAlpha(51),
                           borderRadius: BorderRadius.circular(6),
                         ),
                         child: Text(
@@ -454,7 +472,7 @@ class _ProjectsManagementState extends State<ProjectsManagement> {
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
               border: Border(
-                top: BorderSide(color: AppTheme.surfaceColor.withOpacity(0.3)),
+                top: BorderSide(color: AppTheme.surfaceColor.withAlpha(76)),
               ),
             ),
             child: Row(
@@ -511,6 +529,7 @@ class _ProjectsManagementState extends State<ProjectsManagement> {
         crossAxisCount: crossAxisCount,
         crossAxisSpacing: 20,
         mainAxisSpacing: 20,
+        mainAxisExtent: 470,
       ),
       itemCount: projects.length,
       itemBuilder: (context, index) =>
@@ -570,7 +589,7 @@ class _ProjectsManagementState extends State<ProjectsManagement> {
       final provider = Provider.of<PortfolioProvider>(context, listen: false);
       await provider.toggleProjectVisibility(project);
 
-      if (mounted) {
+      if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
@@ -583,7 +602,7 @@ class _ProjectsManagementState extends State<ProjectsManagement> {
         );
       }
     } catch (e) {
-      if (mounted) {
+      if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Error:  $e'),
@@ -602,7 +621,7 @@ class _ProjectsManagementState extends State<ProjectsManagement> {
       final provider = Provider.of<PortfolioProvider>(context, listen: false);
       await provider.toggleProjectFeatured(project);
 
-      if (mounted) {
+      if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
@@ -615,7 +634,7 @@ class _ProjectsManagementState extends State<ProjectsManagement> {
         );
       }
     } catch (e) {
-      if (mounted) {
+      if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Error: $e'),
@@ -630,7 +649,7 @@ class _ProjectsManagementState extends State<ProjectsManagement> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: AppTheme.cardBackground,
+        backgroundColor: AppTheme.getCardBackground(context),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: Row(
           children: [
@@ -670,7 +689,7 @@ class _ProjectsManagementState extends State<ProjectsManagement> {
       final provider = Provider.of<PortfolioProvider>(context, listen: false);
       await provider.deleteProject(project.id);
 
-      if (mounted) {
+      if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Project deleted successfully'),
@@ -679,7 +698,7 @@ class _ProjectsManagementState extends State<ProjectsManagement> {
         );
       }
     } catch (e) {
-      if (mounted) {
+      if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Error deleting project: $e'),

@@ -1,10 +1,8 @@
-// 📁 lib/config/env. dart - NEW FILE
+import 'package:flutter/foundation.dart';
+
 class Env {
-  // ImgBB API Key
-  static const String imgbbApiKey = String.fromEnvironment(
-    'IMGBB_API_KEY',
-    defaultValue:  '', // Empty in production, fail safely
-  );
+  // ImgBB API Key intentionally removed from client-side bundle for security.
+  // Use a secure backend proxy (like Firebase Cloud Functions) for uploads.
 
   // Firebase Web API Key (optional - usually safe to expose)
   static const String firebaseWebApiKey = String.fromEnvironment(
@@ -20,14 +18,14 @@ class Env {
 
   // Validate all keys are present
   static bool get isConfigured {
-    return imgbbApiKey. isNotEmpty;
+    return true; // ImgBB is handled server-side now.
   }
 
   // Show warning in debug mode
   static void validateConfig() {
     if (!isConfigured) {
-      print('⚠️ WARNING: Environment variables not configured!');
-      print('Run: flutter run --dart-define=IMGBB_API_KEY=your_key');
+      debugPrint('⚠️ WARNING: Environment variables not configured!');
+      debugPrint('Run: flutter run --dart-define=IMGBB_API_KEY=your_key');
     }
   }
 }
