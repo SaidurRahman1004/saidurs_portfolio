@@ -23,13 +23,13 @@ class PortfolioProvider with ChangeNotifier {
   }
 
   /// Store All Logics
-  List<SkillModel> _skills = [];
-  List<ProjectModel> _projects = [];
-  ContactModel? _contactInfo;
+  List<SkillModel> _skills = List.from(PortfolioSeedData.skills);
+  List<ProjectModel> _projects = List.from(PortfolioSeedData.projects);
+  ContactModel? _contactInfo = PortfolioSeedData.contactInfo;
   
-  List<ProfessionalExperienceModel> _experiences = [];
-  List<EducationModel> _education = [];
-  List<CertificationModel> _certifications = [];
+  List<ProfessionalExperienceModel> _experiences = List.from(PortfolioSeedData.experiences);
+  List<EducationModel> _education = List.from(PortfolioSeedData.educations);
+  List<CertificationModel> _certifications = List.from(PortfolioSeedData.certifications);
   CareerConfigModel _careerConfig = CareerConfigModel.defaultConfig();
   List<InquiryModel> _inquiries = [];
   List<ErrorReportModel> _errorReports = [];
@@ -82,12 +82,12 @@ class PortfolioProvider with ChangeNotifier {
 
 
   /// Loading states
-  bool _isLoadingSkills = true;
-  bool _isLoadingProjects = true;
-  bool _isLoadingContact = true;
-  bool _isLoadingExperiences = true;
-  bool _isLoadingEducation = true;
-  bool _isLoadingCertifications = true;
+  bool _isLoadingSkills = false;
+  bool _isLoadingProjects = false;
+  bool _isLoadingContact = false;
+  bool _isLoadingExperiences = false;
+  bool _isLoadingEducation = false;
+  bool _isLoadingCertifications = false;
 
   // Admin Loaders
   bool _isLoadingAllSkills = false;
@@ -146,9 +146,11 @@ class PortfolioProvider with ChangeNotifier {
   /// Loads Data
   Future<void> loadSkills() async {
     try {
-      _isLoadingSkills = true;
-      _errorSkills = null;
-      notifyListeners();
+      if (_skills.isEmpty) {
+        _isLoadingSkills = true;
+        _errorSkills = null;
+        notifyListeners();
+      }
       _skillsSub?.cancel();
       _skillsSub = _firebaseService.getSkills().listen(
         (skillsList) {
@@ -198,9 +200,11 @@ class PortfolioProvider with ChangeNotifier {
 
   Future<void> loadProjects() async {
     try {
-      _isLoadingProjects = true;
-      _errorProjects = null;
-      notifyListeners();
+      if (_projects.isEmpty) {
+        _isLoadingProjects = true;
+        _errorProjects = null;
+        notifyListeners();
+      }
       _projectsSub?.cancel();
       _projectsSub = _firebaseService.getProjects().listen(
         (projectsList) {
@@ -250,9 +254,11 @@ class PortfolioProvider with ChangeNotifier {
 
   Future<void> loadContactInfo() async {
     try {
-      _isLoadingContact = true;
-      _errorContact = null;
-      notifyListeners();
+      if (_contactInfo == null) {
+        _isLoadingContact = true;
+        _errorContact = null;
+        notifyListeners();
+      }
       _contactSub?.cancel();
       _contactSub = _firebaseService.getContactInfo().listen(
         (contact) {
@@ -339,9 +345,11 @@ class PortfolioProvider with ChangeNotifier {
 
   Future<void> loadExperiences({bool includeHidden = false}) async {
     try {
-      _isLoadingExperiences = true;
-      _errorExperiences = null;
-      notifyListeners();
+      if (_experiences.isEmpty) {
+        _isLoadingExperiences = true;
+        _errorExperiences = null;
+        notifyListeners();
+      }
       _experiencesSub?.cancel();
       _experiencesSub = _firebaseService.getExperiences(includeHidden: includeHidden).listen(
         (list) {
@@ -371,9 +379,11 @@ class PortfolioProvider with ChangeNotifier {
 
   Future<void> loadEducation({bool includeHidden = false}) async {
     try {
-      _isLoadingEducation = true;
-      _errorEducation = null;
-      notifyListeners();
+      if (_education.isEmpty) {
+        _isLoadingEducation = true;
+        _errorEducation = null;
+        notifyListeners();
+      }
       _educationSub?.cancel();
       _educationSub = _firebaseService.getEducation(includeHidden: includeHidden).listen(
         (list) {
@@ -403,9 +413,11 @@ class PortfolioProvider with ChangeNotifier {
 
   Future<void> loadCertifications({bool includeHidden = false}) async {
     try {
-      _isLoadingCertifications = true;
-      _errorCertifications = null;
-      notifyListeners();
+      if (_certifications.isEmpty) {
+        _isLoadingCertifications = true;
+        _errorCertifications = null;
+        notifyListeners();
+      }
       _certificationsSub?.cancel();
       _certificationsSub = _firebaseService.getCertifications(includeHidden: includeHidden).listen(
         (list) {

@@ -52,7 +52,7 @@ class CertificationsSection extends StatelessWidget {
                         crossAxisCount: columns,
                         crossAxisSpacing: 20,
                         mainAxisSpacing: 20,
-                        mainAxisExtent: columns == 1 ? 330 : 300,
+                        mainAxisExtent: columns == 1 ? 340 : 315,
                       ),
                       itemCount: certifications.length,
                       itemBuilder: (context, index) => _CertificationCard(
@@ -230,22 +230,31 @@ class _CertificationCard extends StatelessWidget {
                       const SizedBox(height: 7),
                       Text(certification.issuingOrganization, maxLines: 1, overflow: TextOverflow.ellipsis, style: theme.textTheme.bodyMedium?.copyWith(color: primary, fontWeight: FontWeight.w600)),
                       const Spacer(),
-                      if (_hasCredential)
-                        TextButton.icon(
-                          onPressed: () => _openCredential(context),
-                          icon: const Icon(Icons.verified_outlined, size: 17),
-                          label: const Text('Verify credential'),
-                          style: TextButton.styleFrom(padding: EdgeInsets.zero, alignment: Alignment.centerLeft),
-                        )
-                      else if (_hasImage)
-                        TextButton.icon(
-                          onPressed: () => _showCertificate(context),
-                          icon: const Icon(Icons.visibility_outlined, size: 17),
-                          label: const Text('View certificate'),
-                          style: TextButton.styleFrom(padding: EdgeInsets.zero, alignment: Alignment.centerLeft),
-                        )
-                      else
-                        Text('Certificate details available', style: theme.textTheme.bodySmall?.copyWith(color: theme.hintColor)),
+                      Wrap(
+                        spacing: 12,
+                        runSpacing: 4,
+                        children: [
+                          if (_hasCredential)
+                            TextButton.icon(
+                              onPressed: () => _openCredential(context),
+                              icon: const Icon(Icons.verified_outlined, size: 17),
+                              label: const Text('Verify credential'),
+                              style: TextButton.styleFrom(padding: EdgeInsets.zero, minimumSize: const Size(0, 32)),
+                            ),
+                          if (_hasImage)
+                            TextButton.icon(
+                              onPressed: () => _showCertificate(context),
+                              icon: const Icon(Icons.visibility_outlined, size: 17),
+                              label: const Text('View certificate'),
+                              style: TextButton.styleFrom(padding: EdgeInsets.zero, minimumSize: const Size(0, 32)),
+                            ),
+                          if (!_hasCredential && !_hasImage)
+                            Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 6),
+                              child: Text('Certificate details available', style: theme.textTheme.bodySmall?.copyWith(color: theme.hintColor)),
+                            ),
+                        ],
+                      ),
                     ],
                   ),
                 ),

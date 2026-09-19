@@ -29,6 +29,10 @@ analyzer:
     non_const_argument_for_const_parameter: ignore
     deprecated_member_use: ignore
     unnecessary_underscores: ignore
+  exclude:
+    - build/**
+    - android/**
+    - web/**
 
 # Additional information about this file can be found at
 # https://dart.dev/guides/language/analysis-options

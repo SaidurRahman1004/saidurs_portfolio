@@ -50,6 +50,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="preconnect" href="https://firebasestorage.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@500;600;700;800&display=swap" rel="stylesheet">
 
     <!-- Professional Loading Screen Style -->
     <style>
@@ -197,16 +198,29 @@
 
 <!-- Script to hide loading when Flutter is ready -->
 <script>
-    window.addEventListener('load', function() {
-
-        window.addEventListener('flutter-first-frame', function() {
+    (function() {
+        var loaderHidden = false;
+        function hideLoader() {
+            if (loaderHidden) return;
+            loaderHidden = true;
             document.body.classList.add('loaded');
             setTimeout(function() {
                 var loader = document.getElementById('loading-indicator');
                 if (loader) loader.style.display = 'none';
-            }, 500);
+            }, 400);
+        }
+
+        // 1. Immediately listen for flutter first frame
+        window.addEventListener('flutter-first-frame', hideLoader);
+
+        // 2. Fallback after window load
+        window.addEventListener('load', function() {
+            setTimeout(hideLoader, 2500);
         });
-    });
+
+        // 3. Absolute safety timeout (max 4s) to guarantee loader never hangs
+        setTimeout(hideLoader, 4000);
+    })();
 </script>
 </body>
 </html>

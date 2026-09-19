@@ -618,6 +618,24 @@ class _ContentEditorDialogState extends State<_ContentEditorDialog> {
     setState(() => end ? _endDate = selected : _startDate = selected);
   }
 
+  String _sanitizeImageUrl(String url) {
+    final clean = url.trim();
+    if (clean.isEmpty) return clean;
+
+    // Google Drive share link: https://drive.google.com/file/d/FILE_ID/...
+    final gDriveMatch = RegExp(r'drive\.google\.com/file/d/([^/?]+)').firstMatch(clean);
+    if (gDriveMatch != null) {
+      return 'https://drive.google.com/uc?export=view&id=${gDriveMatch.group(1)}';
+    }
+
+    // Dropbox: replace dl=0 with raw=1
+    if (clean.contains('dropbox.com') && clean.contains('dl=0')) {
+      return clean.replaceAll('dl=0', 'raw=1');
+    }
+
+    return clean;
+  }
+
   Future<void> _pickCertificateImage() async {
     try {
       final image = await _imagePicker.pickImage(
@@ -628,18 +646,19 @@ class _ContentEditorDialogState extends State<_ContentEditorDialog> {
       );
       if (image == null) return;
       final bytes = await image.readAsBytes();
-      if (!_imageUploadService.validateImageSize(bytes, maxSizeMB: 8)) {
+      if (!_imageUploadService.validateImageSize(bytes, maxSizeMB: 10)) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Certificate image must be 8 MB or smaller')),
+            const SnackBar(content: Text('Certificate image must be 10 MB or smaller')),
           );
         }
         return;
       }
       setState(() {
         _selectedCertificateImage = bytes;
-        _certificateImageUrl.clear();
       });
+      // Automatically upload immediately to ImgBB
+      await _uploadCertificateImage();
     } catch (error) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -649,12 +668,14 @@ class _ContentEditorDialogState extends State<_ContentEditorDialog> {
     }
   }
 
-  Future<void> _uploadCertificateImage() async {
+  Future<String?> _uploadCertificateImage() async {
     final bytes = _selectedCertificateImage;
-    if (bytes == null) return;
+    if (bytes == null) {
+      return _certificateImageUrl.text.trim().isEmpty ? null : _certificateImageUrl.text.trim();
+    }
     setState(() {
       _uploadingCertificateImage = true;
-      _certificateUploadProgress = 0;
+      _certificateUploadProgress = 0.15;
     });
     try {
       final url = await _imageUploadService.uploadImage(
@@ -670,14 +691,25 @@ class _ContentEditorDialogState extends State<_ContentEditorDialog> {
           _certificateImageUrl.text = url;
           _uploadingCertificateImage = false;
         });
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Certificate image uploaded to ImgBB successfully!'),
+            backgroundColor: Colors.green,
+          ),
+        );
       }
+      return url;
     } catch (error) {
       if (mounted) {
         setState(() => _uploadingCertificateImage = false);
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Certificate upload failed: $error')),
+          SnackBar(
+            content: Text('Certificate upload failed: $error'),
+            backgroundColor: Colors.red,
+          ),
         );
       }
+      return null;
     }
   }
 
@@ -864,6 +896,18 @@ class _ContentEditorDialogState extends State<_ContentEditorDialog> {
             await p.addEducation(item);
           }
         case AdminContentType.certification:
+          String? finalImageUrl = _certificateImageUrl.text.trim().isEmpty
+              ? null
+              : _certificateImageUrl.text.trim();
+
+          // Auto-upload if user picked an image but hasn't uploaded yet
+          if (_selectedCertificateImage != null && (finalImageUrl == null || finalImageUrl.isEmpty)) {
+            final uploadedUrl = await _uploadCertificateImage();
+            if (uploadedUrl != null && uploadedUrl.isNotEmpty) {
+              finalImageUrl = uploadedUrl;
+            }
+          }
+
           final item = CertificationModel(
             id: widget.item is CertificationModel
                 ? (widget.item as CertificationModel).id
@@ -874,9 +918,7 @@ class _ContentEditorDialogState extends State<_ContentEditorDialog> {
             credentialUrl: _credentialUrl.text.trim().isEmpty
                 ? null
                 : _credentialUrl.text.trim(),
-            imageUrl: _certificateImageUrl.text.trim().isEmpty
-                ? null
-                : _certificateImageUrl.text.trim(),
+            imageUrl: finalImageUrl,
             order: order,
             isVisible: _isVisible,
             createdAt: widget.item is CertificationModel
@@ -1144,7 +1186,7 @@ class _ContentEditorDialogState extends State<_ContentEditorDialog> {
   }
 
   Widget _buildCertificateImageField() {
-      return StatefulBuilder(
+    return StatefulBuilder(
       builder: (context, setLocalState) {
         final imageUrl = _certificateImageUrl.text.trim();
         return Container(
@@ -1162,16 +1204,52 @@ class _ContentEditorDialogState extends State<_ContentEditorDialog> {
               const SizedBox(height: 6),
               Text('Upload a clear certificate image or paste a public image URL.', style: Theme.of(context).textTheme.bodySmall),
               const SizedBox(height: 12),
-              if (_selectedCertificateImage != null)
+              if (_uploadingCertificateImage)
+                Container(
+                  height: 150,
+                  width: double.infinity,
+                  alignment: Alignment.center,
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).colorScheme.surface,
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      CircularProgressIndicator(value: _certificateUploadProgress > 0 ? _certificateUploadProgress : null),
+                      const SizedBox(height: 12),
+                      Text('Uploading to ImgBB... ${(_certificateUploadProgress * 100).round()}%',
+                          style: Theme.of(context).textTheme.bodySmall),
+                    ],
+                  ),
+                )
+              else if (_selectedCertificateImage != null)
                 ClipRRect(
                   borderRadius: BorderRadius.circular(10),
                   child: Image.memory(_selectedCertificateImage!, height: 150, width: double.infinity, fit: BoxFit.cover),
                 )
               else if (imageUrl.isNotEmpty)
-                SizedBox(
-                  height: 150,
-                  width: double.infinity,
-                  child: CachedNetworkImage(imageUrl: imageUrl, fit: BoxFit.cover, errorWidget: (_, _, _) => const Center(child: Text('Image URL could not be loaded'))),
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(10),
+                  child: CachedNetworkImage(
+                    imageUrl: imageUrl,
+                    height: 150,
+                    width: double.infinity,
+                    fit: BoxFit.cover,
+                    placeholder: (_, _) => const Center(child: CircularProgressIndicator(strokeWidth: 2)),
+                    errorWidget: (_, _, _) => Container(
+                      height: 150,
+                      color: Theme.of(context).colorScheme.surface,
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(Icons.broken_image_outlined, color: Theme.of(context).colorScheme.error, size: 36),
+                          const SizedBox(height: 8),
+                          Text('Could not load image from URL', style: TextStyle(color: Theme.of(context).colorScheme.error, fontSize: 12)),
+                        ],
+                      ),
+                    ),
+                  ),
                 )
               else
                 Container(
@@ -1185,19 +1263,55 @@ class _ContentEditorDialogState extends State<_ContentEditorDialog> {
               TextFormField(
                 controller: _certificateImageUrl,
                 enabled: !_uploadingCertificateImage,
-                onChanged: (_) => setLocalState(() {}),
-                decoration: const InputDecoration(labelText: 'Public image URL', prefixIcon: Icon(Icons.link)),
+                onChanged: (val) {
+                  final clean = _sanitizeImageUrl(val);
+                  if (clean != val) {
+                    _certificateImageUrl.text = clean;
+                    _certificateImageUrl.selection = TextSelection.collapsed(offset: clean.length);
+                  }
+                  setState(() => _selectedCertificateImage = null);
+                  setLocalState(() {});
+                },
+                decoration: const InputDecoration(
+                  labelText: 'Public image URL',
+                  prefixIcon: Icon(Icons.link),
+                  helperText: 'Paste direct image link (e.g. https://i.ibb.co/... or https://i.postimg.cc/...)',
+                ),
               ),
               const SizedBox(height: 10),
               Wrap(
                 spacing: 10,
                 runSpacing: 10,
                 children: [
-                  OutlinedButton.icon(onPressed: _uploadingCertificateImage ? null : _pickCertificateImage, icon: const Icon(Icons.photo_library_outlined), label: const Text('Choose image')),
-                  if (_selectedCertificateImage != null)
-                    FilledButton.icon(onPressed: _uploadingCertificateImage ? null : _uploadCertificateImage, icon: _uploadingCertificateImage ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2)) : const Icon(Icons.cloud_upload_outlined), label: Text(_uploadingCertificateImage ? '${(_certificateUploadProgress * 100).round()}%' : 'Upload')),
+                  OutlinedButton.icon(
+                    onPressed: _uploadingCertificateImage ? null : () async {
+                      await _pickCertificateImage();
+                      setLocalState(() {});
+                    },
+                    icon: const Icon(Icons.photo_library_outlined),
+                    label: const Text('Choose image'),
+                  ),
+                  if (_selectedCertificateImage != null && !_uploadingCertificateImage && _certificateImageUrl.text.isEmpty)
+                    FilledButton.icon(
+                      onPressed: () async {
+                        await _uploadCertificateImage();
+                        setLocalState(() {});
+                      },
+                      icon: const Icon(Icons.cloud_upload_outlined),
+                      label: const Text('Upload to ImgBB'),
+                    ),
                   if (_selectedCertificateImage != null || imageUrl.isNotEmpty)
-                    TextButton(onPressed: _uploadingCertificateImage ? null : () { setState(() { _selectedCertificateImage = null; _certificateImageUrl.clear(); }); setLocalState(() {}); }, child: const Text('Remove image')),
+                    TextButton.icon(
+                      onPressed: _uploadingCertificateImage ? null : () {
+                        setState(() {
+                          _selectedCertificateImage = null;
+                          _certificateImageUrl.clear();
+                        });
+                        setLocalState(() {});
+                      },
+                      icon: const Icon(Icons.delete_outline, size: 18),
+                      label: const Text('Remove image'),
+                    ),
                 ],
               ),
             ],

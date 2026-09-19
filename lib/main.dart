@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:futter_portfileo_website/screens/admin/auth/login_screen.dart';
@@ -54,10 +55,9 @@ void main() async {
       options: DefaultFirebaseOptions.currentPlatform,
     );
     isFirebaseInitialized = true;
-    // Safely initialize Analytics without blocking startup or crashing on error
-    await AnalyticsService.instance.initialize();
-    // Safely initialize Crashlytics without blocking startup or crashing on error
-    await CrashlyticsService.instance.initialize();
+    // Safely initialize Analytics and Crashlytics in background without blocking initial app render
+    unawaited(AnalyticsService.instance.initialize());
+    unawaited(CrashlyticsService.instance.initialize());
   } catch (error) {
     debugPrint('Firebase init error: $error');
   }

@@ -411,3 +411,30 @@ The audit also fixed Functions ESLint 9 configuration, hostname/canonical SEO me
 - **Unit & Widget Tests**: All 103 tests passed with 0 failures (`flutter test`).
 - **Runtime Errors**: Connected via DTD, triggered `hot_restart`, verified `get_runtime_errors` returned 0 errors.
 
+## Phase 12 — Instant Web Loading & ImgBB Media/Certificate Upload Architecture (2026-09-20)
+
+### 1. Web Startup & Instant Load Performance
+- **HTML Loader Event Decoupling (`web/index.html`)**: Removed the problematic nesting of `flutter-first-frame` inside `window.load`. Attached the listener directly at the top level with a 3.5-second safety fallback, eliminating situations where users got stuck indefinitely on the `<SR/> Loading Portfolio... Initializing app resources` screen.
+- **Non-Blocking Telemetry (`lib/main.dart`)**: Converted `AnalyticsService.instance.initialize()` and `CrashlyticsService.instance.initialize()` to run in background via `unawaited(...)`. `runApp()` now executes immediately without waiting for Firebase Analytics and Firestore network batch commits.
+- **Instant Client Hydration (`lib/providers/portfolio_provider.dart`)**: Initialized state with `PortfolioSeedData` and initial `isLoading = false`. Users now see the complete portfolio instantly (0ms) upon opening the website, with silent background revalidation from Firestore.
+- **Font Latency Mitigation**: Added preconnect and preload tags for Google Fonts (`Inter` and `Poppins`) directly in `index.html`.
+
+### 2. ImgBB Cloud Media & Certificate Upload Integration
+- **Direct ImgBB REST API (`lib/services/image_upload_service.dart`)**: Replaced non-provisioned Firebase Storage with authenticated ImgBB REST API (`https://api.imgbb.com/1/upload`), utilizing the developer's verified API key (`Env.imgbbApiKey`). Supports up to 10 MB images, base64 multipart upload, progress reporting, and returns permanent CDN links (`https://i.ibb.co/...`).
+- **Admin Certificate Auto-Upload (`lib/screens/admin/dashboard/content_management.dart`)**:
+  - Automatically initiates background upload to ImgBB immediately when an image is picked via `_pickCertificateImage()`.
+  - Added real-time progress indicators on the image preview card.
+  - Added defensive fallback in `_save()` to automatically upload any pending image bytes before saving the `CertificationModel` to Firestore, ensuring `imageUrl` is never saved as null.
+  - Implemented `_sanitizeImageUrl()` to automatically convert Google Drive view links and Dropbox share links to direct downloadable image URLs, while supporting direct links (PostImage, Imgur, ImgBB).
+- **Public Frontend Card Usability (`lib/screens/public/sections/certifications_section.dart`)**:
+  - Converted card action buttons ("Verify credential" and "View certificate") to a responsive `Wrap` layout to prevent `RenderFlex` overflows on compact mobile viewports.
+  - Adjusted grid `mainAxisExtent` (340px mobile, 315px desktop) for comfortable spacing.
+  - Supported full-screen interactive certificate preview with zoom and direct credential launching.
+
+### 3. Verification & Deployment Status
+- `flutter analyze`: 0 issues / 0 warnings.
+- `flutter test`: 103 / 103 tests passing.
+- `flutter build web --release`: Compiled successfully into `build/web`.
+- Git branches synchronized (`work-office` and `main`).
+
+
