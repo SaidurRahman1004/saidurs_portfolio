@@ -1,6 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:animated_text_kit/animated_text_kit.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:futter_portfileo_website/widgets/comon/custom_button.dart';
 import '../../../config/constants.dart';
 import '../../../config/theme.dart';
@@ -86,6 +87,7 @@ class HeroSection extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
+        // 1. Open to work badge — first to appear
         if (isOpenToWork)
           Builder(
             builder: (context) {
@@ -119,6 +121,14 @@ class HeroSection extends StatelessWidget {
                           ),
                         ],
                       ),
+                    )
+                    // Pulse animation on the green dot
+                    .animate(onPlay: (c) => c.repeat(reverse: true))
+                    .scale(
+                      begin: const Offset(1, 1),
+                      end: const Offset(1.5, 1.5),
+                      duration: 900.ms,
+                      curve: Curves.easeInOut,
                     ),
                     const SizedBox(width: 8),
                     Text(
@@ -132,17 +142,28 @@ class HeroSection extends StatelessWidget {
                     ),
                   ],
                 ),
-              );
+              )
+              .animate()
+              .fade(duration: 600.ms)
+              .slideY(begin: -0.3, end: 0, duration: 600.ms, curve: Curves.easeOutBack);
             },
           ),
+
+        // 2. "Hi, I'm" label
         Text(
           'Hi, I\'m',
           style: txtTheme.headlineMedium?.copyWith(
             color: (Theme.of(context).textTheme.bodyMedium?.color ?? Colors.grey),
             fontSize: isMobile ? 22 : 28,
           ),
-        ),
+        )
+        .animate(delay: 150.ms)
+        .fade(duration: 500.ms)
+        .slideX(begin: -0.05, end: 0, duration: 500.ms, curve: Curves.easeOut),
+
         const SizedBox(height: 8),
+
+        // 3. Name with gradient
         FittedBox(
           fit: BoxFit.scaleDown,
           alignment: Alignment.centerLeft,
@@ -163,8 +184,14 @@ class HeroSection extends StatelessWidget {
               ),
             ),
           ),
-        ),
+        )
+        .animate(delay: 250.ms)
+        .fade(duration: 700.ms)
+        .slideX(begin: -0.06, end: 0, duration: 700.ms, curve: Curves.easeOutCubic),
+
         const SizedBox(height: 16),
+
+        // 4. Role typewriter
         Wrap(
           crossAxisAlignment: WrapCrossAlignment.center,
           children: [
@@ -193,8 +220,14 @@ class HeroSection extends StatelessWidget {
               }).toList(),
             ),
           ],
-        ),
+        )
+        .animate(delay: 400.ms)
+        .fade(duration: 600.ms)
+        .slideY(begin: 0.1, end: 0, duration: 600.ms, curve: Curves.easeOut),
+
         const SizedBox(height: 16),
+
+        // 5. Description text
         Text(
           description,
           style: txtTheme.bodyLarge?.copyWith(
@@ -202,9 +235,14 @@ class HeroSection extends StatelessWidget {
             height: 1.5,
           ),
           maxLines: 5,
-        ),
+        )
+        .animate(delay: 550.ms)
+        .fade(duration: 600.ms)
+        .slideY(begin: 0.08, end: 0, duration: 600.ms, curve: Curves.easeOut),
+
         const SizedBox(height: 36),
-        //Buttons
+
+        // 6. Buttons — staggered
         Wrap(
           spacing: 14,
           runSpacing: 14,
@@ -220,7 +258,11 @@ class HeroSection extends StatelessWidget {
               },
               text: 'View Project',
               icon: Icons.work_outline,
-            ),
+            )
+            .animate(delay: 700.ms)
+            .fade(duration: 500.ms)
+            .slideY(begin: 0.15, end: 0, duration: 500.ms, curve: Curves.easeOutBack),
+
             GradientButton(
               text: 'Contact Me',
               icon: Icons.email_outlined,
@@ -232,7 +274,11 @@ class HeroSection extends StatelessWidget {
                 );
                 onContentClick();
               },
-            ),
+            )
+            .animate(delay: 800.ms)
+            .fade(duration: 500.ms)
+            .slideY(begin: 0.15, end: 0, duration: 500.ms, curve: Curves.easeOutBack),
+
             //Resume Button
             Consumer<PortfolioProvider>(
               builder: (context, provider, child) {
@@ -265,7 +311,10 @@ class HeroSection extends StatelessWidget {
                         },
                 );
               },
-            ),
+            )
+            .animate(delay: 900.ms)
+            .fade(duration: 500.ms)
+            .slideY(begin: 0.15, end: 0, duration: 500.ms, curve: Curves.easeOutBack),
           ],
         ),
       ],
@@ -296,90 +345,96 @@ class HeroSection extends StatelessWidget {
             final double glowW = cardW + (isMobile ? 16 : 30);
             final double glowH = cardH + (isMobile ? 16 : 40);
 
+            final isDark = AppTheme.isDark(context);
+            final primary = Theme.of(context).colorScheme.primary;
+
             return Center(
               child: Stack(
                 alignment: Alignment.center,
                 children: [
-                  // Glowing
-                  Builder(
-                    builder: (context) {
-                      final isDark = AppTheme.isDark(context);
-                      final primary = Theme.of(context).colorScheme.primary;
+                  // Glowing ring — pulses gently
+                  Container(
+                    height: glowH,
+                    width: glowW,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(40),
+                      border: Border.all(
+                        color: primary.withAlpha(isDark ? 25 : 40),
+                        width: 2,
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: primary.withAlpha(isDark ? 20 : 18),
+                          blurRadius: 50,
+                          spreadRadius: isDark ? 10 : 6,
+                        ),
+                      ],
+                    ),
+                  )
+                  .animate(onPlay: (c) => c.repeat(reverse: true))
+                  .scale(
+                    begin: const Offset(1.0, 1.0),
+                    end: const Offset(1.02, 1.02),
+                    duration: 3000.ms,
+                    curve: Curves.easeInOut,
+                  ),
 
-                      return Container(
-                        height: glowH,
-                        width: glowW,
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(40),
-                          border: Border.all(
-                            color: primary.withAlpha(isDark ? 25 : 40),
-                            width: 2,
-                          ),
-                          boxShadow: [
-                            BoxShadow(
-                              color: primary.withAlpha(isDark ? 20 : 18),
-                              blurRadius: 50,
-                              spreadRadius: isDark ? 10 : 6,
+                  // Card — entrance animation + continuous float
+                  _FloatingCard(
+                    child: Container(
+                      height: cardH,
+                      width: cardW,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(35),
+                        color: isDark ? Colors.white.withAlpha(7) : Colors.white,
+                        border: Border.all(
+                          color: isDark ? Colors.white.withAlpha(15) : AppTheme.getBorderColor(context),
+                          width: 1.2,
+                        ),
+                        boxShadow: AppTheme.getCardShadow(context),
+                      ),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(35),
+                        child: Stack(
+                          children: [
+                            Positioned(
+                              top: -50,
+                              right: -50,
+                              child: Container(
+                                height: 200,
+                                width: 200,
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  color: primary.withAlpha(isDark ? 25 : 12),
+                                ),
+                              ),
+                            ),
+                            Center(
+                              child: Padding(
+                                padding: const EdgeInsets.all(20.0),
+                                child: CachedNetworkImage(
+                                  imageUrl: finalImageUrl,
+                                  fit: BoxFit.contain,
+                                  placeholder: (context, url) => const Center(
+                                    child: CircularProgressIndicator(strokeWidth: 2),
+                                  ),
+                                  errorWidget: (context, url, error) =>
+                                      _buildFallbackImage(context),
+                                ),
+                              ),
                             ),
                           ],
                         ),
-                      );
-                    },
-                  ),
-
-                  // Background
-                  Builder(
-                    builder: (context) {
-                      final isDark = AppTheme.isDark(context);
-                      final primary = Theme.of(context).colorScheme.primary;
-
-                      return Container(
-                        height: cardH,
-                        width: cardW,
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(35),
-                          color: isDark ? Colors.white.withAlpha(7) : Colors.white,
-                          border: Border.all(
-                            color: isDark ? Colors.white.withAlpha(15) : AppTheme.getBorderColor(context),
-                            width: 1.2,
-                          ),
-                          boxShadow: AppTheme.getCardShadow(context),
-                        ),
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(35),
-                          child: Stack(
-                            children: [
-                              Positioned(
-                                top: -50,
-                                right: -50,
-                                child: Container(
-                                  height: 200,
-                                  width: 200,
-                                  decoration: BoxDecoration(
-                                    shape: BoxShape.circle,
-                                    color: primary.withAlpha(isDark ? 25 : 12),
-                                  ),
-                                ),
-                              ),
-                              Center(
-                                child: Padding(
-                                  padding: const EdgeInsets.all(20.0),
-                                  child: CachedNetworkImage(
-                                    imageUrl: finalImageUrl,
-                                    fit: BoxFit.contain,
-                                    placeholder: (context, url) => const Center(
-                                      child: CircularProgressIndicator(strokeWidth: 2),
-                                    ),
-                                    errorWidget: (context, url, error) =>
-                                        _buildFallbackImage(context),
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      );
-                    },
+                      ),
+                    )
+                    .animate(delay: 300.ms)
+                    .fade(duration: 800.ms)
+                    .slideX(
+                      begin: 0.08,
+                      end: 0,
+                      duration: 800.ms,
+                      curve: Curves.easeOutCubic,
+                    ),
                   ),
                 ],
               ),
@@ -425,5 +480,48 @@ class HeroSection extends StatelessWidget {
     } catch (e) {
       debugPrint('Error launching URL: $e');
     }
+  }
+}
+
+/// A widget that perpetually floats its child up and down.
+class _FloatingCard extends StatefulWidget {
+  final Widget child;
+  const _FloatingCard({required this.child});
+
+  @override
+  State<_FloatingCard> createState() => _FloatingCardState();
+}
+
+class _FloatingCardState extends State<_FloatingCard>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _ctrl;
+  late final Animation<double> _anim;
+
+  @override
+  void initState() {
+    super.initState();
+    _ctrl = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 2800),
+    )..repeat(reverse: true);
+    _anim = CurvedAnimation(parent: _ctrl, curve: Curves.easeInOut);
+  }
+
+  @override
+  void dispose() {
+    _ctrl.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: _anim,
+      builder: (context, child) => Transform.translate(
+        offset: Offset(0, -8 * _anim.value),
+        child: child,
+      ),
+      child: widget.child,
+    );
   }
 }

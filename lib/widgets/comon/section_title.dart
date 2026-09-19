@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import '../../config/theme.dart';
 
 class SectionTitle extends StatelessWidget {
@@ -29,6 +30,15 @@ class SectionTitle extends StatelessWidget {
               gradient: AppTheme.getPrimaryGradient(context),
               borderRadius: BorderRadius.circular(2),
             ),
+          )
+          .animate()
+          .fade(duration: 400.ms)
+          .scaleX(
+            begin: 0,
+            end: 1,
+            duration: 600.ms,
+            curve: Curves.easeOutCubic,
+            alignment: Alignment.centerLeft,
           ),
           const SizedBox(height: 16),
           //Text
@@ -43,7 +53,10 @@ class SectionTitle extends StatelessWidget {
               ),
               textAlign: centered ? TextAlign.center : TextAlign.left,
             ),
-          ),
+          )
+          .animate(delay: 150.ms)
+          .fade(duration: 600.ms)
+          .slideY(begin: 0.2, end: 0, duration: 600.ms, curve: Curves.easeOutCubic),
         ],
 
         if(subtitle != null)...[
@@ -52,8 +65,10 @@ class SectionTitle extends StatelessWidget {
             subtitle!,
             style: Theme.of(context).textTheme.bodyLarge,
             textAlign: centered ? TextAlign.center : TextAlign.left,
-          ),
-
+          )
+          .animate(delay: 280.ms)
+          .fade(duration: 500.ms)
+          .slideY(begin: 0.1, end: 0, duration: 500.ms, curve: Curves.easeOut),
         ]
       ],
     );

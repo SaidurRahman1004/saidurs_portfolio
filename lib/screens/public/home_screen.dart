@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:flutter_animate/flutter_animate.dart';
 import 'package:provider/provider.dart';
 import '../../widgets/comon/custom_app_bar.dart';
 import 'sections/hero_section.dart';
@@ -267,10 +266,7 @@ class _HomeScreenState extends State<HomeScreen> {
               Container(key: educationKey, child: const EducationSection()),
               const CertificationsSection(),
               Container(key: contactKey, child: const ContactSection()),
-            ]
-                .animate(interval: 200.ms)
-                .fade(duration: 800.ms)
-                .slideY(begin: 0.1, end: 0, duration: 800.ms, curve: Curves.easeOutCubic),
+            ],
           ),
         ),
       ),

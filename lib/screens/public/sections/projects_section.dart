@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:futter_portfileo_website/models/project_model.dart';
 import 'package:futter_portfileo_website/widgets/comon/section_title.dart';
 import '../../../config/theme.dart';
@@ -606,7 +607,10 @@ class _ProjectsSectionState extends State<ProjectsSection> {
       ),
     ),
   ),
-);
+  )
+  .animate(delay: Duration(milliseconds: 80 + position * 90))
+  .fade(duration: 600.ms)
+  .slideY(begin: 0.07, end: 0, duration: 600.ms, curve: Curves.easeOutCubic);
 }
 
   Widget _buildFallbackBanner(BuildContext context, ProjectModel project) {

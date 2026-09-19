@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:intl/intl.dart';
@@ -58,7 +59,7 @@ class EducationSection extends StatelessWidget {
                   itemCount: educationList.length,
                   itemBuilder: (context, index) {
                     final edu = educationList[index];
-                    return _EducationCard(education: edu);
+                    return _EducationCard(education: edu, index: index);
                   },
                 );
               },
@@ -72,8 +73,9 @@ class EducationSection extends StatelessWidget {
 
 class _EducationCard extends StatelessWidget {
   final EducationModel education;
+  final int index;
 
-  const _EducationCard({required this.education});
+  const _EducationCard({required this.education, this.index = 0});
 
   Future<void> _launchUrl(String? url) async {
     if (url == null || url.trim().isEmpty) return;
@@ -267,6 +269,9 @@ class _EducationCard extends StatelessWidget {
           ],
         ],
       ),
-    );
+    )
+    .animate(delay: Duration(milliseconds: 100 + index * 120))
+    .fade(duration: 600.ms)
+    .slideY(begin: 0.08, end: 0, duration: 600.ms, curve: Curves.easeOutCubic);
   }
 }

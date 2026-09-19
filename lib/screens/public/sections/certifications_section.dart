@@ -1,5 +1,6 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -57,6 +58,7 @@ class CertificationsSection extends StatelessWidget {
                       itemCount: certifications.length,
                       itemBuilder: (context, index) => _CertificationCard(
                         certification: certifications[index],
+                        index: index,
                       ),
                     );
                   },
@@ -93,8 +95,9 @@ class _EmptyCertifications extends StatelessWidget {
 
 class _CertificationCard extends StatelessWidget {
   final CertificationModel certification;
+  final int index;
 
-  const _CertificationCard({required this.certification});
+  const _CertificationCard({required this.certification, this.index = 0});
 
   bool get _hasImage => certification.imageUrl?.trim().isNotEmpty == true;
   bool get _hasCredential => certification.credentialUrl?.trim().isNotEmpty == true;
@@ -263,6 +266,14 @@ class _CertificationCard extends StatelessWidget {
           ),
         ),
       ),
+    )
+    .animate(delay: Duration(milliseconds: 80 + index * 90))
+    .fade(duration: 550.ms)
+    .scale(
+      begin: const Offset(0.94, 0.94),
+      end: const Offset(1, 1),
+      duration: 550.ms,
+      curve: Curves.easeOutCubic,
     );
   }
 }

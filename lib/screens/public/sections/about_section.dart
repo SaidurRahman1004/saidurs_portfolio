@@ -1,5 +1,6 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:futter_portfileo_website/config/constants.dart';
 import 'package:futter_portfileo_website/widgets/comon/section_title.dart';
 import '../../../config/theme.dart';
@@ -38,11 +39,23 @@ class AboutSection extends StatelessWidget {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        //image Left
-        Expanded(flex: 2, child: _buildAvatar(context)),
+        //image Left — slides in from left
+        Expanded(
+          flex: 2,
+          child: _buildAvatar(context)
+          .animate()
+          .fade(duration: 700.ms)
+          .slideX(begin: -0.08, end: 0, duration: 700.ms, curve: Curves.easeOutCubic),
+        ),
         const SizedBox(width: 60),
-        //Description Right
-        Expanded(flex: 3, child: _buildContent(context)),
+        //Description Right — slides in from right
+        Expanded(
+          flex: 3,
+          child: _buildContent(context)
+          .animate(delay: 200.ms)
+          .fade(duration: 700.ms)
+          .slideX(begin: 0.08, end: 0, duration: 700.ms, curve: Curves.easeOutCubic),
+        ),
       ],
     );
   }
@@ -51,9 +64,15 @@ class AboutSection extends StatelessWidget {
   Widget _buildMobileLayout(BuildContext context) {
     return Column(
       children: [
-        _buildAvatar(context),
+        _buildAvatar(context)
+        .animate()
+        .fade(duration: 700.ms)
+        .slideY(begin: 0.07, end: 0, duration: 700.ms, curve: Curves.easeOutCubic),
         const SizedBox(height: 40),
-        _buildContent(context),
+        _buildContent(context)
+        .animate(delay: 250.ms)
+        .fade(duration: 700.ms)
+        .slideY(begin: 0.07, end: 0, duration: 700.ms, curve: Curves.easeOutCubic),
       ],
     );
   }
