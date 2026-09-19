@@ -34,6 +34,7 @@ class PortfolioSeedData {
           fullDescription:
               'Developed and maintained a production mobile application published on Google Play Store and Apple App Store. Built student-focused marketplace services with 6+ categories (Accommodation, Events, Services, Jobs, Marketplace, Giveaways), real-time user messaging using Socket.IO, integrated Airtel Money & MTN Mobile Money payments, QR-based ticketing, promo codes, and location-based discovery with Google Maps.',
           role: 'Junior Flutter Developer',
+          projectType: 'App',
           category: 'Mobile Development',
           featured: true,
           status: 'Production',
@@ -75,6 +76,7 @@ class PortfolioSeedData {
           fullDescription:
               'A TikTok-style social video sharing application featuring interactive video feeds, controlled video preloading, auto-looping playback, lazy loading, and visibility-based performance optimizations. Implemented camera capture, video compression, multipart video uploads, thumbnail generation, in-app purchases, subscription management, and Google Mobile Ads.',
           role: 'Mobile App Developer',
+          projectType: 'App',
           category: 'Mobile Development',
           featured: true,
           status: 'In Development',
@@ -111,6 +113,7 @@ class PortfolioSeedData {
           fullDescription:
               'Built a multi-feature productivity application with Flutter and a custom Django REST Framework backend. Designed structured full-stack architecture with JWT authentication, user-specific data isolation, offline-first SQLite local storage, synchronized workflows, Clean Architecture, and Provider state management.',
           role: 'Full-Stack Developer',
+          projectType: 'App',
           category: 'Full-Stack Mobile',
           featured: false,
           status: 'Completed',
@@ -145,6 +148,7 @@ class PortfolioSeedData {
           fullDescription:
               'Social travel platform built with Flutter and Firebase. Features public and private GPS-tagged trips, community engagement feeds, Cloud Firestore with offline caching, Google Maps integration, Geolocator with automatic reverse geocoding address resolution, ImgBB REST API image uploads, and GoRouter declarative navigation.',
           role: 'Flutter Developer',
+          projectType: 'App',
           category: 'Mobile Development',
           featured: false,
           status: 'Completed',

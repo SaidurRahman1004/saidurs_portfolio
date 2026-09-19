@@ -260,10 +260,29 @@ class _ProjectsSectionState extends State<ProjectsSection> {
         ),
         boxShadow: AppTheme.getCardShadow(context),
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Banner Image & Badges
+      child: Material(
+        color: Colors.transparent,
+        borderRadius: BorderRadius.circular(20),
+        child: InkWell(
+          borderRadius: BorderRadius.circular(20),
+          onTap: () {
+            AnalyticsService.instance.logProjectDetailsOpen(
+              projectId: project.id,
+              projectTitle: project.name,
+              projectSlug: project.name.toLowerCase().replaceAll(RegExp(r'[^a-z0-9]+'), '-'),
+              category: project.category,
+              sourceSection: 'featured_projects',
+              position: position,
+            );
+            showDialog(
+              context: context,
+              builder: (context) => ProjectDetailsModal(project: project),
+            );
+          },
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Banner Image & Badges
           Stack(
             children: [
               if (project.imageUrl != null && project.imageUrl!.isNotEmpty)
@@ -319,37 +338,63 @@ class _ProjectsSectionState extends State<ProjectsSection> {
                   ),
                 ),
 
-              // Category Badge
-              if (project.category != null && project.category!.isNotEmpty)
-                Positioned(
-                  top: 12,
-                  right: 12,
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 10,
-                      vertical: 4,
-                    ),
-                    decoration: BoxDecoration(
-                      color: isDark
-                          ? Theme.of(context).scaffoldBackgroundColor.withAlpha(200)
-                          : const Color(0xFFF1F5F9),
-                      borderRadius: BorderRadius.circular(20),
-                      border: Border.all(
-                        color: isDark
-                            ? primary.withAlpha(76)
-                            : AppTheme.getBorderColor(context),
+              // Badges on Top Right (ProjectType & Category)
+              Positioned(
+                top: 12,
+                right: 12,
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    if (project.displayProjectType.isNotEmpty) ...[
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 4,
+                        ),
+                        decoration: BoxDecoration(
+                          color: primary.withAlpha(isDark ? 200 : 230),
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: Text(
+                          project.displayProjectType.toUpperCase(),
+                          style: const TextStyle(
+                            fontSize: 9,
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
                       ),
-                    ),
-                    child: Text(
-                      project.category!,
-                      style: TextStyle(
-                        fontSize: 9,
-                        color: isDark ? Colors.white70 : AppTheme.lightTextSecondary,
-                        fontWeight: FontWeight.w700,
+                      const SizedBox(width: 6),
+                    ],
+                    if (project.category != null && project.category!.isNotEmpty)
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 4,
+                        ),
+                        decoration: BoxDecoration(
+                          color: isDark
+                              ? Theme.of(context).scaffoldBackgroundColor.withAlpha(200)
+                              : const Color(0xFFF1F5F9),
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(
+                            color: isDark
+                                ? primary.withAlpha(76)
+                                : AppTheme.getBorderColor(context),
+                          ),
+                        ),
+                        child: Text(
+                          project.category!,
+                          style: TextStyle(
+                            fontSize: 9,
+                            color: isDark ? Colors.white70 : AppTheme.lightTextSecondary,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
                       ),
-                    ),
-                  ),
+                  ],
                 ),
+              ),
             ],
           ),
 
@@ -559,8 +604,10 @@ class _ProjectsSectionState extends State<ProjectsSection> {
           ),
         ],
       ),
-    );
-  }
+    ),
+  ),
+);
+}
 
   Widget _buildFallbackBanner(BuildContext context, ProjectModel project) {
     return Container(

@@ -402,6 +402,28 @@ class _ProjectsManagementState extends State<ProjectsManagement> {
                     ),
                   ),
                 ),
+                if (project.displayProjectType.isNotEmpty) ...[
+                  const SizedBox(width: 8),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 4,
+                    ),
+                    decoration: BoxDecoration(
+                      color: AppTheme.primaryColor.withAlpha(40),
+                      borderRadius: BorderRadius.circular(6),
+                      border: Border.all(color: AppTheme.primaryColor.withAlpha(80)),
+                    ),
+                    child: Text(
+                      project.displayProjectType.toUpperCase(),
+                      style: const TextStyle(
+                        fontSize: 10,
+                        color: AppTheme.primaryColor,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ],
               ],
             ),
           ),

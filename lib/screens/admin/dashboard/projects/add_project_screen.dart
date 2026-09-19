@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import '../../../../config/theme.dart';
 import '../../../../providers/portfolio_provider.dart';
 import '../../../../models/project_model.dart';
@@ -19,16 +20,25 @@ class _AddProjectDialogState extends State<AddProjectDialog> {
 
   /// Controllers
   final _nameController = TextEditingController();
-  final _descriptionController = TextEditingController();
+  final _shortDescriptionController = TextEditingController();
+  final _fullDescriptionController = TextEditingController();
+  final _categoryController = TextEditingController(text: 'Mobile Development');
+  final _customProjectTypeController = TextEditingController();
   final _githubController = TextEditingController();
   final _liveUrlController = TextEditingController();
+  final _playStoreUrlController = TextEditingController();
+  final _appStoreUrlController = TextEditingController();
+  final _otherUrlController = TextEditingController();
+  final _otherUrlLabelController = TextEditingController();
+  final _imageUrlController = TextEditingController();
   final _orderController = TextEditingController(text: '0');
   final _techController = TextEditingController();
 
   /// Form values
-  final List<String> _techStack = [];
-  String? _imageUrl;
+  String _projectType = 'App'; // 'App', 'Web', 'CMS', 'CRM', 'Other'
+  final List<String> _techStack = ['Flutter', 'Dart'];
   Uint8List? _selectedImageBytes;
+  String? _uploadedImageUrl;
   bool _isFeatured = false;
   bool _isVisible = true;
   bool _isLoading = false;
@@ -39,12 +49,28 @@ class _AddProjectDialogState extends State<AddProjectDialog> {
   final ImagePicker _picker = ImagePicker();
   final ImageUploadService _uploadService = ImageUploadService.instance;
 
+  final List<Map<String, dynamic>> _projectTypeOptions = const [
+    {'type': 'App', 'label': 'App (Mobile/Desktop)', 'icon': Icons.phone_android},
+    {'type': 'Web', 'label': 'Web Application', 'icon': Icons.language},
+    {'type': 'CMS', 'label': 'CMS Platform', 'icon': Icons.dashboard_customize},
+    {'type': 'CRM', 'label': 'CRM System', 'icon': Icons.people_alt},
+    {'type': 'Other', 'label': 'Others / Custom', 'icon': Icons.more_horiz},
+  ];
+
   @override
   void dispose() {
     _nameController.dispose();
-    _descriptionController.dispose();
+    _shortDescriptionController.dispose();
+    _fullDescriptionController.dispose();
+    _categoryController.dispose();
+    _customProjectTypeController.dispose();
     _githubController.dispose();
     _liveUrlController.dispose();
+    _playStoreUrlController.dispose();
+    _appStoreUrlController.dispose();
+    _otherUrlController.dispose();
+    _otherUrlLabelController.dispose();
+    _imageUrlController.dispose();
     _orderController.dispose();
     _techController.dispose();
     super.dispose();
@@ -64,12 +90,11 @@ class _AddProjectDialogState extends State<AddProjectDialog> {
 
       final imageBytes = await image.readAsBytes();
 
-      // image size Validate
       if (!_uploadService.validateImageSize(imageBytes)) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
-              content: Text(' Image size too large!  Max 5 MB allowed.'),
+              content: Text('Image size too large! Max 5 MB allowed.'),
               backgroundColor: Colors.red,
             ),
           );
@@ -80,12 +105,8 @@ class _AddProjectDialogState extends State<AddProjectDialog> {
       setState(() {
         _selectedImageBytes = imageBytes;
       });
-
-      /// Show size info
-      final sizeInfo = _uploadService.getImageSizeInfo(imageBytes);
-      debugPrint('Selected image size: $sizeInfo');
     } catch (e) {
-      debugPrint(' Error picking image: $e');
+      debugPrint('Error picking image: $e');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -97,7 +118,7 @@ class _AddProjectDialogState extends State<AddProjectDialog> {
     }
   }
 
-  ///Upload image to ImgBB
+  /// Upload image to ImgBB
   Future<String?> _uploadImage() async {
     if (_selectedImageBytes == null) return null;
 
@@ -111,37 +132,38 @@ class _AddProjectDialogState extends State<AddProjectDialog> {
         imageBytes: _selectedImageBytes!,
         fileName: 'project_${DateTime.now().millisecondsSinceEpoch}.jpg',
         onProgress: (progress) {
-          setState(() {
-            _uploadProgress = progress;
-          });
+          if (mounted) {
+            setState(() {
+              _uploadProgress = progress;
+            });
+          }
         },
       );
 
-      setState(() {
-        _isUploadingImage = false;
-        _imageUrl = imageUrl;
-      });
+      if (mounted) {
+        setState(() {
+          _isUploadingImage = false;
+          _uploadedImageUrl = imageUrl;
+        });
+      }
 
       return imageUrl;
     } catch (e) {
-      setState(() {
-        _isUploadingImage = false;
-      });
-
       if (mounted) {
+        setState(() {
+          _isUploadingImage = false;
+        });
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Image upload failed: $e'),
-            backgroundColor: Colors.red,
+            content: Text('Image upload error: $e. Proceeding with save.'),
+            backgroundColor: Colors.orange,
           ),
         );
       }
-
       return null;
     }
   }
 
-  // Add tech to stack
   void _addTech() {
     final tech = _techController.text.trim();
     if (tech.isNotEmpty && !_techStack.contains(tech)) {
@@ -152,26 +174,15 @@ class _AddProjectDialogState extends State<AddProjectDialog> {
     }
   }
 
-  // Remove tech from stack
   void _removeTech(String tech) {
     setState(() {
       _techStack.remove(tech);
     });
   }
 
-  //Save project
+  /// Save project
   Future<void> _saveProject() async {
     if (!_formKey.currentState!.validate()) {
-      return;
-    }
-
-    if (_techStack.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Please add at least one technology'),
-          backgroundColor: Colors.orange,
-        ),
-      );
       return;
     }
 
@@ -180,36 +191,52 @@ class _AddProjectDialogState extends State<AddProjectDialog> {
     });
 
     try {
-      //Upload image if selected
-      String? finalImageUrl = _imageUrl;
+      // Determine final image URL (Optional)
+      String? finalImageUrl = _uploadedImageUrl;
 
-      if (_selectedImageBytes != null && _imageUrl == null) {
-        finalImageUrl = await _uploadImage();
-        if (finalImageUrl == null) {
-          throw Exception('Image upload failed');
+      // 1. If an image file was picked and not uploaded yet, try uploading it
+      if (_selectedImageBytes != null && finalImageUrl == null) {
+        final uploaded = await _uploadImage();
+        if (uploaded != null) {
+          finalImageUrl = uploaded;
         }
       }
 
-      //Create ProjectModel
+      // 2. If no image from file, fall back to manual Image URL text field if entered
+      if (finalImageUrl == null && _imageUrlController.text.trim().isNotEmpty) {
+        finalImageUrl = _imageUrlController.text.trim();
+      }
+
+      final title = _nameController.text.trim();
+      final shortDesc = _shortDescriptionController.text.trim();
+      final fullDesc = _fullDescriptionController.text.trim().isNotEmpty
+          ? _fullDescriptionController.text.trim()
+          : shortDesc;
+
       final newProject = ProjectModel(
         id: '',
-        name: _nameController.text.trim(),
-        description: _descriptionController.text.trim(),
-        techStack: _techStack,
-        githubUrl: _githubController.text.trim(),
-        liveUrl: _liveUrlController.text.trim().isEmpty
-            ? null
-            : _liveUrlController.text.trim(),
+        title: title,
+        shortDescription: shortDesc,
+        fullDescription: fullDesc,
+        projectType: _projectType,
+        customProjectType: _projectType == 'Other' ? _customProjectTypeController.text.trim() : null,
+        category: _categoryController.text.trim().isNotEmpty ? _categoryController.text.trim() : null,
+        technologies: _techStack,
         imageUrl: finalImageUrl,
+        liveUrl: _liveUrlController.text.trim().isNotEmpty ? _liveUrlController.text.trim() : null,
+        playStoreUrl: _playStoreUrlController.text.trim().isNotEmpty ? _playStoreUrlController.text.trim() : null,
+        appStoreUrl: _appStoreUrlController.text.trim().isNotEmpty ? _appStoreUrlController.text.trim() : null,
+        githubUrl: _githubController.text.trim().isNotEmpty ? _githubController.text.trim() : null,
+        otherUrl: _otherUrlController.text.trim().isNotEmpty ? _otherUrlController.text.trim() : null,
+        otherUrlLabel: _otherUrlLabelController.text.trim().isNotEmpty ? _otherUrlLabelController.text.trim() : null,
         isFeatured: _isFeatured,
         isVisible: _isVisible,
-        order: int.tryParse(_orderController.text) ?? 0,
+        sortOrder: int.tryParse(_orderController.text.trim()) ?? 0,
         createdAt: DateTime.now(),
       );
 
       if (!mounted) return;
 
-      //Save to Firebase
       final portfolioProvider = Provider.of<PortfolioProvider>(
         context,
         listen: false,
@@ -217,30 +244,25 @@ class _AddProjectDialogState extends State<AddProjectDialog> {
 
       await portfolioProvider.addProject(newProject);
 
-      //Success!
       if (mounted) {
         Navigator.of(context).pop();
-
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('"${newProject.name}" added successfully! '),
+            content: Text('"${newProject.title}" saved successfully!'),
             backgroundColor: Colors.green,
             behavior: SnackBarBehavior.floating,
           ),
         );
       }
     } catch (e) {
-      setState(() {
-        _isLoading = false;
-      });
-
       if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(
-              'Error:  ${e.toString().replaceAll('Exception: ', '')}',
-            ),
-            backgroundColor: AppTheme.accentColor,
+            content: Text('Save error: ${e.toString().replaceAll('Exception: ', '')}'),
+            backgroundColor: Colors.redAccent,
             behavior: SnackBarBehavior.floating,
           ),
         );
@@ -248,102 +270,255 @@ class _AddProjectDialogState extends State<AddProjectDialog> {
     }
   }
 
+  InputDecoration _buildInputDecoration({
+    required BuildContext context,
+    required String hintText,
+    IconData? prefixIcon,
+    Widget? suffixIcon,
+  }) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final primary = AppTheme.getPrimaryColor(context);
+    final borderColor = isDark ? const Color(0xFF334155) : const Color(0xFFCBD5E1);
+    final fillColor = isDark ? const Color(0xFF1E2640) : const Color(0xFFF8FAFC);
+    final hintColor = isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B);
+
+    return InputDecoration(
+      hintText: hintText,
+      hintStyle: TextStyle(color: hintColor, fontSize: 13),
+      prefixIcon: prefixIcon != null ? Icon(prefixIcon, size: 20, color: primary) : null,
+      suffixIcon: suffixIcon,
+      filled: true,
+      fillColor: fillColor,
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: BorderSide(color: borderColor, width: 1),
+      ),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: BorderSide(color: borderColor, width: 1),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: BorderSide(color: primary, width: 2),
+      ),
+      errorBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: const BorderSide(color: Colors.redAccent, width: 1),
+      ),
+    );
+  }
+
+  Widget _buildFieldLabel(BuildContext context, String label, {bool isRequired = false, String? hint}) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: Row(
+        children: [
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.w600,
+              color: isDark ? const Color(0xFFE2E8F0) : const Color(0xFF1E293B),
+            ),
+          ),
+          if (isRequired)
+            const Text(' *', style: TextStyle(color: Colors.redAccent, fontWeight: FontWeight.bold)),
+          if (hint != null) ...[
+            const SizedBox(width: 8),
+            Text(
+              hint,
+              style: TextStyle(
+                fontSize: 11,
+                color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  TextStyle _inputTextStyle(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return TextStyle(
+      fontSize: 14,
+      color: isDark ? Colors.white : const Color(0xFF0F172A),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final primary = AppTheme.getPrimaryColor(context);
+    final isMobile = MediaQuery.of(context).size.width < 600;
+
     return Dialog(
-      backgroundColor: Colors.transparent,
-      child: Container(
-        constraints: const BoxConstraints(maxWidth: 600, maxHeight: 800),
-        decoration: BoxDecoration(
-          gradient: AppTheme.cardGradient,
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(
-            color: AppTheme.primaryColor.withValues(alpha: 0.3),
-            width: 1,
-          ),
+      backgroundColor: isDark ? const Color(0xFF13182E) : Colors.white,
+      insetPadding: EdgeInsets.symmetric(
+        horizontal: isMobile ? 12 : 24,
+        vertical: 24,
+      ),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(20),
+        side: BorderSide(
+          color: isDark ? primary.withAlpha(80) : const Color(0xFFCBD5E1),
+          width: 1.5,
         ),
+      ),
+      child: Container(
+        constraints: const BoxConstraints(maxWidth: 720, maxHeight: 880),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            _buildHeader(),
-
+            _buildHeader(context, isDark, primary),
             Expanded(
               child: SingleChildScrollView(
-                padding: const EdgeInsets.all(24),
+                padding: EdgeInsets.all(isMobile ? 16 : 24),
                 child: Form(
                   key: _formKey,
                   child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      _buildImageSection(),
+                      // Project Type Selector
+                      _buildProjectTypeSelector(context, isDark, primary),
                       const SizedBox(height: 20),
-                      _buildNameField(),
+
+                      // Name Field
+                      _buildFieldLabel(context, 'Project Title', isRequired: true),
+                      TextFormField(
+                        controller: _nameController,
+                        style: _inputTextStyle(context),
+                        decoration: _buildInputDecoration(
+                          context: context,
+                          hintText: 'e.g., EzyDash Student Marketplace, Task Tracker',
+                          prefixIcon: Icons.title,
+                        ),
+                        validator: (value) {
+                          if (value == null || value.trim().isEmpty) {
+                            return 'Please enter a project title';
+                          }
+                          return null;
+                        },
+                      ),
                       const SizedBox(height: 20),
-                      _buildDescriptionField(),
+
+                      // Category Field
+                      _buildFieldLabel(context, 'Category', hint: '(Optional, e.g. Mobile Development, Full-Stack)'),
+                      TextFormField(
+                        controller: _categoryController,
+                        style: _inputTextStyle(context),
+                        decoration: _buildInputDecoration(
+                          context: context,
+                          hintText: 'e.g., Mobile Development, Web Application, SaaS',
+                          prefixIcon: Icons.category_outlined,
+                        ),
+                      ),
                       const SizedBox(height: 20),
-                      _buildTechStackSection(),
+
+                      // Short Description Field
+                      _buildFieldLabel(context, 'Short Description', isRequired: true, hint: '(Displayed on cards & summaries)'),
+                      TextFormField(
+                        controller: _shortDescriptionController,
+                        style: _inputTextStyle(context),
+                        maxLines: 2,
+                        decoration: _buildInputDecoration(
+                          context: context,
+                          hintText: 'Brief summary of what this project does and key value...',
+                        ),
+                        validator: (value) {
+                          if (value == null || value.trim().isEmpty) {
+                            return 'Please enter a short description';
+                          }
+                          return null;
+                        },
+                      ),
                       const SizedBox(height: 20),
-                      _buildGitHubField(),
-                      const SizedBox(height: 20),
-                      _buildLiveUrlField(),
-                      const SizedBox(height: 20),
-                      _buildOrderField(),
-                      const SizedBox(height: 20),
-                      _buildToggles(),
+
+                      // Full Description Field
+                      _buildFieldLabel(context, 'Full Description', hint: '(Optional, detailed overview for the details modal)'),
+                      TextFormField(
+                        controller: _fullDescriptionController,
+                        style: _inputTextStyle(context),
+                        maxLines: 4,
+                        decoration: _buildInputDecoration(
+                          context: context,
+                          hintText: 'Comprehensive description covering features, architecture, and highlights...',
+                        ),
+                      ),
+                      const SizedBox(height: 24),
+
+                      // Project Image Section
+                      _buildImageSection(context, isDark, primary),
+                      const SizedBox(height: 24),
+
+                      // Tech Stack
+                      _buildTechStackSection(context, isDark, primary),
+                      const SizedBox(height: 24),
+
+                      // Dynamic URLs based on Project Type
+                      _buildUrlsSection(context, isDark, primary),
+                      const SizedBox(height: 24),
+
+                      // Order & Toggles
+                      _buildSettingsSection(context, isDark, primary),
                     ],
                   ),
                 ),
               ),
             ),
-
-            _buildFooter(),
+            _buildFooter(context, isDark, primary),
           ],
         ),
       ),
     );
   }
 
-  //Header
-  Widget _buildHeader() {
+  Widget _buildHeader(BuildContext context, bool isDark, Color primary) {
     return Container(
-      padding: const EdgeInsets.all(24),
+      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 18),
       decoration: BoxDecoration(
-        gradient: AppTheme.primaryGradient.scale(0.2),
+        color: isDark ? const Color(0xFF192038) : const Color(0xFFF1F5F9),
         borderRadius: const BorderRadius.only(
           topLeft: Radius.circular(20),
           topRight: Radius.circular(20),
+        ),
+        border: Border(
+          bottom: BorderSide(
+            color: isDark ? const Color(0xFF2B3558) : const Color(0xFFE2E8F0),
+          ),
         ),
       ),
       child: Row(
         children: [
           Container(
-            padding: const EdgeInsets.all(12),
+            padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
-              color: AppTheme.primaryColor.withValues(alpha: 0.2),
+              color: primary.withAlpha(40),
               borderRadius: BorderRadius.circular(12),
             ),
-            child: Icon(
-              Icons.work_outline,
-              color: AppTheme.primaryColor,
-              size: 28,
-            ),
+            child: Icon(Icons.rocket_launch, color: primary, size: 24),
           ),
-          const SizedBox(width: 16),
+          const SizedBox(width: 14),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
                   'Add New Project',
-                  style: Theme.of(
-                    context,
-                  ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: isDark ? Colors.white : const Color(0xFF0F172A),
+                  ),
                 ),
-                const SizedBox(height: 4),
+                const SizedBox(height: 2),
                 Text(
-                  'Showcase your latest work',
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: AppTheme.textSecondary,
+                  'Configure schema, project type, URLs, and showcase media',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
                   ),
                 ),
               ],
@@ -352,244 +527,307 @@ class _AddProjectDialogState extends State<AddProjectDialog> {
           IconButton(
             onPressed: _isLoading ? null : () => Navigator.pop(context),
             icon: const Icon(Icons.close),
+            tooltip: 'Cancel',
           ),
         ],
       ),
     );
   }
 
-  // Image Section
-  Widget _buildImageSection() {
+  Widget _buildProjectTypeSelector(BuildContext context, bool isDark, Color primary) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Row(
-          children: [
-            Text(
-              'Project Image',
-              style: Theme.of(
-                context,
-              ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600),
-            ),
-            const SizedBox(width: 8),
-            Text(
-              '(Optional)',
-              style: Theme.of(
-                context,
-              ).textTheme.bodySmall?.copyWith(color: AppTheme.textHint),
-            ),
-          ],
-        ),
-        const SizedBox(height: 12),
-
-        //Image Preview or Placeholder
-        Container(
-          height: 200,
-          width: double.infinity,
-          decoration: BoxDecoration(
-            color: AppTheme.darkBackground.withValues(alpha: 0.5),
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: AppTheme.primaryColor.withValues(alpha: 0.3)),
-          ),
-          child: _selectedImageBytes != null
-              ? Stack(
+        _buildFieldLabel(context, 'Project Type', hint: '(Optional: App, Web, CMS, CRM, Others)'),
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: _projectTypeOptions.map((opt) {
+            final isSelected = _projectType == opt['type'];
+            return InkWell(
+              onTap: () {
+                setState(() {
+                  _projectType = opt['type'];
+                });
+              },
+              borderRadius: BorderRadius.circular(10),
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 200),
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                decoration: BoxDecoration(
+                  color: isSelected
+                      ? primary.withAlpha(isDark ? 55 : 35)
+                      : (isDark ? const Color(0xFF1E2640) : const Color(0xFFF8FAFC)),
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(
+                    color: isSelected
+                        ? primary
+                        : (isDark ? const Color(0xFF334155) : const Color(0xFFCBD5E1)),
+                    width: isSelected ? 2 : 1,
+                  ),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
                   children: [
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(12),
-                      child: Image.memory(
-                        _selectedImageBytes!,
-                        width: double.infinity,
-                        height: 200,
-                        fit: BoxFit.cover,
+                    Icon(
+                      opt['icon'] as IconData,
+                      size: 18,
+                      color: isSelected ? primary : (isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B)),
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      opt['label'] as String,
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+                        color: isSelected
+                            ? primary
+                            : (isDark ? const Color(0xFFE2E8F0) : const Color(0xFF334155)),
                       ),
                     ),
-                    Positioned(
-                      top: 8,
-                      right: 8,
-                      child: IconButton(
-                        onPressed: _isUploadingImage ? null : () {
-                          setState(() {
-                            _selectedImageBytes = null;
-                            _imageUrl = null;
-                          });
-                        },
-                        icon: const Icon(Icons.close),
-                        style: IconButton.styleFrom(
-                          backgroundColor: Colors.black54,
-                          foregroundColor: Colors.white,
-                        ),
-                      ),
-                    ),
-                    if (_isUploadingImage)
-                      Positioned(
-                        bottom: 0,
-                        left: 0,
-                        right: 0,
-                        child: LinearProgressIndicator(
-                          value: _uploadProgress,
-                          backgroundColor: Colors.black54,
-                          color: AppTheme.primaryColor,
-                          minHeight: 6,
-                        ),
-                      ),
                   ],
-                )
-              : InkWell(
-                  onTap: _isUploadingImage ? null : _pickImage,
+                ),
+              ),
+            );
+          }).toList(),
+        ),
+        if (_projectType == 'Other') ...[
+          const SizedBox(height: 12),
+          _buildFieldLabel(context, 'Specify Other Project Type', hint: '(e.g., Desktop App, AI System, SaaS, CLI Tool)'),
+          TextFormField(
+            controller: _customProjectTypeController,
+            style: _inputTextStyle(context),
+            decoration: _buildInputDecoration(
+              context: context,
+              hintText: 'Enter custom project type...',
+              prefixIcon: Icons.edit_note,
+            ),
+          ),
+        ],
+      ],
+    );
+  }
+
+  Widget _buildImageSection(BuildContext context, bool isDark, Color primary) {
+    final previewUrl = _uploadedImageUrl ?? (_imageUrlController.text.trim().isNotEmpty ? _imageUrlController.text.trim() : null);
+
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: isDark ? const Color(0xFF192038) : const Color(0xFFF8FAFC),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(
+          color: isDark ? const Color(0xFF2B3558) : const Color(0xFFE2E8F0),
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.image, size: 20, color: primary),
+              const SizedBox(width: 8),
+              Text(
+                'Project Image',
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.bold,
+                  color: isDark ? Colors.white : const Color(0xFF0F172A),
+                ),
+              ),
+              const SizedBox(width: 8),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                decoration: BoxDecoration(
+                  color: primary.withAlpha(30),
+                  borderRadius: BorderRadius.circular(6),
+                ),
+                child: Text(
+                  'Optional',
+                  style: TextStyle(fontSize: 11, color: primary, fontWeight: FontWeight.bold),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+
+          // Image Preview Container
+          if (_selectedImageBytes != null)
+            Stack(
+              children: [
+                ClipRRect(
                   borderRadius: BorderRadius.circular(12),
-                  child: Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        if (_isUploadingImage)
-                          const CircularProgressIndicator()
-                        else
-                          Icon(
-                            Icons.add_photo_alternate_outlined,
-                            size: 48,
-                            color: AppTheme.textHint,
-                          ),
-                        const SizedBox(height: 12),
-                        Text(
-                          _isUploadingImage
-                              ? 'Uploading...'
-                              : 'Click to upload image',
-                          style: Theme.of(context).textTheme.bodyMedium
-                              ?.copyWith(color: AppTheme.textSecondary),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          'Max 5 MB • JPG, PNG',
-                          style: Theme.of(context).textTheme.bodySmall
-                              ?.copyWith(color: AppTheme.textHint),
-                        ),
-                      ],
+                  child: Image.memory(
+                    _selectedImageBytes!,
+                    height: 180,
+                    width: double.infinity,
+                    fit: BoxFit.cover,
+                  ),
+                ),
+                Positioned(
+                  top: 8,
+                  right: 8,
+                  child: CircleAvatar(
+                    backgroundColor: Colors.black87,
+                    radius: 18,
+                    child: IconButton(
+                      icon: const Icon(Icons.close, size: 16, color: Colors.white),
+                      onPressed: () {
+                        setState(() {
+                          _selectedImageBytes = null;
+                          _uploadedImageUrl = null;
+                        });
+                      },
                     ),
                   ),
                 ),
-        ),
-      ],
-    );
-  }
+              ],
+            )
+          else if (previewUrl != null)
+            Stack(
+              children: [
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(12),
+                  child: CachedNetworkImage(
+                    imageUrl: previewUrl,
+                    height: 180,
+                    width: double.infinity,
+                    fit: BoxFit.cover,
+                    placeholder: (_, __) => Container(
+                      height: 180,
+                      color: isDark ? const Color(0xFF1E2640) : const Color(0xFFE2E8F0),
+                      child: const Center(child: CircularProgressIndicator(strokeWidth: 2)),
+                    ),
+                    errorWidget: (_, __, ___) => Container(
+                      height: 180,
+                      color: isDark ? const Color(0xFF1E2640) : const Color(0xFFE2E8F0),
+                      child: const Center(
+                        child: Text('Invalid image URL', style: TextStyle(color: Colors.redAccent)),
+                      ),
+                    ),
+                  ),
+                ),
+                Positioned(
+                  top: 8,
+                  right: 8,
+                  child: CircleAvatar(
+                    backgroundColor: Colors.black87,
+                    radius: 18,
+                    child: IconButton(
+                      icon: const Icon(Icons.close, size: 16, color: Colors.white),
+                      onPressed: () {
+                        setState(() {
+                          _uploadedImageUrl = null;
+                          _imageUrlController.clear();
+                        });
+                      },
+                    ),
+                  ),
+                ),
+              ],
+            )
+          else
+            InkWell(
+              onTap: _isUploadingImage ? null : _pickImage,
+              borderRadius: BorderRadius.circular(12),
+              child: Container(
+                height: 120,
+                width: double.infinity,
+                decoration: BoxDecoration(
+                  color: isDark ? const Color(0xFF1E2640) : Colors.white,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: isDark ? const Color(0xFF334155) : const Color(0xFFCBD5E1),
+                    style: BorderStyle.solid,
+                  ),
+                ),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(Icons.cloud_upload_outlined, size: 36, color: primary),
+                    const SizedBox(height: 8),
+                    Text(
+                      'Click to browse & upload image (Max 5MB)',
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                        color: isDark ? const Color(0xFFE2E8F0) : const Color(0xFF1E293B),
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      'Auto uploads securely to ImgBB cloud storage',
+                      style: TextStyle(
+                        fontSize: 11,
+                        color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
 
-  //Project Name Field
-  Widget _buildNameField() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'Project Name *',
-          style: Theme.of(
-            context,
-          ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600),
-        ),
-        const SizedBox(height: 8),
-        TextFormField(
-          controller: _nameController,
-          decoration: InputDecoration(
-            hintText: 'e.g., TravelSnap, Task Manager',
-            prefixIcon: const Icon(Icons.title),
-            filled: true,
-            fillColor: AppTheme.darkBackground.withValues(alpha: 0.5),
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide.none,
+          if (_isUploadingImage) ...[
+            const SizedBox(height: 12),
+            LinearProgressIndicator(value: _uploadProgress > 0 ? _uploadProgress : null),
+            const SizedBox(height: 4),
+            Text(
+              'Uploading image: ${(_uploadProgress * 100).toInt()}%',
+              style: TextStyle(fontSize: 11, color: primary),
             ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide(color: AppTheme.primaryColor, width: 2),
+          ],
+
+          const SizedBox(height: 16),
+          // Direct Image URL Field
+          _buildFieldLabel(context, 'Or Paste Image URL directly', hint: '(e.g. PostImages, ImgBB, Unsplash direct link)'),
+          TextFormField(
+            controller: _imageUrlController,
+            style: _inputTextStyle(context),
+            decoration: _buildInputDecoration(
+              context: context,
+              hintText: 'https://i.ibb.co/.../image.jpg',
+              prefixIcon: Icons.link,
             ),
+            onChanged: (_) => setState(() {}),
           ),
-          validator: (value) {
-            if (value == null || value.trim().isEmpty) {
-              return 'Please enter project name';
-            }
-            return null;
-          },
-        ),
-      ],
+        ],
+      ),
     );
   }
 
-  //Description Field
-  Widget _buildDescriptionField() {
+  Widget _buildTechStackSection(BuildContext context, bool isDark, Color primary) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          'Description *',
-          style: Theme.of(
-            context,
-          ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600),
-        ),
-        const SizedBox(height: 8),
-        TextFormField(
-          controller: _descriptionController,
-          maxLines: 4,
-          decoration: InputDecoration(
-            hintText: 'Describe your project... ',
-            filled: true,
-            fillColor: AppTheme.darkBackground.withValues(alpha: 0.5),
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide.none,
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide(color: AppTheme.primaryColor, width: 2),
-            ),
-          ),
-          validator: (value) {
-            if (value == null || value.trim().isEmpty) {
-              return 'Please enter description';
-            }
-            if (value.trim().length < 20) {
-              return 'Description must be at least 20 characters';
-            }
-            return null;
-          },
-        ),
-      ],
-    );
-  }
-
-  //Tech Stack Section
-  Widget _buildTechStackSection() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'Tech Stack *',
-          style: Theme.of(
-            context,
-          ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600),
-        ),
-        const SizedBox(height: 8),
-
-        /// Input field
+        _buildFieldLabel(context, 'Technologies & Skills', hint: '(Add tags used in this project)'),
         Row(
           children: [
             Expanded(
               child: TextField(
                 controller: _techController,
-                decoration: InputDecoration(
-                  hintText: 'e.g., Flutter, Firebase',
-                  filled: true,
-                  fillColor: AppTheme.darkBackground.withValues(alpha: 0.5),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide.none,
-                  ),
+                style: _inputTextStyle(context),
+                decoration: _buildInputDecoration(
+                  context: context,
+                  hintText: 'e.g., Flutter, Firebase, REST API, Node.js',
+                  prefixIcon: Icons.code,
                 ),
                 onSubmitted: (_) => _addTech(),
               ),
             ),
-            const SizedBox(width: 8),
-            ElevatedButton(onPressed: _addTech, child: const Text('Add')),
+            const SizedBox(width: 10),
+            ElevatedButton.icon(
+              onPressed: _addTech,
+              icon: const Icon(Icons.add, size: 18),
+              label: const Text('Add'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: primary,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              ),
+            ),
           ],
         ),
-
-        /// Tech chips
         if (_techStack.isNotEmpty) ...[
           const SizedBox(height: 12),
           Wrap(
@@ -598,10 +836,12 @@ class _AddProjectDialogState extends State<AddProjectDialog> {
             children: _techStack.map((tech) {
               return Chip(
                 label: Text(tech),
-                deleteIcon: const Icon(Icons.close, size: 18),
+                deleteIcon: const Icon(Icons.close, size: 16),
                 onDeleted: () => _removeTech(tech),
-                backgroundColor: AppTheme.secondaryColor.withValues(alpha: 0.2),
-                labelStyle: TextStyle(color: AppTheme.secondaryColor),
+                backgroundColor: primary.withAlpha(isDark ? 40 : 25),
+                labelStyle: TextStyle(color: primary, fontWeight: FontWeight.w600, fontSize: 12),
+                side: BorderSide(color: primary.withAlpha(80)),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
               );
             }).toList(),
           ),
@@ -610,211 +850,228 @@ class _AddProjectDialogState extends State<AddProjectDialog> {
     );
   }
 
-  //GitHub URL Field
-  Widget _buildGitHubField() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'GitHub URL *',
-          style: Theme.of(
-            context,
-          ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600),
-        ),
-        const SizedBox(height: 8),
-        TextFormField(
-          controller: _githubController,
-          decoration: InputDecoration(
-            hintText: 'https://github.com/username/repo',
-            prefixIcon: const Icon(Icons.code),
-            filled: true,
-            fillColor: AppTheme.darkBackground.withValues(alpha: 0.5),
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide.none,
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide(color: AppTheme.primaryColor, width: 2),
-            ),
-          ),
-          validator: (value) {
-            if (value == null || value.trim().isEmpty) {
-              return 'Please enter GitHub URL';
-            }
-            if (!value.contains('github.com')) {
-              return 'Please enter a valid GitHub URL';
-            }
-            return null;
-          },
-        ),
-      ],
-    );
-  }
+  Widget _buildUrlsSection(BuildContext context, bool isDark, Color primary) {
+    final isApp = _projectType == 'App';
 
-  //Live URL Field
-  Widget _buildLiveUrlField() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          children: [
-            Text(
-              'Live Demo URL',
-              style: Theme.of(
-                context,
-              ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600),
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: isDark ? const Color(0xFF192038) : const Color(0xFFF8FAFC),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(
+          color: isDark ? const Color(0xFF2B3558) : const Color(0xFFE2E8F0),
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.link, size: 20, color: primary),
+              const SizedBox(width: 8),
+              Text(
+                isApp ? 'App & Live URLs (All Optional)' : 'Project Links & URLs (All Optional)',
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.bold,
+                  color: isDark ? Colors.white : const Color(0xFF0F172A),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+
+          // If App type: Show Play Store and App Store prominently
+          if (isApp) ...[
+            _buildFieldLabel(context, 'Google Play Store URL', hint: '(Optional)'),
+            TextFormField(
+              controller: _playStoreUrlController,
+              style: _inputTextStyle(context),
+              decoration: _buildInputDecoration(
+                context: context,
+                hintText: 'https://play.google.com/store/apps/details?id=com.example.app',
+                prefixIcon: Icons.shop,
+              ),
             ),
-            const SizedBox(width: 8),
-            Text(
-              '(Optional)',
-              style: Theme.of(
-                context,
-              ).textTheme.bodySmall?.copyWith(color: AppTheme.textHint),
+            const SizedBox(height: 16),
+
+            _buildFieldLabel(context, 'Apple App Store URL', hint: '(Optional)'),
+            TextFormField(
+              controller: _appStoreUrlController,
+              style: _inputTextStyle(context),
+              decoration: _buildInputDecoration(
+                context: context,
+                hintText: 'https://apps.apple.com/app/id1234567890',
+                prefixIcon: Icons.apple,
+              ),
             ),
+            const SizedBox(height: 16),
           ],
-        ),
-        const SizedBox(height: 8),
-        TextFormField(
-          controller: _liveUrlController,
-          decoration: InputDecoration(
-            hintText: 'https://yourapp.com',
-            prefixIcon: const Icon(Icons.launch),
-            filled: true,
-            fillColor: AppTheme.darkBackground.withValues(alpha: 0.5),
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide.none,
+
+          // Live Demo / Web URL
+          _buildFieldLabel(context, 'Live Demo / Website URL', hint: '(Optional)'),
+          TextFormField(
+            controller: _liveUrlController,
+            style: _inputTextStyle(context),
+            decoration: _buildInputDecoration(
+              context: context,
+              hintText: 'https://yourwebsite.com or web app live link',
+              prefixIcon: Icons.open_in_browser,
             ),
           ),
-        ),
-      ],
+          const SizedBox(height: 16),
+
+          // GitHub URL
+          _buildFieldLabel(context, 'GitHub / Repository URL', hint: '(Optional, leave empty if private)'),
+          TextFormField(
+            controller: _githubController,
+            style: _inputTextStyle(context),
+            decoration: _buildInputDecoration(
+              context: context,
+              hintText: 'https://github.com/username/project',
+              prefixIcon: Icons.code,
+            ),
+          ),
+          const SizedBox(height: 16),
+
+          // Other URL & Label
+          _buildFieldLabel(context, 'Other External URL', hint: '(Optional: e.g. Documentation, Case Study, Figma, etc.)'),
+          Row(
+            children: [
+              Expanded(
+                flex: 2,
+                child: TextFormField(
+                  controller: _otherUrlController,
+                  style: _inputTextStyle(context),
+                  decoration: _buildInputDecoration(
+                    context: context,
+                    hintText: 'https://...',
+                    prefixIcon: Icons.open_in_new,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                flex: 1,
+                child: TextFormField(
+                  controller: _otherUrlLabelController,
+                  style: _inputTextStyle(context),
+                  decoration: _buildInputDecoration(
+                    context: context,
+                    hintText: 'Label (e.g. Case Study)',
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
     );
   }
 
-  //Order Field
-  Widget _buildOrderField() {
+  Widget _buildSettingsSection(BuildContext context, bool isDark, Color primary) {
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(
           children: [
-            Text(
-              'Display Order',
-              style: Theme.of(
-                context,
-              ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600),
-            ),
-            const SizedBox(width: 8),
-            Tooltip(
-              message: 'Lower numbers appear first',
-              child: Icon(
-                Icons.info_outline,
-                size: 16,
-                color: AppTheme.textHint,
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _buildFieldLabel(context, 'Sort Order', hint: '(Lower = appears first)'),
+                  TextFormField(
+                    controller: _orderController,
+                    keyboardType: TextInputType.number,
+                    inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                    style: _inputTextStyle(context),
+                    decoration: _buildInputDecoration(
+                      context: context,
+                      hintText: '0',
+                      prefixIcon: Icons.sort,
+                    ),
+                  ),
+                ],
               ),
             ),
           ],
         ),
-        const SizedBox(height: 8),
-        TextFormField(
-          controller: _orderController,
-          keyboardType: TextInputType.number,
-          inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-          decoration: InputDecoration(
-            prefixIcon: const Icon(Icons.sort),
-            filled: true,
-            fillColor: AppTheme.darkBackground.withValues(alpha: 0.5),
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide.none,
-            ),
-          ),
-        ),
-      ],
-    );
-  }
+        const SizedBox(height: 16),
 
-  //Toggles (Featured & Visible)
-  Widget _buildToggles() {
-    return Column(
-      children: [
-        /// Featured Toggle
+        // Featured Toggle
         Container(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           decoration: BoxDecoration(
             color: _isFeatured
-                ? Colors.amber.withValues(alpha: 0.1)
-                : AppTheme.darkBackground.withValues(alpha: 0.5),
+                ? Colors.amber.withAlpha(isDark ? 40 : 25)
+                : (isDark ? const Color(0xFF1E2640) : const Color(0xFFF8FAFC)),
             borderRadius: BorderRadius.circular(12),
             border: Border.all(
               color: _isFeatured
-                  ? Colors.amber.withValues(alpha: 0.3)
-                  : AppTheme.surfaceColor.withValues(alpha: 0.3),
+                  ? Colors.amber
+                  : (isDark ? const Color(0xFF334155) : const Color(0xFFCBD5E1)),
             ),
           ),
           child: Row(
             children: [
               Icon(
                 _isFeatured ? Icons.star : Icons.star_outline,
-                color: _isFeatured ? Colors.amber : AppTheme.textSecondary,
+                color: _isFeatured ? Colors.amber : (isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B)),
               ),
               const SizedBox(width: 12),
               Expanded(
                 child: Text(
-                  _isFeatured ? 'Featured Project' : 'Not Featured',
-                  style: Theme.of(context).textTheme.titleSmall,
+                  'Featured Project (Showcase on homepage)',
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                    color: isDark ? Colors.white : const Color(0xFF0F172A),
+                  ),
                 ),
               ),
               Switch(
                 value: _isFeatured,
-                onChanged: (value) {
-                  setState(() {
-                    _isFeatured = value;
-                  });
-                },
+                onChanged: (val) => setState(() => _isFeatured = val),
                 activeThumbColor: Colors.amber,
               ),
             ],
           ),
         ),
+        const SizedBox(height: 10),
 
-        const SizedBox(height: 12),
-
-        /// Visibility Toggle
+        // Visibility Toggle
         Container(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           decoration: BoxDecoration(
             color: _isVisible
-                ? Colors.green.withValues(alpha: 0.1)
-                : Colors.orange.withValues(alpha: 0.1),
+                ? Colors.green.withAlpha(isDark ? 40 : 25)
+                : (isDark ? const Color(0xFF1E2640) : const Color(0xFFF8FAFC)),
             borderRadius: BorderRadius.circular(12),
             border: Border.all(
               color: _isVisible
-                  ? Colors.green.withValues(alpha: 0.3)
-                  : Colors.orange.withValues(alpha: 0.3),
+                  ? Colors.green
+                  : (isDark ? const Color(0xFF334155) : const Color(0xFFCBD5E1)),
             ),
           ),
           child: Row(
             children: [
               Icon(
                 _isVisible ? Icons.visibility : Icons.visibility_off,
-                color: _isVisible ? Colors.green : Colors.orange,
+                color: _isVisible ? Colors.green : Colors.grey,
               ),
               const SizedBox(width: 12),
               Expanded(
                 child: Text(
-                  _isVisible ? 'Visible on website' : 'Hidden from website',
-                  style: Theme.of(context).textTheme.titleSmall,
+                  _isVisible ? 'Visible to website visitors' : 'Hidden from public website',
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                    color: isDark ? Colors.white : const Color(0xFF0F172A),
+                  ),
                 ),
               ),
               Switch(
                 value: _isVisible,
-                onChanged: (value) {
-                  setState(() {
-                    _isVisible = value;
-                  });
-                },
+                onChanged: (val) => setState(() => _isVisible = val),
                 activeThumbColor: Colors.green,
               ),
             ],
@@ -824,13 +1081,19 @@ class _AddProjectDialogState extends State<AddProjectDialog> {
     );
   }
 
-  // Footer
-  Widget _buildFooter() {
+  Widget _buildFooter(BuildContext context, bool isDark, Color primary) {
     return Container(
-      padding: const EdgeInsets.all(24),
+      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
       decoration: BoxDecoration(
+        color: isDark ? const Color(0xFF192038) : const Color(0xFFF1F5F9),
+        borderRadius: const BorderRadius.only(
+          bottomLeft: Radius.circular(20),
+          bottomRight: Radius.circular(20),
+        ),
         border: Border(
-          top: BorderSide(color: AppTheme.surfaceColor.withValues(alpha: 0.3)),
+          top: BorderSide(
+            color: isDark ? const Color(0xFF2B3558) : const Color(0xFFE2E8F0),
+          ),
         ),
       ),
       child: Row(
@@ -839,7 +1102,9 @@ class _AddProjectDialogState extends State<AddProjectDialog> {
             child: OutlinedButton(
               onPressed: _isLoading ? null : () => Navigator.pop(context),
               style: OutlinedButton.styleFrom(
-                padding: const EdgeInsets.symmetric(vertical: 16),
+                padding: const EdgeInsets.symmetric(vertical: 14),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                side: BorderSide(color: isDark ? const Color(0xFF334155) : const Color(0xFFCBD5E1)),
               ),
               child: const Text('Cancel'),
             ),
@@ -850,29 +1115,22 @@ class _AddProjectDialogState extends State<AddProjectDialog> {
             child: ElevatedButton(
               onPressed: _isLoading ? null : _saveProject,
               style: ElevatedButton.styleFrom(
-                padding: const EdgeInsets.symmetric(vertical: 16),
-                backgroundColor: AppTheme.primaryColor,
+                backgroundColor: primary,
                 foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(vertical: 14),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                elevation: 0,
               ),
               child: _isLoading
-                  ? Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        const SizedBox(
-                          height: 20,
-                          width: 20,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                          ),
-                        ),
-                        if (_isUploadingImage) ...[
-                          const SizedBox(width: 12),
-                          Text('Uploading Image... ${(_uploadProgress * 100).toInt()}%'),
-                        ],
-                      ],
+                  ? const SizedBox(
+                      height: 20,
+                      width: 20,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                      ),
                     )
-                  : const Text('Save Project'),
+                  : const Text('Save Project', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
             ),
           ),
         ],

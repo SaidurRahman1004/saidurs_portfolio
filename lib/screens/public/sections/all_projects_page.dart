@@ -333,9 +333,28 @@ class _AllProjectsPageState extends State<AllProjectsPage> {
           width: project.isFeatured ? 2 : 1,
         ),
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
+      child: Material(
+        color: Colors.transparent,
+        borderRadius: BorderRadius.circular(20),
+        child: InkWell(
+          borderRadius: BorderRadius.circular(20),
+          onTap: () {
+            AnalyticsService.instance.logProjectDetailsOpen(
+              projectId: project.id,
+              projectTitle: project.name,
+              projectSlug: slug,
+              category: project.category,
+              sourceSection: 'all_projects_page',
+              position: position,
+            );
+            showDialog(
+              context: context,
+              builder: (context) => ProjectDetailsModal(project: project),
+            );
+          },
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
           // Image and Badge
           Stack(
             children: [
@@ -412,6 +431,58 @@ class _AllProjectsPageState extends State<AllProjectsPage> {
                     ),
                   ),
                 ),
+              Positioned(
+                top: 12,
+                right: 12,
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    if (project.displayProjectType.isNotEmpty) ...[
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 4,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Theme.of(context).colorScheme.primary.withAlpha(200),
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: Text(
+                          project.displayProjectType.toUpperCase(),
+                          style: const TextStyle(
+                            fontSize: 9,
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 6),
+                    ],
+                    if (project.category != null && project.category!.isNotEmpty)
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 4,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Theme.of(context).scaffoldBackgroundColor.withAlpha(200),
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(
+                            color: Theme.of(context).colorScheme.primary.withAlpha(76),
+                          ),
+                        ),
+                        child: Text(
+                          project.category!,
+                          style: const TextStyle(
+                            fontSize: 9,
+                            color: Colors.white70,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+              ),
             ],
           ),
 
@@ -595,8 +666,10 @@ class _AllProjectsPageState extends State<AllProjectsPage> {
           ),
         ],
       ),
-    );
-  }
+    ),
+  ),
+);
+}
 
   Future<void> _launchURL(String url) async {
     try {

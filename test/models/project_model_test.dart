@@ -52,6 +52,10 @@ void main() {
         shortDescription: 'Short',
         fullDescription: 'Full',
         technologies: ['Tech'],
+        projectType: 'App',
+        playStoreUrl: 'https://play.google.com/store/apps/details?id=test',
+        appStoreUrl: 'https://apps.apple.com/app/test',
+        otherUrl: 'https://external.link',
         createdAt: DateTime(2023, 1, 1),
       );
 
@@ -61,8 +65,26 @@ void main() {
       expect(data['shortDescription'], 'Short');
       expect(data['fullDescription'], 'Full');
       expect(data['technologies'], ['Tech']);
+      expect(data['projectType'], 'App');
+      expect(data['playStoreUrl'], 'https://play.google.com/store/apps/details?id=test');
+      expect(data['appStoreUrl'], 'https://apps.apple.com/app/test');
+      expect(data['otherUrl'], 'https://external.link');
       expect(data['createdAt'], isA<Timestamp>());
       expect(data['updatedAt'], isA<FieldValue>());
+    });
+
+    test('displayProjectType returns custom type if Other, or projectType', () {
+      final app = ProjectModel(id: '1', title: 'App', projectType: 'App', createdAt: DateTime.now());
+      expect(app.displayProjectType, 'App');
+
+      final other = ProjectModel(id: '2', title: 'Other', projectType: 'Other', customProjectType: 'Desktop Tool', createdAt: DateTime.now());
+      expect(other.displayProjectType, 'Desktop Tool');
+
+      final otherEmpty = ProjectModel(id: '3', title: 'OtherEmpty', projectType: 'Other', createdAt: DateTime.now());
+      expect(otherEmpty.displayProjectType, 'Other');
+
+      final empty = ProjectModel(id: '4', title: 'Empty', createdAt: DateTime.now());
+      expect(empty.displayProjectType, '');
     });
   });
 }

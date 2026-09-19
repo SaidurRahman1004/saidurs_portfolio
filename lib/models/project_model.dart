@@ -19,6 +19,10 @@ class ProjectModel {
   final String? liveUrl;
   final String? playStoreUrl;
   final String? appStoreUrl;
+  final String? otherUrl;
+  final String? otherUrlLabel;
+  final String? projectType; // 'App', 'Web', 'CMS', 'CRM', 'Other'
+  final String? customProjectType;
   final int sortOrder;
   final bool isVisible;
   final DateTime createdAt;
@@ -30,6 +34,13 @@ class ProjectModel {
   List<String> get techStack => technologies;
   bool get isFeatured => featured;
   int get order => sortOrder;
+
+  String get displayProjectType {
+    if (projectType == 'Other' && customProjectType != null && customProjectType!.trim().isNotEmpty) {
+      return customProjectType!.trim();
+    }
+    return projectType ?? '';
+  }
 
   ProjectModel({
     required this.id,
@@ -54,6 +65,10 @@ class ProjectModel {
     this.liveUrl,
     this.playStoreUrl,
     this.appStoreUrl,
+    this.otherUrl,
+    this.otherUrlLabel,
+    this.projectType,
+    this.customProjectType,
     int? sortOrder,
     int? order,
     this.isVisible = true,
@@ -102,6 +117,10 @@ class ProjectModel {
       liveUrl: data['liveUrl'],
       playStoreUrl: data['playStoreUrl'],
       appStoreUrl: data['appStoreUrl'],
+      otherUrl: data['otherUrl'],
+      otherUrlLabel: data['otherUrlLabel'],
+      projectType: data['projectType'],
+      customProjectType: data['customProjectType'],
       sortOrder: data['sortOrder'] ?? data['order'] ?? 0,
       isVisible: data['isVisible'] ?? true,
       createdAt: parsedDate,
@@ -132,6 +151,10 @@ class ProjectModel {
       'liveUrl': liveUrl,
       'playStoreUrl': playStoreUrl,
       'appStoreUrl': appStoreUrl,
+      'otherUrl': otherUrl,
+      'otherUrlLabel': otherUrlLabel,
+      'projectType': projectType,
+      'customProjectType': customProjectType,
       'sortOrder': sortOrder,
       'order': sortOrder, // Keeping legacy
       'isVisible': isVisible,
@@ -163,6 +186,10 @@ class ProjectModel {
     String? liveUrl,
     String? playStoreUrl,
     String? appStoreUrl,
+    String? otherUrl,
+    String? otherUrlLabel,
+    String? projectType,
+    String? customProjectType,
     int? sortOrder,
     int? order, // Support old copyWith calls
     bool? isVisible,
@@ -188,6 +215,10 @@ class ProjectModel {
       liveUrl: liveUrl ?? this.liveUrl,
       playStoreUrl: playStoreUrl ?? this.playStoreUrl,
       appStoreUrl: appStoreUrl ?? this.appStoreUrl,
+      otherUrl: otherUrl ?? this.otherUrl,
+      otherUrlLabel: otherUrlLabel ?? this.otherUrlLabel,
+      projectType: projectType ?? this.projectType,
+      customProjectType: customProjectType ?? this.customProjectType,
       sortOrder: sortOrder ?? order ?? this.sortOrder,
       isVisible: isVisible ?? this.isVisible,
       createdAt: createdAt ?? this.createdAt,
