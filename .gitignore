@@ -46,3 +46,6 @@ app.*.map.json
 /android/app/profile
 CV
 *.apk
+branch_structure.json
+temp_auto_push.bat
+temp_interactive_push.bat
