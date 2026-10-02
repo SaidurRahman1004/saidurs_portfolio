@@ -21,6 +21,9 @@ class _MobileContactConfigScreenState extends State<MobileContactConfigScreen> {
   late TextEditingController _locationController;
   late TextEditingController _githubController;
   late TextEditingController _linkedinController;
+  late TextEditingController _facebookController;
+  late TextEditingController _twitterController;
+  late TextEditingController _youtubeController;
   late TextEditingController _resumeUrlController;
   late bool _isOpenToWork;
   bool _isSaving = false;
@@ -34,6 +37,9 @@ class _MobileContactConfigScreenState extends State<MobileContactConfigScreen> {
     _locationController = TextEditingController(text: contact?.location ?? 'Dhaka, Bangladesh');
     _githubController = TextEditingController(text: contact?.githubUrl ?? 'https://github.com/SaidurRahman1004');
     _linkedinController = TextEditingController(text: contact?.linkedinUrl ?? 'https://www.linkedin.com/in/saidur1004/');
+    _facebookController = TextEditingController(text: contact?.facebookUrl ?? '');
+    _twitterController = TextEditingController(text: contact?.twitterUrl ?? '');
+    _youtubeController = TextEditingController(text: contact?.youtubeUrl ?? '');
     _resumeUrlController = TextEditingController(text: contact?.resumeUrl ?? '');
     _isOpenToWork = contact?.isOpenToWork ?? true;
     _isInitialized = true;
@@ -48,6 +54,9 @@ class _MobileContactConfigScreenState extends State<MobileContactConfigScreen> {
       _locationController.dispose();
       _githubController.dispose();
       _linkedinController.dispose();
+      _facebookController.dispose();
+      _twitterController.dispose();
+      _youtubeController.dispose();
       _resumeUrlController.dispose();
     }
     super.dispose();
@@ -72,6 +81,9 @@ class _MobileContactConfigScreenState extends State<MobileContactConfigScreen> {
         location: _locationController.text.trim(),
         githubUrl: _githubController.text.trim(),
         linkedinUrl: _linkedinController.text.trim(),
+        facebookUrl: _facebookController.text.trim().isNotEmpty ? _facebookController.text.trim() : null,
+        twitterUrl: _twitterController.text.trim().isNotEmpty ? _twitterController.text.trim() : null,
+        youtubeUrl: _youtubeController.text.trim().isNotEmpty ? _youtubeController.text.trim() : null,
         resumeUrl: _resumeUrlController.text.trim().isNotEmpty ? _resumeUrlController.text.trim() : null,
         isOpenToWork: _isOpenToWork,
         updatedAt: DateTime.now(),
@@ -176,6 +188,24 @@ class _MobileContactConfigScreenState extends State<MobileContactConfigScreen> {
               TextFormField(
                 controller: _linkedinController,
                 decoration: _buildDecoration(isDark, 'LinkedIn Profile URL', Icons.badge_outlined),
+              ),
+              const SizedBox(height: 12),
+
+              TextFormField(
+                controller: _facebookController,
+                decoration: _buildDecoration(isDark, 'Facebook Profile URL', Icons.public),
+              ),
+              const SizedBox(height: 12),
+
+              TextFormField(
+                controller: _twitterController,
+                decoration: _buildDecoration(isDark, 'Twitter / X Profile URL', Icons.alternate_email),
+              ),
+              const SizedBox(height: 12),
+
+              TextFormField(
+                controller: _youtubeController,
+                decoration: _buildDecoration(isDark, 'YouTube Channel URL', Icons.video_library_outlined),
               ),
               const SizedBox(height: 12),
 

@@ -1,6 +1,14 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:url_launcher/url_launcher.dart';
+import '../../config/constants.dart';
+import '../../config/theme.dart';
+import '../../providers/portfolio_provider.dart';
+import '../../providers/theme_provider.dart';
+import '../../services/analytics/analytics_service.dart';
 import '../../widgets/comon/custom_app_bar.dart';
 import 'sections/hero_section.dart';
 import 'sections/highlights_section.dart';
@@ -11,9 +19,6 @@ import 'sections/projects_section.dart';
 import 'sections/education_section.dart';
 import 'sections/certifications_section.dart';
 import 'sections/contact_section.dart';
-import '../../config/theme.dart';
-import '../../providers/theme_provider.dart';
-import '../../services/analytics/analytics_service.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -152,101 +157,7 @@ class _HomeScreenState extends State<HomeScreen> {
           educationkey: educationKey,
           contactkey: contactKey,
         ),
-        drawer: Drawer(
-          backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-          child: ListView(
-            padding: EdgeInsets.zero,
-            children: [
-              DrawerHeader(
-                decoration: BoxDecoration(
-                  gradient: gradient.scale(0.3),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [
-                    ShaderMask(
-                      shaderCallback: (bounds) => gradient.createShader(bounds),
-                      child: Text(
-                        '<SR/>',
-                        style: Theme.of(context).textTheme.headlineLarge
-                            ?.copyWith(
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white,
-                            ),
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      'Flutter Developer',
-                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                            color: isDark ? AppTheme.textSecondary : AppTheme.lightTextSecondary,
-                          ),
-                    ),
-                  ],
-                ),
-              ),
-              _buildDrawerItem(
-                context,
-                icon: Icons.home,
-                title: 'Home',
-                onTap: () => _scrollToSection(heroKey, sectionId: 'hero', sectionName: 'Home'),
-              ),
-              _buildDrawerItem(
-                context,
-                icon: Icons.person,
-                title: 'About',
-                onTap: () => _scrollToSection(aboutKey, sectionId: 'about', sectionName: 'About'),
-              ),
-              _buildDrawerItem(
-                context,
-                icon: Icons.work,
-                title: 'Experience',
-                onTap: () => _scrollToSection(experienceKey, sectionId: 'experience', sectionName: 'Experience'),
-              ),
-              _buildDrawerItem(
-                context,
-                icon: Icons.code,
-                title: 'Skills',
-                onTap: () => _scrollToSection(skillsKey, sectionId: 'skills', sectionName: 'Skills'),
-              ),
-              _buildDrawerItem(
-                context,
-                icon: Icons.layers,
-                title: 'Projects',
-                onTap: () => _scrollToSection(projectsKey, sectionId: 'projects', sectionName: 'Projects'),
-              ),
-              _buildDrawerItem(
-                context,
-                icon: Icons.school,
-                title: 'Education',
-                onTap: () => _scrollToSection(educationKey, sectionId: 'education', sectionName: 'Education'),
-              ),
-              _buildDrawerItem(
-                context,
-                icon: Icons.mail,
-                title: 'Contact',
-                onTap: () => _scrollToSection(contactKey, sectionId: 'contact', sectionName: 'Contact'),
-              ),
-              const Divider(),
-              ListTile(
-                leading: Icon(
-                  isDark ? Icons.light_mode : Icons.dark_mode,
-                  color: Theme.of(context).colorScheme.primary,
-                ),
-                title: Text(
-                  isDark ? 'Light Mode' : 'Dark Mode',
-                  style: Theme.of(context).textTheme.titleMedium,
-                ),
-                onTap: () {
-                  final nextDark = !isDark;
-                  context.read<ThemeProvider>().toggleTheme();
-                  AnalyticsService.instance.logThemeToggle(isDark: nextDark);
-                },
-              ),
-            ],
-          ),
-        ),
+        drawer: _buildModernDrawer(context, isDark, gradient),
         body: SingleChildScrollView(
           controller: _scrollController,
           child: Column(
@@ -273,17 +184,439 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildDrawerItem(
+  Widget _buildModernDrawer(BuildContext context, bool isDark, Gradient gradient) {
+    return Drawer(
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      child: Consumer<PortfolioProvider>(
+        builder: (context, portfolioProvider, _) {
+          final contact = portfolioProvider.contactInfo;
+          final primary = Theme.of(context).colorScheme.primary;
+          final cardBg = AppTheme.getCardBackground(context);
+          final borderColor = AppTheme.getBorderColor(context);
+
+          return Column(
+            children: [
+              // Rich Interactive Header
+              Container(
+                width: double.infinity,
+                padding: EdgeInsets.fromLTRB(
+                  20,
+                  MediaQuery.of(context).padding.top + 20,
+                  20,
+                  20,
+                ),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [
+                      primary.withAlpha(isDark ? 55 : 35),
+                      Theme.of(context).colorScheme.secondary.withAlpha(isDark ? 35 : 20),
+                    ],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  border: Border(
+                    bottom: BorderSide(color: borderColor, width: 1),
+                  ),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Avatar with glowing ring
+                        Container(
+                          padding: const EdgeInsets.all(3),
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            gradient: gradient,
+                            boxShadow: [
+                              BoxShadow(
+                                color: primary.withAlpha(80),
+                                blurRadius: 12,
+                                offset: const Offset(0, 4),
+                              ),
+                            ],
+                          ),
+                          child: CircleAvatar(
+                            radius: 30,
+                            backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+                            child: ClipOval(
+                              child: (contact?.profileImageUrl != null && contact!.profileImageUrl!.isNotEmpty)
+                                  ? CachedNetworkImage(
+                                      imageUrl: contact.profileImageUrl!,
+                                      width: 60,
+                                      height: 60,
+                                      fit: BoxFit.cover,
+                                      placeholder: (context, url) => Center(
+                                        child: SizedBox(
+                                          width: 20,
+                                          height: 20,
+                                          child: CircularProgressIndicator(strokeWidth: 2, color: primary),
+                                        ),
+                                      ),
+                                      errorWidget: (context, url, error) => Image.asset(
+                                        'assets/icons/app_icon.png',
+                                        width: 60,
+                                        height: 60,
+                                        fit: BoxFit.cover,
+                                      ),
+                                    )
+                                  : Image.asset(
+                                      'assets/icons/app_icon.png',
+                                      width: 60,
+                                      height: 60,
+                                      fit: BoxFit.cover,
+                                      errorBuilder: (context, error, stackTrace) => Text(
+                                        '<SR/>',
+                                        style: TextStyle(
+                                          color: primary,
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 16,
+                                        ),
+                                      ),
+                                    ),
+                            ),
+                          ),
+                        ),
+
+                        // Tech branding tag
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: primary.withAlpha(isDark ? 40 : 25),
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(color: primary.withAlpha(isDark ? 80 : 120)),
+                          ),
+                          child: Text(
+                            '<SR/>',
+                            style: TextStyle(
+                              color: primary,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 12,
+                              letterSpacing: 1,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 14),
+
+                    // Name
+                    Text(
+                      contact?.fullName.isNotEmpty == true ? contact!.fullName : AppConstants.name,
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.bold,
+                        color: AppTheme.getTextPrimary(context),
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 3),
+
+                    // Role
+                    Text(
+                      contact?.title.isNotEmpty == true ? contact!.title : AppConstants.role,
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: AppTheme.getTextSecondary(context),
+                        fontWeight: FontWeight.w500,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 10),
+
+                    // Live Status Pill
+                    if (contact?.isOpenToWork ?? true)
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF10B981).withAlpha(isDark ? 30 : 20),
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(
+                            color: const Color(0xFF10B981).withAlpha(isDark ? 90 : 120),
+                          ),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Container(
+                              width: 7,
+                              height: 7,
+                              decoration: const BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: Color(0xFF10B981),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Color(0xFF10B981),
+                                    blurRadius: 4,
+                                    spreadRadius: 1,
+                                  ),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(width: 6),
+                            Text(
+                              contact?.openToWorkText.isNotEmpty == true
+                                  ? contact!.openToWorkText
+                                  : 'Available for Opportunities',
+                              style: const TextStyle(
+                                fontSize: 11,
+                                fontWeight: FontWeight.w600,
+                                color: Color(0xFF10B981),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+
+              // Nav Items List
+              Expanded(
+                child: ListView(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                  children: [
+                    _buildModernNavItem(
+                      context,
+                      icon: Icons.home_rounded,
+                      title: 'Home',
+                      onTap: () => _scrollToSection(heroKey, sectionId: 'hero', sectionName: 'Home'),
+                    ),
+                    _buildModernNavItem(
+                      context,
+                      icon: Icons.person_rounded,
+                      title: 'About',
+                      onTap: () => _scrollToSection(aboutKey, sectionId: 'about', sectionName: 'About'),
+                    ),
+                    _buildModernNavItem(
+                      context,
+                      icon: Icons.work_rounded,
+                      title: 'Experience',
+                      onTap: () => _scrollToSection(experienceKey, sectionId: 'experience', sectionName: 'Experience'),
+                    ),
+                    _buildModernNavItem(
+                      context,
+                      icon: Icons.code_rounded,
+                      title: 'Skills',
+                      onTap: () => _scrollToSection(skillsKey, sectionId: 'skills', sectionName: 'Skills'),
+                    ),
+                    _buildModernNavItem(
+                      context,
+                      icon: Icons.layers_rounded,
+                      title: 'Projects',
+                      onTap: () => _scrollToSection(projectsKey, sectionId: 'projects', sectionName: 'Projects'),
+                    ),
+                    _buildModernNavItem(
+                      context,
+                      icon: Icons.school_rounded,
+                      title: 'Education',
+                      onTap: () => _scrollToSection(educationKey, sectionId: 'education', sectionName: 'Education'),
+                    ),
+                    _buildModernNavItem(
+                      context,
+                      icon: Icons.mail_rounded,
+                      title: 'Contact',
+                      onTap: () => _scrollToSection(contactKey, sectionId: 'contact', sectionName: 'Contact'),
+                    ),
+                  ],
+                ),
+              ),
+
+              // Bottom Section: Theme Switcher + Socials + Footer
+              Container(
+                padding: const EdgeInsets.fromLTRB(16, 12, 16, 20),
+                decoration: BoxDecoration(
+                  border: Border(
+                    top: BorderSide(color: borderColor, width: 1),
+                  ),
+                ),
+                child: Column(
+                  children: [
+                    // Theme Switcher Card
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                      decoration: BoxDecoration(
+                        color: cardBg,
+                        borderRadius: BorderRadius.circular(14),
+                        border: Border.all(color: borderColor),
+                      ),
+                      child: Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              color: (isDark ? Colors.amber : primary).withAlpha(30),
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: Icon(
+                              isDark ? Icons.light_mode_rounded : Icons.dark_mode_rounded,
+                              color: isDark ? Colors.amber : primary,
+                              size: 18,
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Text(
+                              isDark ? 'Light Mode' : 'Dark Mode',
+                              style: TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w600,
+                                color: AppTheme.getTextPrimary(context),
+                              ),
+                            ),
+                          ),
+                          Switch(
+                            value: isDark,
+                            onChanged: (val) {
+                              context.read<ThemeProvider>().toggleTheme();
+                              AnalyticsService.instance.logThemeToggle(isDark: val);
+                            },
+                            activeColor: primary,
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+
+                    // Social Quick Links Row
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        _buildDrawerSocialIcon(
+                          icon: FontAwesomeIcons.github,
+                          tooltip: 'GitHub',
+                          color: isDark ? Colors.white : const Color(0xFF181717),
+                          onTap: () => _launchDrawerUrl(contact?.githubUrl ?? AppConstants.github),
+                        ),
+                        if (contact?.linkedinUrl != null && contact!.linkedinUrl!.isNotEmpty) ...[
+                          const SizedBox(width: 10),
+                          _buildDrawerSocialIcon(
+                            icon: FontAwesomeIcons.linkedinIn,
+                            tooltip: 'LinkedIn',
+                            color: const Color(0xFF0A66C2),
+                            onTap: () => _launchDrawerUrl(contact.linkedinUrl!),
+                          ),
+                        ],
+                        if (contact?.facebookUrl != null && contact!.facebookUrl!.isNotEmpty) ...[
+                          const SizedBox(width: 10),
+                          _buildDrawerSocialIcon(
+                            icon: FontAwesomeIcons.facebookF,
+                            tooltip: 'Facebook',
+                            color: const Color(0xFF1877F2),
+                            onTap: () => _launchDrawerUrl(contact.facebookUrl!),
+                          ),
+                        ],
+                        if (contact?.email.isNotEmpty == true) ...[
+                          const SizedBox(width: 10),
+                          _buildDrawerSocialIcon(
+                            icon: Icons.mail_outline_rounded,
+                            tooltip: 'Email',
+                            color: primary,
+                            onTap: () => _launchDrawerUrl('mailto:${contact!.email}'),
+                          ),
+                        ],
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+
+                    // Copyright caption
+                    Text(
+                      '© ${DateTime.now().year} Saidur Rahman • Flutter Dev',
+                      style: TextStyle(
+                        fontSize: 10,
+                        color: AppTheme.getTextHint(context),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildModernNavItem(
     BuildContext context, {
     required IconData icon,
     required String title,
     required VoidCallback onTap,
   }) {
-    return ListTile(
-      leading: Icon(icon, color: Theme.of(context).colorScheme.primary),
-      title: Text(title, style: Theme.of(context).textTheme.titleMedium),
-      onTap: onTap,
-      hoverColor: Theme.of(context).colorScheme.primary.withAlpha(25),
+    final primary = Theme.of(context).colorScheme.primary;
+    final isDark = AppTheme.isDark(context);
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 4),
+      child: Material(
+        color: Colors.transparent,
+        borderRadius: BorderRadius.circular(12),
+        child: InkWell(
+          borderRadius: BorderRadius.circular(12),
+          onTap: onTap,
+          hoverColor: primary.withAlpha(isDark ? 30 : 15),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: primary.withAlpha(isDark ? 30 : 15),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Icon(icon, size: 18, color: primary),
+                ),
+                const SizedBox(width: 14),
+                Expanded(
+                  child: Text(
+                    title,
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      color: AppTheme.getTextPrimary(context),
+                    ),
+                  ),
+                ),
+                Icon(
+                  Icons.chevron_right_rounded,
+                  size: 18,
+                  color: AppTheme.getTextHint(context),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
     );
+  }
+
+  Widget _buildDrawerSocialIcon({
+    required dynamic icon,
+    required String tooltip,
+    required Color color,
+    required VoidCallback onTap,
+  }) {
+    return IconButton(
+      onPressed: onTap,
+      tooltip: tooltip,
+      icon: icon is IconData ? Icon(icon, size: 16, color: color) : FaIcon(icon, size: 15, color: color),
+      style: IconButton.styleFrom(
+        backgroundColor: color.withAlpha(25),
+        padding: const EdgeInsets.all(8),
+        minimumSize: const Size(36, 36),
+      ),
+    );
+  }
+
+  Future<void> _launchDrawerUrl(String url) async {
+    final uri = Uri.parse(url);
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    }
   }
 }

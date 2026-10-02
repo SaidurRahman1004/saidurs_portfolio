@@ -77,23 +77,84 @@ class _AllProjectsPageState extends State<AllProjectsPage> {
         body: CustomScrollView(
           slivers: [
             SliverAppBar(
-              expandedHeight: 200,
+              expandedHeight: 220,
               floating: false,
               pinned: true,
+              leading: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: AppTheme.isDark(context)
+                        ? const Color(0xFF1E293B).withAlpha(200)
+                        : Colors.white.withAlpha(220),
+                    shape: BoxShape.circle,
+                    border: Border.all(color: AppTheme.getBorderColor(context)),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withAlpha(25),
+                        blurRadius: 8,
+                      ),
+                    ],
+                  ),
+                  child: BackButton(
+                    color: AppTheme.getTextPrimary(context),
+                  ),
+                ),
+              ),
               flexibleSpace: FlexibleSpaceBar(
-                title: const Text(
+                title: Text(
                   'All Projects',
-                  style: TextStyle(fontWeight: FontWeight.bold),
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    color: AppTheme.getTextPrimary(context),
+                  ),
                 ),
                 background: Container(
                   decoration: BoxDecoration(
-                    gradient: AppTheme.getPrimaryGradient(context).scale(0.3),
+                    gradient: LinearGradient(
+                      colors: [
+                        Theme.of(context).colorScheme.primary.withAlpha(AppTheme.isDark(context) ? 60 : 35),
+                        Theme.of(context).colorScheme.secondary.withAlpha(AppTheme.isDark(context) ? 40 : 20),
+                        Theme.of(context).scaffoldBackgroundColor,
+                      ],
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                    ),
                   ),
                   child: Center(
-                    child: Icon(
-                      Icons.work_outline,
-                      size: 80,
-                      color: Colors.white.withAlpha(76),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            gradient: AppTheme.getPrimaryGradient(context),
+                            shape: BoxShape.circle,
+                            boxShadow: [
+                              BoxShadow(
+                                color: Theme.of(context).colorScheme.primary.withAlpha(80),
+                                blurRadius: 20,
+                                offset: const Offset(0, 6),
+                              ),
+                            ],
+                          ),
+                          child: const Icon(
+                            Icons.layers_rounded,
+                            size: 38,
+                            color: Colors.white,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          'PORTFOLIO ARCHIVE',
+                          style: TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w700,
+                            letterSpacing: 1.5,
+                            color: Theme.of(context).colorScheme.primary,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ),
@@ -368,39 +429,12 @@ class _AllProjectsPageState extends State<AllProjectsPage> {
                     height: 180,
                     width: double.infinity,
                     fit: BoxFit.cover,
-                    placeholder: (context, url) => const SizedBox(
-                      height: 180,
-                      child: Center(child: CircularProgressIndicator()),
-                    ),
-                    errorWidget: (context, url, error) {
-                      return Container(
-                        height: 180,
-                        color: Theme.of(context).cardColor,
-                        child: Icon(
-                          Icons.broken_image,
-                          size: 48,
-                          color: Theme.of(context).hintColor,
-                        ),
-                      );
-                    },
+                    placeholder: (context, url) => _buildFallbackBanner(context, project),
+                    errorWidget: (context, url, error) => _buildFallbackBanner(context, project),
                   ),
                 )
               else
-                Container(
-                  height: 180,
-                  width: double.infinity,
-                  decoration: BoxDecoration(
-                    color: Theme.of(context).cardColor,
-                    borderRadius: const BorderRadius.vertical(
-                      top: Radius.circular(20),
-                    ),
-                  ),
-                  child: Icon(
-                    Icons.code,
-                    size: 48,
-                    color: Theme.of(context).hintColor,
-                  ),
-                ),
+                _buildFallbackBanner(context, project),
               if (project.isFeatured)
                 Positioned(
                   top: 12,
@@ -670,6 +704,142 @@ class _AllProjectsPageState extends State<AllProjectsPage> {
   ),
 );
 }
+
+  Widget _buildFallbackBanner(BuildContext context, ProjectModel project) {
+    final isDark = AppTheme.isDark(context);
+    final primary = Theme.of(context).colorScheme.primary;
+    final secondary = Theme.of(context).colorScheme.secondary;
+
+    final cat = (project.category ?? '').toLowerCase();
+    final type = project.displayProjectType.toLowerCase();
+    final IconData bannerIcon;
+    final String techTag;
+
+    if (cat.contains('mobile') || type.contains('app') || cat.contains('android') || cat.contains('flutter')) {
+      bannerIcon = Icons.phone_android_rounded;
+      techTag = 'MOBILE APP';
+    } else if (cat.contains('web')) {
+      bannerIcon = Icons.language_rounded;
+      techTag = 'WEB APP';
+    } else if (cat.contains('backend') || cat.contains('cloud') || cat.contains('api') || cat.contains('django')) {
+      bannerIcon = Icons.dns_rounded;
+      techTag = 'BACKEND';
+    } else {
+      bannerIcon = Icons.devices_rounded;
+      techTag = 'SOFTWARE';
+    }
+
+    return Container(
+      height: 180,
+      width: double.infinity,
+      decoration: BoxDecoration(
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: isDark
+              ? [
+                  const Color(0xFF1E293B),
+                  primary.withAlpha(50),
+                  const Color(0xFF0F172A),
+                ]
+              : [
+                  primary.withAlpha(35),
+                  secondary.withAlpha(20),
+                  const Color(0xFFF1F5F9),
+                ],
+        ),
+      ),
+      child: Stack(
+        children: [
+          // Background subtle code watermark
+          Positioned(
+            right: -10,
+            bottom: -15,
+            child: Text(
+              '</>',
+              style: TextStyle(
+                fontSize: 90,
+                fontWeight: FontWeight.w900,
+                color: (isDark ? Colors.white : primary).withAlpha(15),
+                letterSpacing: -2,
+              ),
+            ),
+          ),
+
+          // Ambient glowing circle
+          Positioned(
+            left: 20,
+            top: 15,
+            child: Container(
+              width: 70,
+              height: 70,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                gradient: RadialGradient(
+                  colors: [
+                    primary.withAlpha(isDark ? 40 : 25),
+                    Colors.transparent,
+                  ],
+                ),
+              ),
+            ),
+          ),
+
+          // Centered tech badge
+          Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(14),
+                  decoration: BoxDecoration(
+                    color: isDark
+                        ? const Color(0xFF0F172A).withAlpha(160)
+                        : Colors.white.withAlpha(200),
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(
+                      color: primary.withAlpha(isDark ? 80 : 120),
+                      width: 1.5,
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: primary.withAlpha(isDark ? 50 : 25),
+                        blurRadius: 16,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  child: Icon(
+                    bannerIcon,
+                    size: 32,
+                    color: primary,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
+                  decoration: BoxDecoration(
+                    color: primary.withAlpha(isDark ? 30 : 20),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Text(
+                    techTag,
+                    style: TextStyle(
+                      fontSize: 10,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: 1,
+                      color: primary,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 
   Future<void> _launchURL(String url) async {
     try {

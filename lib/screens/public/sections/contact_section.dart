@@ -218,25 +218,26 @@ class ContactSection extends StatelessWidget {
   }
 
   Widget _buildSocialLinks(BuildContext context, ContactModel contact) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'Professional Profiles',
-          style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
-        ),
-        const SizedBox(height: 20),
-        _buildSocialButton(
-          context,
-          icon: const FaIcon(
+    final isDark = AppTheme.isDark(context);
+    final theme = Theme.of(context);
+
+    // Build the dynamic list of social & professional profile entries
+    final entries = <_ProfileEntry>[];
+
+    // 1. GitHub Profile
+    if (contact.githubUrl.isNotEmpty) {
+      entries.add(
+        _ProfileEntry(
+          title: 'GitHub',
+          subtitle: 'Code & Open Source',
+          url: contact.githubUrl,
+          brandColor: isDark ? const Color(0xFF38434F) : const Color(0xFF181717),
+          iconWidget: const FaIcon(
             FontAwesomeIcons.github,
             color: Colors.white,
-            size: 18,
+            size: 19,
           ),
-          label: 'GitHub Profile',
-          color: const Color(0xFF181717),
+          badge: 'Dev',
           onTap: () {
             AnalyticsService.instance.logGithubClick(
               source: 'contact_section',
@@ -245,51 +246,246 @@ class ContactSection extends StatelessWidget {
             _launchURL(contact.githubUrl);
           },
         ),
-        const SizedBox(height: 12),
-        _buildSocialButton(
-          context,
-          icon: const FaIcon(
-            FontAwesomeIcons.linkedin,
-            color: Color(0xFF0A66C2),
+      );
+    }
+
+    // 2. LinkedIn Profile
+    final linkedin = (contact.linkedinUrl != null && contact.linkedinUrl!.trim().isNotEmpty)
+        ? contact.linkedinUrl!
+        : 'https://www.linkedin.com/in/saidur1004/';
+    entries.add(
+      _ProfileEntry(
+        title: 'LinkedIn',
+        subtitle: 'Professional Network',
+        url: linkedin,
+        brandColor: const Color(0xFF0A66C2),
+        iconWidget: const FaIcon(
+          FontAwesomeIcons.linkedinIn,
+          color: Colors.white,
+          size: 19,
+        ),
+        badge: 'Connect',
+        onTap: () {
+          AnalyticsService.instance.logLinkedinClick(
+            source: 'contact_section',
+            ctaLocation: 'social_profiles',
+          );
+          _launchURL(linkedin);
+        },
+      ),
+    );
+
+    // 3. Facebook Profile (uses contact.facebookUrl if set, or default fallback unless explicitly cleared "")
+    final fbUrl = contact.facebookUrl ?? 'https://facebook.com/SaidurRahman1004';
+    if (fbUrl.trim().isNotEmpty) {
+      entries.add(
+        _ProfileEntry(
+          title: 'Facebook',
+          subtitle: 'Social & Community',
+          url: fbUrl,
+          brandColor: const Color(0xFF1877F2),
+          iconWidget: const FaIcon(
+            FontAwesomeIcons.facebookF,
+            color: Colors.white,
+            size: 19,
+          ),
+          badge: 'Follow',
+          onTap: () {
+            AnalyticsService.instance.logExternalLinkClick(
+              destinationDomain: 'facebook.com',
+              source: 'contact_section',
+            );
+            _launchURL(fbUrl);
+          },
+        ),
+      );
+    }
+
+    // 4. Twitter / X Profile (if configured)
+    if (contact.twitterUrl != null && contact.twitterUrl!.trim().isNotEmpty) {
+      entries.add(
+        _ProfileEntry(
+          title: 'Twitter / X',
+          subtitle: 'Tech & Updates',
+          url: contact.twitterUrl!,
+          brandColor: const Color(0xFF1DA1F2),
+          iconWidget: const FaIcon(
+            FontAwesomeIcons.twitter,
+            color: Colors.white,
             size: 18,
           ),
-          label: 'LinkedIn Profile',
-          color: const Color(0xFF0A66C2),
-          onTap: contact.linkedinUrl != null && contact.linkedinUrl!.isNotEmpty
-              ? () {
-                  AnalyticsService.instance.logLinkedinClick(
-                    source: 'contact_section',
-                    ctaLocation: 'social_profiles',
-                  );
-                  _launchURL(contact.linkedinUrl!);
-                }
-              : null,
+          badge: 'Posts',
+          onTap: () => _launchURL(contact.twitterUrl!),
         ),
-        const SizedBox(height: 12),
-        _buildSocialButton(
-          context,
-          icon: const Icon(Icons.description_outlined, size: 20),
-          label: 'View / Download CV',
-          color: Theme.of(context).colorScheme.primary,
-          onTap: contact.resumeUrl != null && contact.resumeUrl!.isNotEmpty
-              ? () {
-                  AnalyticsService.instance.logResumeView(
-                    source: 'contact',
-                    ctaLocation: 'social_profiles',
-                    fileType: 'pdf',
-                  );
-                  AnalyticsService.instance.logResumeDownload(
-                    source: 'contact',
-                    ctaLocation: 'social_profiles',
-                    fileType: 'pdf',
-                  );
-                  _launchURL(contact.resumeUrl!);
-                }
-              : () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Resume not available yet')),
-                  );
-                },
+      );
+    }
+
+    // 5. YouTube Channel (if configured)
+    if (contact.youtubeUrl != null && contact.youtubeUrl!.trim().isNotEmpty) {
+      entries.add(
+        _ProfileEntry(
+          title: 'YouTube',
+          subtitle: 'Tech & App Demos',
+          url: contact.youtubeUrl!,
+          brandColor: const Color(0xFFFF0000),
+          iconWidget: const FaIcon(
+            FontAwesomeIcons.youtube,
+            color: Colors.white,
+            size: 18,
+          ),
+          badge: 'Videos',
+          onTap: () => _launchURL(contact.youtubeUrl!),
+        ),
+      );
+    }
+
+    // 6. Instagram (if configured)
+    if (contact.instagramUrl != null && contact.instagramUrl!.trim().isNotEmpty) {
+      entries.add(
+        _ProfileEntry(
+          title: 'Instagram',
+          subtitle: 'Personal & Stories',
+          url: contact.instagramUrl!,
+          brandColor: const Color(0xFFE4405F),
+          iconWidget: const FaIcon(
+            FontAwesomeIcons.instagram,
+            color: Colors.white,
+            size: 19,
+          ),
+          badge: 'Life',
+          onTap: () => _launchURL(contact.instagramUrl!),
+        ),
+      );
+    }
+
+    // 7. LeetCode / Coding (if configured)
+    if (contact.leetcodeUrl != null && contact.leetcodeUrl!.trim().isNotEmpty) {
+      entries.add(
+        _ProfileEntry(
+          title: 'LeetCode',
+          subtitle: 'Problem Solving & DSA',
+          url: contact.leetcodeUrl!,
+          brandColor: const Color(0xFFFFA116),
+          iconWidget: const Icon(
+            Icons.terminal_rounded,
+            color: Colors.white,
+            size: 20,
+          ),
+          badge: 'DSA',
+          onTap: () => _launchURL(contact.leetcodeUrl!),
+        ),
+      );
+    }
+
+    // 8. Medium (if configured)
+    if (contact.mediumUrl != null && contact.mediumUrl!.trim().isNotEmpty) {
+      entries.add(
+        _ProfileEntry(
+          title: 'Medium',
+          subtitle: 'Articles & Write-ups',
+          url: contact.mediumUrl!,
+          brandColor: const Color(0xFF00AB6C),
+          iconWidget: const Icon(
+            Icons.article_rounded,
+            color: Colors.white,
+            size: 20,
+          ),
+          badge: 'Blog',
+          onTap: () => _launchURL(contact.mediumUrl!),
+        ),
+      );
+    }
+
+    // 9. View / Download CV (Core CTA)
+    final resumeUrl = contact.resumeUrl ?? AppConstants.resumeUrl;
+    entries.add(
+      _ProfileEntry(
+        title: 'View / Download CV',
+        subtitle: 'Curriculum Vitae & PDF',
+        url: resumeUrl,
+        brandColor: theme.colorScheme.primary,
+        iconWidget: const Icon(
+          Icons.description_rounded,
+          color: Colors.white,
+          size: 20,
+        ),
+        badge: 'PDF',
+        onTap: () {
+          if (resumeUrl.isNotEmpty) {
+            AnalyticsService.instance.logResumeView(
+              source: 'contact',
+              ctaLocation: 'social_profiles',
+              fileType: 'pdf',
+            );
+            AnalyticsService.instance.logResumeDownload(
+              source: 'contact',
+              ctaLocation: 'social_profiles',
+              fileType: 'pdf',
+            );
+            _launchURL(resumeUrl);
+          } else {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Resume not available yet')),
+            );
+          }
+        },
+      ),
+    );
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(7),
+              decoration: BoxDecoration(
+                color: theme.colorScheme.primary.withOpacity(0.12),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Icon(
+                Icons.hub_rounded,
+                size: 18,
+                color: theme.colorScheme.primary,
+              ),
+            ),
+            const SizedBox(width: 10),
+            Text(
+              'Professional Profiles',
+              style: theme.textTheme.titleLarge?.copyWith(
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 6),
+        Text(
+          'Connect across developer platforms and professional networks',
+          style: TextStyle(
+            color: AppTheme.getTextHint(context),
+            fontSize: 13,
+          ),
+        ),
+        const SizedBox(height: 18),
+        LayoutBuilder(
+          builder: (context, constraints) {
+            final width = constraints.maxWidth;
+            final isTwoCol = width >= 440;
+            final cardWidth = isTwoCol ? (width - 12) / 2 : width;
+
+            return Wrap(
+              spacing: 12,
+              runSpacing: 12,
+              children: entries
+                  .map(
+                    (entry) => SizedBox(
+                      width: cardWidth,
+                      child: _SocialProfileCard(entry: entry),
+                    ),
+                  )
+                  .toList(),
+            );
+          },
         ),
       ],
     );
@@ -361,46 +557,7 @@ class ContactSection extends StatelessWidget {
     );
   }
 
-  Widget _buildSocialButton(
-    BuildContext context, {
-    required Widget icon,
-    required String label,
-    required Color color,
-    required VoidCallback? onTap,
-  }) {
-    final isDisabled = onTap == null;
-    final isDark = AppTheme.isDark(context);
 
-    return SizedBox(
-      width: double.infinity,
-      child: OutlinedButton.icon(
-        onPressed: onTap,
-        icon: icon,
-        label: Text(
-          label,
-          style: TextStyle(
-            fontWeight: FontWeight.w600,
-            color: isDisabled
-                ? AppTheme.getTextHint(context)
-                : AppTheme.getTextPrimary(context),
-          ),
-        ),
-        style: OutlinedButton.styleFrom(
-          backgroundColor: isDark
-              ? const Color(0xFF1E293B)
-              : Colors.white,
-          side: BorderSide(
-            color: AppTheme.getBorderColor(context),
-          ),
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-          alignment: Alignment.centerLeft,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
-        ),
-      ),
-    );
-  }
 
   Widget _buildFooter(BuildContext context) {
     final currentYear = DateTime.now().year;
@@ -500,6 +657,209 @@ class ContactSection extends StatelessWidget {
         await launchUrl(uri, mode: LaunchMode.externalApplication);
       }
     }
+  }
+}
+
+class _ProfileEntry {
+  final String title;
+  final String subtitle;
+  final String url;
+  final Color brandColor;
+  final Widget iconWidget;
+  final String? badge;
+  final VoidCallback onTap;
+
+  _ProfileEntry({
+    required this.title,
+    required this.subtitle,
+    required this.url,
+    required this.brandColor,
+    required this.iconWidget,
+    this.badge,
+    required this.onTap,
+  });
+}
+
+class _SocialProfileCard extends StatefulWidget {
+  final _ProfileEntry entry;
+
+  const _SocialProfileCard({required this.entry});
+
+  @override
+  State<_SocialProfileCard> createState() => _SocialProfileCardState();
+}
+
+class _SocialProfileCardState extends State<_SocialProfileCard> {
+  bool _isHovered = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = AppTheme.isDark(context);
+    final brandColor = widget.entry.brandColor;
+
+    final borderColor = _isHovered
+        ? brandColor.withOpacity(0.55)
+        : AppTheme.getBorderColor(context);
+
+    final cardBg = _isHovered
+        ? (isDark
+            ? brandColor.withOpacity(0.14)
+            : brandColor.withOpacity(0.06))
+        : (isDark
+            ? const Color(0xFF1E2640)
+            : Colors.white);
+
+    return MouseRegion(
+      onEnter: (_) => setState(() => _isHovered = true),
+      onExit: (_) => setState(() => _isHovered = false),
+      cursor: SystemMouseCursors.click,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        curve: Curves.easeOutCubic,
+        decoration: BoxDecoration(
+          color: cardBg,
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(
+            color: borderColor,
+            width: _isHovered ? 1.5 : 1.0,
+          ),
+          boxShadow: [
+            if (_isHovered)
+              BoxShadow(
+                color: brandColor.withOpacity(isDark ? 0.28 : 0.15),
+                blurRadius: 16,
+                offset: const Offset(0, 4),
+              )
+            else
+              BoxShadow(
+                color: Colors.black.withOpacity(isDark ? 0.18 : 0.04),
+                blurRadius: 6,
+                offset: const Offset(0, 2),
+              ),
+          ],
+        ),
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            onTap: widget.entry.onTap,
+            borderRadius: BorderRadius.circular(14),
+            splashColor: brandColor.withOpacity(0.14),
+            highlightColor: brandColor.withOpacity(0.07),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+              child: Row(
+                children: [
+                  // High-contrast branded icon container
+                  Container(
+                    width: 42,
+                    height: 42,
+                    decoration: BoxDecoration(
+                      color: brandColor,
+                      borderRadius: BorderRadius.circular(11),
+                      boxShadow: [
+                        BoxShadow(
+                          color: brandColor.withOpacity(0.35),
+                          blurRadius: 8,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    alignment: Alignment.center,
+                    child: widget.entry.iconWidget,
+                  ),
+                  const SizedBox(width: 12),
+                  // Title, subtitle and badge
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Row(
+                          children: [
+                            Flexible(
+                              child: Text(
+                                widget.entry.title,
+                                style: TextStyle(
+                                  fontWeight: FontWeight.w700,
+                                  fontSize: 14,
+                                  color: AppTheme.getTextPrimary(context),
+                                  letterSpacing: -0.2,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                            if (widget.entry.badge != null) ...[
+                              const SizedBox(width: 6),
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 6,
+                                  vertical: 2,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: brandColor.withOpacity(0.14),
+                                  borderRadius: BorderRadius.circular(5),
+                                  border: Border.all(
+                                    color: brandColor.withOpacity(0.35),
+                                    width: 0.8,
+                                  ),
+                                ),
+                                child: Text(
+                                  widget.entry.badge!,
+                                  style: TextStyle(
+                                    fontSize: 9.5,
+                                    fontWeight: FontWeight.w700,
+                                    color: brandColor,
+                                    letterSpacing: 0.2,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ],
+                        ),
+                        const SizedBox(height: 3),
+                        Text(
+                          widget.entry.subtitle,
+                          style: TextStyle(
+                            fontSize: 11.5,
+                            color: AppTheme.getTextHint(context),
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  // Action indicator icon
+                  AnimatedContainer(
+                    duration: const Duration(milliseconds: 200),
+                    width: 28,
+                    height: 28,
+                    decoration: BoxDecoration(
+                      color: _isHovered
+                          ? brandColor.withOpacity(0.18)
+                          : (isDark
+                              ? Colors.white.withOpacity(0.06)
+                              : Colors.black.withOpacity(0.04)),
+                      shape: BoxShape.circle,
+                    ),
+                    alignment: Alignment.center,
+                    child: Icon(
+                      Icons.arrow_outward_rounded,
+                      size: 15,
+                      color: _isHovered
+                          ? brandColor
+                          : AppTheme.getTextHint(context),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
   }
 }
 

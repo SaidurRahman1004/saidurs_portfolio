@@ -29,6 +29,10 @@ class _ProfileManagementState extends State<ProfileManagement> {
   
   final _githubController = TextEditingController();
   final _linkedinController = TextEditingController();
+  final _facebookController = TextEditingController();
+  final _twitterController = TextEditingController();
+  final _youtubeController = TextEditingController();
+  final _instagramController = TextEditingController();
   final _locationController = TextEditingController();
 
   bool _isOpenToWork = true;
@@ -52,6 +56,10 @@ class _ProfileManagementState extends State<ProfileManagement> {
     _goalFactController.dispose();
     _githubController.dispose();
     _linkedinController.dispose();
+    _facebookController.dispose();
+    _twitterController.dispose();
+    _youtubeController.dispose();
+    _instagramController.dispose();
     _locationController.dispose();
     super.dispose();
   }
@@ -74,6 +82,10 @@ class _ProfileManagementState extends State<ProfileManagement> {
     
     _githubController.text = contact.githubUrl;
     _linkedinController.text = contact.linkedinUrl ?? '';
+    _facebookController.text = contact.facebookUrl ?? '';
+    _twitterController.text = contact.twitterUrl ?? '';
+    _youtubeController.text = contact.youtubeUrl ?? '';
+    _instagramController.text = contact.instagramUrl ?? '';
     _locationController.text = contact.location;
 
     _isInitialized = true;
@@ -108,6 +120,10 @@ class _ProfileManagementState extends State<ProfileManagement> {
         goalFact: _goalFactController.text.trim(),
         githubUrl: _githubController.text.trim(),
         linkedinUrl: _linkedinController.text.trim().isEmpty ? null : _linkedinController.text.trim(),
+        facebookUrl: _facebookController.text.trim().isEmpty ? null : _facebookController.text.trim(),
+        twitterUrl: _twitterController.text.trim().isEmpty ? null : _twitterController.text.trim(),
+        youtubeUrl: _youtubeController.text.trim().isEmpty ? null : _youtubeController.text.trim(),
+        instagramUrl: _instagramController.text.trim().isEmpty ? null : _instagramController.text.trim(),
         location: _locationController.text.trim(),
         updatedAt: DateTime.now(),
       );
@@ -614,6 +630,38 @@ class _ProfileManagementState extends State<ProfileManagement> {
             controller: _linkedinController,
             hintText: 'https://linkedin.com/in/yourusername',
             icon: Icons.business_center_outlined,
+          ),
+          const SizedBox(height: 18),
+          _buildFormField(
+            context,
+            label: 'Facebook Profile (Optional)',
+            controller: _facebookController,
+            hintText: 'https://facebook.com/yourusername',
+            icon: Icons.public_rounded,
+          ),
+          const SizedBox(height: 18),
+          _buildFormField(
+            context,
+            label: 'Twitter / X Profile (Optional)',
+            controller: _twitterController,
+            hintText: 'https://x.com/yourusername',
+            icon: Icons.alternate_email_rounded,
+          ),
+          const SizedBox(height: 18),
+          _buildFormField(
+            context,
+            label: 'YouTube Channel (Optional)',
+            controller: _youtubeController,
+            hintText: 'https://youtube.com/@yourchannel',
+            icon: Icons.video_library_outlined,
+          ),
+          const SizedBox(height: 18),
+          _buildFormField(
+            context,
+            label: 'Instagram Profile (Optional)',
+            controller: _instagramController,
+            hintText: 'https://instagram.com/yourusername',
+            icon: Icons.camera_alt_outlined,
           ),
         ],
       ),

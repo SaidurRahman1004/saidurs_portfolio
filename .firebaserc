@@ -1,5 +1,7 @@
 {
   "projects": {
     "default": "saidurs-portfolio"
-  }
+  },
+  "targets": {},
+  "etags": {}
 }

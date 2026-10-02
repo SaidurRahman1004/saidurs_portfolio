@@ -144,17 +144,28 @@ class _EditSkillDialogState extends State<EditSkillDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = AppTheme.isDark(context);
+    final cardBg = isDark ? const Color(0xFF1E2640) : Colors.white;
+    final borderColor = isDark
+        ? AppTheme.primaryColor.withAlpha(76)
+        : AppTheme.getBorderColor(context);
+
     return Dialog(
       backgroundColor: Colors.transparent,
+      insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
       child: Container(
-        constraints: const BoxConstraints(maxWidth: 500, maxHeight: 700),
+        constraints: const BoxConstraints(maxWidth: 500, maxHeight: 720),
         decoration: BoxDecoration(
-          gradient: AppTheme.cardGradient,
+          color: cardBg,
           borderRadius: BorderRadius.circular(20),
-          border: Border.all(
-            color: AppTheme.primaryColor.withAlpha(76),
-            width: 1,
-          ),
+          border: Border.all(color: borderColor, width: 1.5),
+          boxShadow: [
+            BoxShadow(
+              color: isDark ? Colors.black.withAlpha(100) : Colors.black.withAlpha(20),
+              blurRadius: 24,
+              offset: const Offset(0, 10),
+            ),
+          ],
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -193,10 +204,19 @@ class _EditSkillDialogState extends State<EditSkillDialog> {
 
   //Dialog Header Edit mode
   Widget _buildHeader() {
+    final isDark = AppTheme.isDark(context);
     return Container(
-      padding: const EdgeInsets.all(24),
+      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
       decoration: BoxDecoration(
-        gradient: AppTheme.primaryGradient.scale(0.2),
+        color: isDark
+            ? AppTheme.secondaryColor.withAlpha(30)
+            : AppTheme.secondaryColor.withAlpha(15),
+        border: Border(
+          bottom: BorderSide(
+            color: AppTheme.getBorderColor(context),
+            width: 1,
+          ),
+        ),
         borderRadius: const BorderRadius.only(
           topLeft: Radius.circular(20),
           topRight: Radius.circular(20),
@@ -205,12 +225,24 @@ class _EditSkillDialogState extends State<EditSkillDialog> {
       child: Row(
         children: [
           Container(
-            padding: const EdgeInsets.all(12),
+            padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
-              color: AppTheme.secondaryColor.withAlpha(51),
+              gradient: LinearGradient(
+                colors: [
+                  AppTheme.secondaryColor,
+                  AppTheme.primaryColor,
+                ],
+              ),
               borderRadius: BorderRadius.circular(12),
+              boxShadow: [
+                BoxShadow(
+                  color: AppTheme.secondaryColor.withAlpha(60),
+                  blurRadius: 8,
+                  offset: const Offset(0, 3),
+                ),
+              ],
             ),
-            child: Icon(Icons.edit, color: AppTheme.secondaryColor, size: 28),
+            child: const Icon(Icons.edit_rounded, color: Colors.white, size: 24),
           ),
 
           const SizedBox(width: 16),
@@ -221,15 +253,16 @@ class _EditSkillDialogState extends State<EditSkillDialog> {
               children: [
                 Text(
                   'Edit Skill',
-                  style: Theme.of(
-                    context,
-                  ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                    fontWeight: FontWeight.bold,
+                    color: AppTheme.getTextPrimary(context),
+                  ),
                 ),
-                const SizedBox(height: 4),
+                const SizedBox(height: 2),
                 Text(
-                  'Update skill information',
+                  'Update skill information and display settings',
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: AppTheme.textSecondary,
+                    color: AppTheme.getTextSecondary(context),
                   ),
                 ),
               ],
@@ -238,39 +271,65 @@ class _EditSkillDialogState extends State<EditSkillDialog> {
 
           IconButton(
             onPressed: _isLoading ? null : () => Navigator.pop(context),
-            icon: const Icon(Icons.close),
+            icon: Icon(Icons.close_rounded, color: AppTheme.getTextSecondary(context)),
           ),
         ],
       ),
     );
   }
 
-  //Form Fields (same as Add Dialog)
+  //Form Fields
   Widget _buildNameField() {
+    final isDark = AppTheme.isDark(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           'Skill Name *',
-          style: Theme.of(
-            context,
-          ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600),
+          style: Theme.of(context).textTheme.titleSmall?.copyWith(
+            fontWeight: FontWeight.w600,
+            color: AppTheme.getTextPrimary(context),
+          ),
         ),
         const SizedBox(height: 8),
         TextFormField(
           controller: _nameController,
+          style: TextStyle(
+            color: AppTheme.getTextPrimary(context),
+            fontSize: 14,
+            fontWeight: FontWeight.w500,
+          ),
           decoration: InputDecoration(
             hintText: 'e.g., Flutter, Firebase, Django',
-            prefixIcon: const Icon(Icons.label_outline),
+            hintStyle: TextStyle(
+              color: AppTheme.getTextHint(context),
+              fontSize: 13,
+            ),
+            prefixIcon: Icon(
+              Icons.label_outline_rounded,
+              color: AppTheme.secondaryColor,
+              size: 20,
+            ),
             filled: true,
-            fillColor: AppTheme.darkBackground.withAlpha(127),
+            fillColor: isDark
+                ? const Color(0xFF0F172A).withAlpha(150)
+                : const Color(0xFFF8FAFC),
+            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide.none,
+              borderSide: BorderSide(color: AppTheme.getBorderColor(context)),
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide(color: AppTheme.getBorderColor(context)),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide(color: AppTheme.primaryColor, width: 2),
+              borderSide: BorderSide(color: AppTheme.secondaryColor, width: 2),
+            ),
+            errorBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide(color: AppTheme.accentColor),
             ),
           ),
           validator: (value) {
@@ -285,33 +344,61 @@ class _EditSkillDialogState extends State<EditSkillDialog> {
   }
 
   Widget _buildCategoryDropdown() {
+    final isDark = AppTheme.isDark(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           'Category *',
-          style: Theme.of(
-            context,
-          ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600),
+          style: Theme.of(context).textTheme.titleSmall?.copyWith(
+            fontWeight: FontWeight.w600,
+            color: AppTheme.getTextPrimary(context),
+          ),
         ),
         const SizedBox(height: 8),
         Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
           decoration: BoxDecoration(
-            color: AppTheme.darkBackground.withAlpha(127),
+            color: isDark
+                ? const Color(0xFF0F172A).withAlpha(150)
+                : const Color(0xFFF8FAFC),
             borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: AppTheme.getBorderColor(context)),
           ),
           child: DropdownButtonHideUnderline(
             child: DropdownButton<String>(
               value: _selectedCategory,
               isExpanded: true,
+              dropdownColor: isDark ? const Color(0xFF1E293B) : Colors.white,
+              icon: Icon(
+                Icons.arrow_drop_down_rounded,
+                color: AppTheme.secondaryColor,
+                size: 26,
+              ),
+              style: TextStyle(
+                color: AppTheme.getTextPrimary(context),
+                fontSize: 14,
+                fontWeight: FontWeight.w500,
+              ),
               items: _categories.map((category) {
-                return DropdownMenuItem(value: category, child: Text(category));
+                return DropdownMenuItem<String>(
+                  value: category,
+                  child: Text(
+                    category,
+                    style: TextStyle(
+                      color: AppTheme.getTextPrimary(context),
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                );
               }).toList(),
               onChanged: (value) {
-                setState(() {
-                  _selectedCategory = value!;
-                });
+                if (value != null) {
+                  setState(() {
+                    _selectedCategory = value;
+                  });
+                }
               },
             ),
           ),
@@ -321,50 +408,95 @@ class _EditSkillDialogState extends State<EditSkillDialog> {
   }
 
   Widget _buildIconPicker() {
+    final isDark = AppTheme.isDark(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           'Icon *',
-          style: Theme.of(
-            context,
-          ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600),
+          style: Theme.of(context).textTheme.titleSmall?.copyWith(
+            fontWeight: FontWeight.w600,
+            color: AppTheme.getTextPrimary(context),
+          ),
         ),
         const SizedBox(height: 8),
         Container(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.all(14),
           decoration: BoxDecoration(
-            color: AppTheme.darkBackground.withAlpha(127),
+            color: isDark
+                ? const Color(0xFF0F172A).withAlpha(150)
+                : const Color(0xFFF8FAFC),
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: AppTheme.primaryColor.withAlpha(76)),
+            border: Border.all(
+              color: AppTheme.secondaryColor.withAlpha(isDark ? 80 : 120),
+            ),
           ),
           child: Row(
             children: [
               Container(
-                padding: const EdgeInsets.all(12),
+                padding: const EdgeInsets.all(10),
                 decoration: BoxDecoration(
-                  gradient: AppTheme.primaryGradient.scale(0.3),
-                  borderRadius: BorderRadius.circular(8),
+                  gradient: LinearGradient(
+                    colors: [
+                      AppTheme.secondaryColor,
+                      AppTheme.primaryColor,
+                    ],
+                  ),
+                  borderRadius: BorderRadius.circular(10),
+                  boxShadow: [
+                    BoxShadow(
+                      color: AppTheme.secondaryColor.withAlpha(50),
+                      blurRadius: 6,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
                 ),
                 child: Icon(
                   MaterialIconMapper.fromCode(_selectedIconCode),
-                  color: AppTheme.primaryColor,
-                  size: 32,
+                  color: Colors.white,
+                  size: 26,
                 ),
               ),
 
               const SizedBox(width: 16),
 
               Expanded(
-                child: Text(
-                  'Code:  $_selectedIconCode',
-                  style: Theme.of(context).textTheme.bodyMedium,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Selected Icon',
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        color: AppTheme.getTextPrimary(context),
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      'Code:  $_selectedIconCode',
+                      style: TextStyle(
+                        fontSize: 11,
+                        color: AppTheme.getTextSecondary(context),
+                      ),
+                    ),
+                  ],
                 ),
               ),
 
-              TextButton(
+              ElevatedButton.icon(
                 onPressed: _showIconPickerDialog,
-                child: const Text('Change'),
+                icon: const Icon(Icons.palette_outlined, size: 16),
+                label: const Text('Change'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppTheme.secondaryColor.withAlpha(30),
+                  foregroundColor: AppTheme.secondaryColor,
+                  elevation: 0,
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
               ),
             ],
           ),
@@ -374,27 +506,62 @@ class _EditSkillDialogState extends State<EditSkillDialog> {
   }
 
   Widget _buildOrderField() {
+    final isDark = AppTheme.isDark(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          'Display Order',
-          style: Theme.of(
-            context,
-          ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600),
+        Row(
+          children: [
+            Text(
+              'Display Order',
+              style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                fontWeight: FontWeight.w600,
+                color: AppTheme.getTextPrimary(context),
+              ),
+            ),
+            const SizedBox(width: 8),
+            Tooltip(
+              message: 'Lower numbers appear first (0 = first position)',
+              child: Icon(
+                Icons.info_outline_rounded,
+                size: 16,
+                color: AppTheme.getTextHint(context),
+              ),
+            ),
+          ],
         ),
         const SizedBox(height: 8),
         TextFormField(
           controller: _orderController,
           keyboardType: TextInputType.number,
           inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+          style: TextStyle(
+            color: AppTheme.getTextPrimary(context),
+            fontSize: 14,
+            fontWeight: FontWeight.w500,
+          ),
           decoration: InputDecoration(
-            prefixIcon: const Icon(Icons.sort),
+            prefixIcon: Icon(
+              Icons.sort_rounded,
+              color: AppTheme.secondaryColor,
+              size: 20,
+            ),
             filled: true,
-            fillColor: AppTheme.darkBackground.withAlpha(127),
+            fillColor: isDark
+                ? const Color(0xFF0F172A).withAlpha(150)
+                : const Color(0xFFF8FAFC),
+            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide.none,
+              borderSide: BorderSide(color: AppTheme.getBorderColor(context)),
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide(color: AppTheme.getBorderColor(context)),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide(color: AppTheme.secondaryColor, width: 2),
             ),
           ),
         ),
@@ -403,25 +570,51 @@ class _EditSkillDialogState extends State<EditSkillDialog> {
   }
 
   Widget _buildVisibilityToggle() {
+    final isDark = AppTheme.isDark(context);
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       decoration: BoxDecoration(
         color: _isVisible
-            ? Colors.green.withAlpha(25)
-            : Colors.orange.withAlpha(25),
+            ? (isDark ? Colors.green.withAlpha(30) : const Color(0xFFECFDF5))
+            : (isDark ? Colors.orange.withAlpha(30) : const Color(0xFFFFFBEB)),
         borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: _isVisible
+              ? (isDark ? Colors.green.withAlpha(100) : const Color(0xFF86EFAC))
+              : (isDark ? Colors.orange.withAlpha(100) : const Color(0xFFFCD34D)),
+        ),
       ),
       child: Row(
         children: [
           Icon(
-            _isVisible ? Icons.visibility : Icons.visibility_off,
-            color: _isVisible ? Colors.green : Colors.orange,
+            _isVisible ? Icons.visibility_rounded : Icons.visibility_off_rounded,
+            color: _isVisible ? Colors.green.shade600 : Colors.orange.shade700,
+            size: 22,
           ),
-          const SizedBox(width: 12),
+          const SizedBox(width: 14),
           Expanded(
-            child: Text(
-              _isVisible ? 'Visible on website' : 'Hidden from website',
-              style: Theme.of(context).textTheme.titleSmall,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  _isVisible ? 'Visible on website' : 'Hidden from website',
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                    color: AppTheme.getTextPrimary(context),
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  _isVisible
+                      ? 'This skill will appear on your public portfolio'
+                      : 'This skill will be hidden from visitors',
+                  style: TextStyle(
+                    fontSize: 11,
+                    color: AppTheme.getTextSecondary(context),
+                  ),
+                ),
+              ],
             ),
           ),
           Switch(
@@ -431,7 +624,7 @@ class _EditSkillDialogState extends State<EditSkillDialog> {
                 _isVisible = value;
               });
             },
-            activeThumbColor: Colors.green,
+            activeColor: Colors.green,
           ),
         ],
       ),
@@ -441,10 +634,10 @@ class _EditSkillDialogState extends State<EditSkillDialog> {
   //Footer (Update button instead of Add)
   Widget _buildFooter() {
     return Container(
-      padding: const EdgeInsets.all(24),
+      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         border: Border(
-          top: BorderSide(color: AppTheme.surfaceColor.withAlpha(76)),
+          top: BorderSide(color: AppTheme.getBorderColor(context)),
         ),
       ),
       child: Row(
@@ -453,9 +646,14 @@ class _EditSkillDialogState extends State<EditSkillDialog> {
             child: OutlinedButton(
               onPressed: _isLoading ? null : () => Navigator.pop(context),
               style: OutlinedButton.styleFrom(
-                padding: const EdgeInsets.symmetric(vertical: 16),
+                padding: const EdgeInsets.symmetric(vertical: 14),
+                side: BorderSide(color: AppTheme.getBorderColor(context)),
+                foregroundColor: AppTheme.getTextSecondary(context),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
               ),
-              child: const Text('Cancel'),
+              child: const Text('Cancel', style: TextStyle(fontWeight: FontWeight.w600)),
             ),
           ),
 
@@ -466,9 +664,13 @@ class _EditSkillDialogState extends State<EditSkillDialog> {
             child: ElevatedButton(
               onPressed: _isLoading ? null : _updateSkill,
               style: ElevatedButton.styleFrom(
-                padding: const EdgeInsets.symmetric(vertical: 16),
+                padding: const EdgeInsets.symmetric(vertical: 14),
                 backgroundColor: AppTheme.secondaryColor,
                 foregroundColor: Colors.white,
+                elevation: 2,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
               ),
               child: _isLoading
                   ? const SizedBox(
@@ -479,7 +681,10 @@ class _EditSkillDialogState extends State<EditSkillDialog> {
                         valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
                       ),
                     )
-                  : const Text('Save Changes'),
+                  : const Text(
+                      'Save Changes',
+                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                    ),
             ),
           ),
         ],
@@ -488,11 +693,15 @@ class _EditSkillDialogState extends State<EditSkillDialog> {
   }
 
   void _showIconPickerDialog() {
+    final isDark = AppTheme.isDark(context);
     showDialog(
       context: context,
       builder: (context) => Dialog(
-        backgroundColor: AppTheme.cardBackground,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        backgroundColor: isDark ? const Color(0xFF1E2640) : Colors.white,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+          side: BorderSide(color: AppTheme.getBorderColor(context)),
+        ),
         child: Container(
           constraints: const BoxConstraints(maxWidth: 500, maxHeight: 600),
           padding: const EdgeInsets.all(24),
@@ -500,17 +709,20 @@ class _EditSkillDialogState extends State<EditSkillDialog> {
             children: [
               Row(
                 children: [
-                  Icon(Icons.palette, color: AppTheme.primaryColor),
+                  Icon(Icons.palette_rounded, color: AppTheme.secondaryColor),
                   const SizedBox(width: 12),
                   Expanded(
                     child: Text(
                       'Choose Icon',
-                      style: Theme.of(context).textTheme.titleLarge,
+                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                        fontWeight: FontWeight.bold,
+                        color: AppTheme.getTextPrimary(context),
+                      ),
                     ),
                   ),
                   IconButton(
                     onPressed: () => Navigator.pop(context),
-                    icon: const Icon(Icons.close),
+                    icon: Icon(Icons.close_rounded, color: AppTheme.getTextSecondary(context)),
                   ),
                 ],
               ),
@@ -536,25 +748,47 @@ class _EditSkillDialogState extends State<EditSkillDialog> {
                         });
                         Navigator.pop(context);
                       },
+                      borderRadius: BorderRadius.circular(12),
                       child: Container(
                         decoration: BoxDecoration(
                           color: isSelected
-                              ? AppTheme.primaryColor.withAlpha(51)
-                              : AppTheme.darkBackground.withAlpha(127),
+                              ? AppTheme.secondaryColor.withAlpha(40)
+                              : (isDark
+                                  ? const Color(0xFF0F172A).withAlpha(150)
+                                  : const Color(0xFFF8FAFC)),
                           borderRadius: BorderRadius.circular(12),
                           border: Border.all(
                             color: isSelected
-                                ? AppTheme.primaryColor
-                                : Colors.transparent,
-                            width: 2,
+                                ? AppTheme.secondaryColor
+                                : AppTheme.getBorderColor(context),
+                            width: isSelected ? 2 : 1,
                           ),
                         ),
-                        child: Icon(
-                          MaterialIconMapper.fromCode(entry.value),
-                          color: isSelected
-                              ? AppTheme.primaryColor
-                              : AppTheme.textSecondary,
-                          size: 28,
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              MaterialIconMapper.fromCode(entry.value),
+                              color: isSelected
+                                  ? AppTheme.secondaryColor
+                                  : (isDark ? AppTheme.textSecondary : const Color(0xFF475569)),
+                              size: 28,
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              entry.key,
+                              style: TextStyle(
+                                fontSize: 9,
+                                fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                                color: isSelected
+                                    ? AppTheme.secondaryColor
+                                    : AppTheme.getTextHint(context),
+                              ),
+                              textAlign: TextAlign.center,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ],
                         ),
                       ),
                     );

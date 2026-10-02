@@ -614,29 +614,118 @@ class _ProjectsSectionState extends State<ProjectsSection> {
 }
 
   Widget _buildFallbackBanner(BuildContext context, ProjectModel project) {
+    final isDark = AppTheme.isDark(context);
+    final primary = Theme.of(context).colorScheme.primary;
+    final secondary = Theme.of(context).colorScheme.secondary;
+
+    final cat = (project.category ?? '').toLowerCase();
+    final type = project.displayProjectType.toLowerCase();
+    final IconData bannerIcon;
+    final String techTag;
+
+    if (cat.contains('mobile') || type.contains('app') || cat.contains('android') || cat.contains('flutter')) {
+      bannerIcon = Icons.phone_android_rounded;
+      techTag = 'MOBILE APP';
+    } else if (cat.contains('web')) {
+      bannerIcon = Icons.language_rounded;
+      techTag = 'WEB APP';
+    } else if (cat.contains('backend') || cat.contains('cloud') || cat.contains('api') || cat.contains('django')) {
+      bannerIcon = Icons.dns_rounded;
+      techTag = 'BACKEND';
+    } else {
+      bannerIcon = Icons.devices_rounded;
+      techTag = 'SOFTWARE';
+    }
+
     return Container(
       height: 150,
       width: double.infinity,
       decoration: BoxDecoration(
-        color: Theme.of(context).cardColor,
-        borderRadius: const BorderRadius.vertical(
-          top: Radius.circular(20),
-        ),
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [
-            Theme.of(context).colorScheme.primary.withAlpha(50),
-            Theme.of(context).scaffoldBackgroundColor,
-          ],
+          colors: isDark
+              ? [
+                  const Color(0xFF1E293B),
+                  primary.withAlpha(50),
+                  const Color(0xFF0F172A),
+                ]
+              : [
+                  primary.withAlpha(35),
+                  secondary.withAlpha(20),
+                  const Color(0xFFF1F5F9),
+                ],
         ),
       ),
-      child: Center(
-        child: Icon(
-          Icons.devices_outlined,
-          size: 44,
-          color: Theme.of(context).colorScheme.primary.withAlpha(150),
-        ),
+      child: Stack(
+        children: [
+          // Background subtle code watermark
+          Positioned(
+            right: -8,
+            bottom: -12,
+            child: Text(
+              '</>',
+              style: TextStyle(
+                fontSize: 75,
+                fontWeight: FontWeight.w900,
+                color: (isDark ? Colors.white : primary).withAlpha(15),
+                letterSpacing: -2,
+              ),
+            ),
+          ),
+
+          // Centered tech badge
+          Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: isDark
+                        ? const Color(0xFF0F172A).withAlpha(160)
+                        : Colors.white.withAlpha(200),
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(
+                      color: primary.withAlpha(isDark ? 80 : 120),
+                      width: 1.5,
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: primary.withAlpha(isDark ? 50 : 25),
+                        blurRadius: 12,
+                        offset: const Offset(0, 3),
+                      ),
+                    ],
+                  ),
+                  child: Icon(
+                    bannerIcon,
+                    size: 28,
+                    color: primary,
+                  ),
+                ),
+                const SizedBox(height: 6),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: primary.withAlpha(isDark ? 30 : 20),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Text(
+                    techTag,
+                    style: TextStyle(
+                      fontSize: 9,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: 0.8,
+                      color: primary,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }

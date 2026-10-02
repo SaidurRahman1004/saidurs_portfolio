@@ -7,6 +7,12 @@ class ContactModel {
   final String phone;
   final String githubUrl;
   final String? linkedinUrl;
+  final String? facebookUrl;
+  final String? twitterUrl;
+  final String? youtubeUrl;
+  final String? instagramUrl;
+  final String? leetcodeUrl;
+  final String? mediumUrl;
   final String? resumeUrl;
   final String location;
   final String whatsappNumber;
@@ -34,6 +40,12 @@ class ContactModel {
     required this.phone,
     required this.githubUrl,
     this.linkedinUrl,
+    this.facebookUrl,
+    this.twitterUrl,
+    this.youtubeUrl,
+    this.instagramUrl,
+    this.leetcodeUrl,
+    this.mediumUrl,
     this.resumeUrl,
     required this.location,
     required this.whatsappNumber,
@@ -87,6 +99,12 @@ class ContactModel {
       phone: data['phone'] ?? '',
       githubUrl: data['githubUrl'] ?? '',
       linkedinUrl: data['linkedinUrl'],
+      facebookUrl: data['facebookUrl'],
+      twitterUrl: data['twitterUrl'] ?? data['xUrl'],
+      youtubeUrl: data['youtubeUrl'],
+      instagramUrl: data['instagramUrl'],
+      leetcodeUrl: data['leetcodeUrl'],
+      mediumUrl: data['mediumUrl'],
       resumeUrl: data['resumeUrl'],
       location: data['location'] ?? 'Bangladesh',
       whatsappNumber: data['whatsappNumber'] ?? data['phone'] ?? '',
@@ -124,6 +142,12 @@ class ContactModel {
       'phone': phone,
       'githubUrl': githubUrl,
       'linkedinUrl': linkedinUrl,
+      'facebookUrl': facebookUrl,
+      'twitterUrl': twitterUrl,
+      'youtubeUrl': youtubeUrl,
+      'instagramUrl': instagramUrl,
+      'leetcodeUrl': leetcodeUrl,
+      'mediumUrl': mediumUrl,
       'resumeUrl': resumeUrl,
       'location': location,
       'whatsappNumber': whatsappNumber,
@@ -151,6 +175,12 @@ class ContactModel {
     String? phone,
     String? githubUrl,
     String? linkedinUrl,
+    String? facebookUrl,
+    String? twitterUrl,
+    String? youtubeUrl,
+    String? instagramUrl,
+    String? leetcodeUrl,
+    String? mediumUrl,
     String? resumeUrl,
     String? location,
     String? whatsappNumber,
@@ -176,6 +206,12 @@ class ContactModel {
       phone: phone ?? this.phone,
       githubUrl: githubUrl ?? this.githubUrl,
       linkedinUrl: linkedinUrl ?? this.linkedinUrl,
+      facebookUrl: facebookUrl ?? this.facebookUrl,
+      twitterUrl: twitterUrl ?? this.twitterUrl,
+      youtubeUrl: youtubeUrl ?? this.youtubeUrl,
+      instagramUrl: instagramUrl ?? this.instagramUrl,
+      leetcodeUrl: leetcodeUrl ?? this.leetcodeUrl,
+      mediumUrl: mediumUrl ?? this.mediumUrl,
       resumeUrl: resumeUrl ?? this.resumeUrl,
       location: location ?? this.location,
       whatsappNumber: whatsappNumber ?? this.whatsappNumber,
