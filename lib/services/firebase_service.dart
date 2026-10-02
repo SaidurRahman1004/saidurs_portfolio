@@ -154,30 +154,213 @@ class FirebaseService {
     });
   }
 
-  //Add New Project Data to Firebase Admin operation
+  // Add New Project Data to Firebase with automatic order cascading
   Future<void> addProject(ProjectModel project) async {
     try {
-      await _projectsCollection.add(project.toFirestore());
+      final snapshot = await _projectsCollection.get();
+      final existingDocs = snapshot.docs;
+
+      int targetOrder = project.sortOrder;
+      final batch = _firestore.batch();
+
+      if (targetOrder <= 0) {
+        // If 0 or unassigned, automatically assign next sequential order
+        int maxOrder = 0;
+        for (final doc in existingDocs) {
+          final data = doc.data() as Map<String, dynamic>;
+          final o = ((data['sortOrder'] ?? data['order'] ?? 0) as num).toInt();
+          if (o > maxOrder) maxOrder = o;
+        }
+        targetOrder = maxOrder + 1;
+      } else {
+        // Shift all existing projects with sortOrder >= targetOrder backwards (+1)
+        for (final doc in existingDocs) {
+          final data = doc.data() as Map<String, dynamic>;
+          final currentOrder = ((data['sortOrder'] ?? data['order'] ?? 0) as num).toInt();
+          if (currentOrder >= targetOrder) {
+            batch.update(doc.reference, {
+              'sortOrder': currentOrder + 1,
+              'order': currentOrder + 1,
+            });
+          }
+        }
+      }
+
+      final newDocRef = _projectsCollection.doc();
+      final resolvedProject = project.copyWith(
+        id: newDocRef.id,
+        sortOrder: targetOrder,
+        order: targetOrder,
+      );
+      batch.set(newDocRef, resolvedProject.toFirestore());
+
+      await batch.commit();
     } catch (e) {
       throw Exception('Failed to add project: $e');
     }
   }
 
-  // Project update
+  // Project update with automatic order cascading
   Future<void> updateProject(String id, ProjectModel project) async {
     try {
-      await _projectsCollection.doc(id).update(project.toFirestore());
+      final docSnapshot = await _projectsCollection.doc(id).get();
+      if (!docSnapshot.exists) {
+        throw Exception('Project not found');
+      }
+
+      final currentData = docSnapshot.data() as Map<String, dynamic>;
+      final int oldOrder = ((currentData['sortOrder'] ?? currentData['order'] ?? 0) as num).toInt();
+      int newOrder = project.sortOrder;
+
+      final snapshot = await _projectsCollection.get();
+      final batch = _firestore.batch();
+
+      if (newOrder <= 0) {
+        newOrder = oldOrder > 0 ? oldOrder : snapshot.docs.length;
+      }
+
+      if (oldOrder != newOrder && oldOrder > 0) {
+        if (newOrder < oldOrder) {
+          // Moving up in rank: shift projects in [newOrder, oldOrder - 1] down (+1)
+          for (final doc in snapshot.docs) {
+            if (doc.id == id) continue;
+            final data = doc.data() as Map<String, dynamic>;
+            final o = ((data['sortOrder'] ?? data['order'] ?? 0) as num).toInt();
+            if (o >= newOrder && o < oldOrder) {
+              batch.update(doc.reference, {
+                'sortOrder': o + 1,
+                'order': o + 1,
+              });
+            }
+          }
+        } else {
+          // Moving down in rank: shift projects in [oldOrder + 1, newOrder] up (-1)
+          for (final doc in snapshot.docs) {
+            if (doc.id == id) continue;
+            final data = doc.data() as Map<String, dynamic>;
+            final o = ((data['sortOrder'] ?? data['order'] ?? 0) as num).toInt();
+            if (o > oldOrder && o <= newOrder) {
+              batch.update(doc.reference, {
+                'sortOrder': o - 1,
+                'order': o - 1,
+              });
+            }
+          }
+        }
+      } else if (oldOrder <= 0 && newOrder > 0) {
+        // Was unassigned, shifting all projects >= newOrder by +1
+        for (final doc in snapshot.docs) {
+          if (doc.id == id) continue;
+          final data = doc.data() as Map<String, dynamic>;
+          final o = ((data['sortOrder'] ?? data['order'] ?? 0) as num).toInt();
+          if (o >= newOrder) {
+            batch.update(doc.reference, {
+              'sortOrder': o + 1,
+              'order': o + 1,
+            });
+          }
+        }
+      }
+
+      final updatedProjectWithOrder = project.copyWith(
+        id: id,
+        sortOrder: newOrder,
+        order: newOrder,
+      );
+      batch.update(_projectsCollection.doc(id), updatedProjectWithOrder.toFirestore());
+
+      await batch.commit();
     } catch (e) {
       throw Exception('Failed to update project: $e');
     }
   }
 
-  // Project delete
+  // Project delete with automatic order closure
   Future<void> deleteProject(String id) async {
     try {
-      await _projectsCollection.doc(id).delete();
+      final docSnapshot = await _projectsCollection.doc(id).get();
+      if (!docSnapshot.exists) return;
+
+      final data = docSnapshot.data() as Map<String, dynamic>;
+      final deletedOrder = ((data['sortOrder'] ?? data['order'] ?? 0) as num).toInt();
+
+      final snapshot = await _projectsCollection.get();
+      final batch = _firestore.batch();
+
+      batch.delete(_projectsCollection.doc(id));
+
+      if (deletedOrder > 0) {
+        // Shift any succeeding projects up (-1) to close the gap
+        for (final doc in snapshot.docs) {
+          if (doc.id == id) continue;
+          final d = doc.data() as Map<String, dynamic>;
+          final o = ((d['sortOrder'] ?? d['order'] ?? 0) as num).toInt();
+          if (o > deletedOrder) {
+            batch.update(doc.reference, {
+              'sortOrder': o - 1,
+              'order': o - 1,
+            });
+          }
+        }
+      }
+
+      await batch.commit();
     } catch (e) {
       throw Exception('Failed to delete project: $e');
+    }
+  }
+
+  // Resequence all projects into clean 1..N order
+  Future<void> resequenceProjects() async {
+    try {
+      final snapshot = await _projectsCollection.get();
+      if (snapshot.docs.isEmpty) return;
+
+      final docs = snapshot.docs.map((doc) {
+        final data = doc.data() as Map<String, dynamic>;
+        DateTime createdAt = DateTime(2020);
+        if (data['createdAt'] != null) {
+          if (data['createdAt'] is Timestamp) {
+            createdAt = (data['createdAt'] as Timestamp).toDate();
+          } else {
+            createdAt = DateTime.tryParse(data['createdAt'].toString()) ?? DateTime(2020);
+          }
+        }
+
+        return {
+          'ref': doc.reference,
+          'sortOrder': ((data['sortOrder'] ?? data['order'] ?? 0) as num).toInt(),
+          'createdAt': createdAt,
+        };
+      }).toList();
+
+      // Sort by current positive sortOrder ascending, then createdAt descending
+      docs.sort((a, b) {
+        final orderA = a['sortOrder'] as int;
+        final orderB = b['sortOrder'] as int;
+        if (orderA > 0 && orderB > 0) {
+          final cmp = orderA.compareTo(orderB);
+          if (cmp != 0) return cmp;
+        } else if (orderA > 0) {
+          return -1;
+        } else if (orderB > 0) {
+          return 1;
+        }
+        return (b['createdAt'] as DateTime).compareTo(a['createdAt'] as DateTime);
+      });
+
+      final batch = _firestore.batch();
+      for (int i = 0; i < docs.length; i++) {
+        final newOrder = i + 1;
+        final ref = docs[i]['ref'] as DocumentReference;
+        batch.update(ref, {
+          'sortOrder': newOrder,
+          'order': newOrder,
+        });
+      }
+      await batch.commit();
+    } catch (e) {
+      throw Exception('Failed to resequence projects: $e');
     }
   }
 

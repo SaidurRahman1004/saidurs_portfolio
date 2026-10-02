@@ -642,6 +642,25 @@ class PortfolioProvider with ChangeNotifier {
     }
   }
 
+  Future<void> resequenceProjects() async {
+    try {
+      await _firebaseService.resequenceProjects();
+      AuditService.instance.logAction(
+        action: 'projects_resequence',
+        resourceType: 'project',
+        resourceId: 'all',
+      );
+    } catch (e) {
+      AuditService.instance.logAction(
+        action: 'projects_resequence',
+        resourceType: 'project',
+        resourceId: 'all',
+        result: 'failure',
+      );
+      throw Exception('Failed to resequence projects: $e');
+    }
+  }
+
   /// ADMIN OPERATIONS - CONTACT INFO CRUD
   Future<void> updateContactInfo(ContactModel contact) async {
     try {

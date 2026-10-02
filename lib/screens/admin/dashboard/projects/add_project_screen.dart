@@ -58,6 +58,18 @@ class _AddProjectDialogState extends State<AddProjectDialog> {
   ];
 
   @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        final provider = Provider.of<PortfolioProvider>(context, listen: false);
+        final defaultOrder = provider.allProjects.length + 1;
+        _orderController.text = defaultOrder.toString();
+      }
+    });
+  }
+
+  @override
   void dispose() {
     _nameController.dispose();
     _shortDescriptionController.dispose();
@@ -273,6 +285,7 @@ class _AddProjectDialogState extends State<AddProjectDialog> {
   InputDecoration _buildInputDecoration({
     required BuildContext context,
     required String hintText,
+    String? helperText,
     IconData? prefixIcon,
     Widget? suffixIcon,
   }) {
@@ -285,6 +298,9 @@ class _AddProjectDialogState extends State<AddProjectDialog> {
     return InputDecoration(
       hintText: hintText,
       hintStyle: TextStyle(color: hintColor, fontSize: 13),
+      helperText: helperText,
+      helperStyle: TextStyle(color: hintColor.withAlpha(200), fontSize: 11),
+      helperMaxLines: 2,
       prefixIcon: prefixIcon != null ? Icon(prefixIcon, size: 20, color: primary) : null,
       suffixIcon: suffixIcon,
       filled: true,
@@ -978,7 +994,11 @@ class _AddProjectDialogState extends State<AddProjectDialog> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _buildFieldLabel(context, 'Sort Order', hint: '(Lower = appears first)'),
+                  _buildFieldLabel(
+                    context,
+                    'Sort Order',
+                    hint: '(Auto-cascades: setting 1 shifts subsequent projects back)',
+                  ),
                   TextFormField(
                     controller: _orderController,
                     keyboardType: TextInputType.number,
@@ -986,7 +1006,8 @@ class _AddProjectDialogState extends State<AddProjectDialog> {
                     style: _inputTextStyle(context),
                     decoration: _buildInputDecoration(
                       context: context,
-                      hintText: '0',
+                      hintText: 'e.g. 1',
+                      helperText: 'Existing projects at or after this order will automatically shift back (+1).',
                       prefixIcon: Icons.sort,
                     ),
                   ),

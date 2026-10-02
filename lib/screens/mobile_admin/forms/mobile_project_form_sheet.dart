@@ -76,6 +76,15 @@ class _MobileProjectFormSheetState extends State<MobileProjectFormSheet> {
     _isFeatured = p?.isFeatured ?? false;
     _isVisible = p?.isVisible ?? true;
     _uploadedImageUrl = p?.imageUrl;
+
+    if (widget.project == null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          final pr = Provider.of<PortfolioProvider>(context, listen: false);
+          _orderController.text = (pr.allProjects.length + 1).toString();
+        }
+      });
+    }
   }
 
   @override
@@ -582,7 +591,12 @@ class _MobileProjectFormSheetState extends State<MobileProjectFormSheet> {
                           child: TextFormField(
                             controller: _orderController,
                             keyboardType: TextInputType.number,
-                            decoration: _buildInputDecoration(isDark, 'Sort Order', Icons.sort_rounded),
+                            decoration: _buildInputDecoration(
+                              isDark,
+                              'Sort Order',
+                              Icons.sort_rounded,
+                              helperText: 'Auto-shifts surrounding projects',
+                            ),
                           ),
                         ),
                       ],
@@ -642,9 +656,10 @@ class _MobileProjectFormSheetState extends State<MobileProjectFormSheet> {
     );
   }
 
-  InputDecoration _buildInputDecoration(bool isDark, String label, IconData icon) {
+  InputDecoration _buildInputDecoration(bool isDark, String label, IconData icon, {String? helperText}) {
     return InputDecoration(
       labelText: label,
+      helperText: helperText,
       prefixIcon: Icon(icon, size: 20),
       filled: true,
       fillColor: isDark ? const Color(0xFF1E293B) : const Color(0xFFF8FAFC),

@@ -437,4 +437,47 @@ The audit also fixed Functions ESLint 9 configuration, hostname/canonical SEO me
 - `flutter build web --release`: Compiled successfully into `build/web`.
 - Git branches synchronized (`work-office` and `main`).
 
+## Phase 13 — Mobile Experience Card Responsiveness & Admin Cascading Project Order Management (2026-10-02)
+
+### 1. Mobile Experience Section Responsive Bug Fixes (`experience_section.dart`)
+- **Company Title & Parent Badge Overflow Fix**:
+  - Identified root cause: `Wrap` containing `Row(mainAxisSize: MainAxisSize.min, children: [Text(...)])` passed unbounded horizontal constraints to `Text`, forcing the 40-character company string `"SM Technology — A Betopia Group Company"` into a single line measuring ~330px on a ~240px available card column.
+  - Replaced unconstrained inner `Row` with `LayoutBuilder` wrapping `ConstrainedBox(constraints: BoxConstraints(maxWidth: companyConstraints.maxWidth))` and `Text.rich(TextSpan(...), softWrap: true)`. Long company names now wrap cleanly across lines without protruding outside the card boundaries.
+  - Constrained parent organization badge (`Betopia Group`) with max width constraints, `Flexible`, and ellipsis truncation to guarantee it never overflows.
+- **Top Status & Date Badge Clipping Fix**:
+  - Replaced rigid `Row(mainAxisAlignment: MainAxisAlignment.spaceBetween)` with responsive `Wrap(spacing: 8, runSpacing: 8, alignment: WrapAlignment.spaceBetween, crossAxisAlignment: WrapCrossAlignment.center)`.
+  - On narrow screens (<390px), the date badge ("March 2026 — Present") now cleanly wraps below the "Current Role • Active Production" status badge instead of getting clipped off the screen edge.
+- **Responsibilities & Tech Stack Header Overflow Fix**:
+  - Replaced unconstrained `Row(children: [Icon, Text, Container(countBadge)])` with `Expanded(child: Text('Key Responsibilities & Production Contributions', softWrap: true))`.
+  - The count badge (`14`) now remains fully visible within card boundaries on all mobile viewports, while the title wraps across two lines when necessary.
+  - Wrapped `Core Technologies & Skills Applied` in `Expanded(child: Text(..., softWrap: true))`.
+  - Added text truncation protection (`overflow: TextOverflow.ellipsis`, `maxLines: 1`) to external action buttons in the card footer.
+  - Tuned mobile card internal padding from `20px` to `16px` for extra horizontal breathing room.
+
+### 2. Admin Cascading Project Order Management Architecture
+- **Automatic Order Cascading on Insert (`FirebaseService.addProject`)**:
+  - When an admin creates a new project with order `targetOrder` (e.g. order `1`), all existing projects with `sortOrder >= targetOrder` automatically shift back by `+1` (1 becomes 2, 2 becomes 3, etc.) in an atomic Firestore `WriteBatch`.
+  - If `targetOrder <= 0` or left blank, the system automatically detects `maxExistingOrder + 1` and assigns the project sequentially at the end.
+- **Surrounding Projects Shift on Order Update (`FirebaseService.updateProject`)**:
+  - When an admin updates a project's order from `oldOrder` to `newOrder`:
+    - Moving up in rank (`newOrder < oldOrder`): all projects in range `[newOrder .. oldOrder - 1]` automatically shift down (`+1`).
+    - Moving down in rank (`newOrder > oldOrder`): all projects in range `[oldOrder + 1 .. newOrder]` automatically shift up (`-1`).
+    - All changes commit atomically via `WriteBatch`.
+- **Automatic Gap Closure on Delete (`FirebaseService.deleteProject`)**:
+  - When deleting a project, any succeeding projects (`sortOrder > deletedOrder`) automatically shift up (`-1`), closing any gaps in order numbers.
+- **Sequential Resequencing Utility (`FirebaseService.resequenceProjects` & `PortfolioProvider.resequenceProjects`)**:
+  - Re-indexes all portfolio projects into clean 1..N order without gaps or duplicates, sorted by current order and creation date.
+  - Added "Re-index Orders" action button in `ProjectsManagement` header with confirmation dialog.
+- **Admin UI Enhancements (`projects_management.dart`, `add_project_screen.dart`, `edit_project_screen.dart`, `mobile_project_form_sheet.dart`)**:
+  - Prominent `#${project.sortOrder}` order badges on all project cards.
+  - `_filterProjects` sorts primarily by `sortOrder ASC`, accurately mirroring public display order.
+  - `AddProjectDialog` & `MobileProjectFormSheet` dynamically default `_orderController` to `totalProjects + 1`.
+  - Added descriptive helper text: "Existing projects at or after this order will automatically shift back (+1)."
+
+### 3. Verification & Quality Assurance
+- **Static Analysis**: `flutter analyze` completed with 0 issues / 0 warnings.
+- **Test Suite**: 104 / 104 tests passing cleanly (`flutter test`).
+- **DTD Connection**: Successfully established connection to Dart Tooling Daemon (DTD).
+
+
 

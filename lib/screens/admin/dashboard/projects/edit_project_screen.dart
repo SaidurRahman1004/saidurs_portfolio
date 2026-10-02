@@ -300,6 +300,7 @@ class _EditProjectDialogState extends State<EditProjectDialog> {
   InputDecoration _buildInputDecoration({
     required BuildContext context,
     required String hintText,
+    String? helperText,
     IconData? prefixIcon,
     Widget? suffixIcon,
   }) {
@@ -312,6 +313,9 @@ class _EditProjectDialogState extends State<EditProjectDialog> {
     return InputDecoration(
       hintText: hintText,
       hintStyle: TextStyle(color: hintColor, fontSize: 13),
+      helperText: helperText,
+      helperStyle: TextStyle(color: hintColor.withAlpha(200), fontSize: 11),
+      helperMaxLines: 2,
       prefixIcon: prefixIcon != null ? Icon(prefixIcon, size: 20, color: primary) : null,
       suffixIcon: suffixIcon,
       filled: true,
@@ -1005,7 +1009,11 @@ class _EditProjectDialogState extends State<EditProjectDialog> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _buildFieldLabel(context, 'Sort Order', hint: '(Lower = appears first)'),
+                  _buildFieldLabel(
+                    context,
+                    'Sort Order',
+                    hint: '(Changing order automatically shifts surrounding projects)',
+                  ),
                   TextFormField(
                     controller: _orderController,
                     keyboardType: TextInputType.number,
@@ -1013,7 +1021,8 @@ class _EditProjectDialogState extends State<EditProjectDialog> {
                     style: _inputTextStyle(context),
                     decoration: _buildInputDecoration(
                       context: context,
-                      hintText: '0',
+                      hintText: 'e.g. 1',
+                      helperText: 'Moving this project will re-order intermediate projects automatically.',
                       prefixIcon: Icons.sort,
                     ),
                   ),

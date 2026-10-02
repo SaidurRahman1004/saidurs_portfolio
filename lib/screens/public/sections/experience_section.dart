@@ -330,13 +330,16 @@ class _ExperienceCardState extends State<_ExperienceCard> {
                   : AppTheme.getCardShadow(context),
             ),
             child: Padding(
-              padding: EdgeInsets.all(isMobile ? 20 : 32),
+              padding: EdgeInsets.all(isMobile ? 16 : 32),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   // Top Status Row (Current Role indicator + Date badge)
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    alignment: WrapAlignment.spaceBetween,
+                    crossAxisAlignment: WrapCrossAlignment.center,
                     children: [
                       if (widget.experience.isCurrentRole)
                         _PulseStatusBadge(isDark: isDark)
@@ -371,7 +374,7 @@ class _ExperienceCardState extends State<_ExperienceCard> {
                             Text(
                               '$startStr — $endStr',
                               style: TextStyle(
-                                fontSize: 13,
+                                fontSize: isMobile ? 12 : 13,
                                 fontWeight: FontWeight.w600,
                                 color: primaryColor,
                               ),
@@ -381,7 +384,7 @@ class _ExperienceCardState extends State<_ExperienceCard> {
                       ),
                     ],
                   ),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 18),
 
                   // Role Title & Company Header
                   Row(
@@ -389,8 +392,8 @@ class _ExperienceCardState extends State<_ExperienceCard> {
                     children: [
                       // Company Avatar Box
                       Container(
-                        width: isMobile ? 48 : 56,
-                        height: isMobile ? 48 : 56,
+                        width: isMobile ? 44 : 56,
+                        height: isMobile ? 44 : 56,
                         decoration: BoxDecoration(
                           gradient: LinearGradient(
                             colors: [
@@ -400,18 +403,18 @@ class _ExperienceCardState extends State<_ExperienceCard> {
                             begin: Alignment.topLeft,
                             end: Alignment.bottomRight,
                           ),
-                          borderRadius: BorderRadius.circular(16),
+                          borderRadius: BorderRadius.circular(isMobile ? 12 : 16),
                           border: Border.all(color: primaryColor.withAlpha(70)),
                         ),
                         child: Center(
                           child: Icon(
                             Icons.terminal_rounded,
                             color: primaryColor,
-                            size: isMobile ? 24 : 28,
+                            size: isMobile ? 22 : 28,
                           ),
                         ),
                       ),
-                      const SizedBox(width: 16),
+                      SizedBox(width: isMobile ? 12 : 16),
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -424,96 +427,115 @@ class _ExperienceCardState extends State<_ExperienceCard> {
                                     letterSpacing: -0.3,
                                   ),
                             ),
-                            const SizedBox(height: 8),
+                            const SizedBox(height: 6),
 
                             // Company and Parent Organization links
-                            Wrap(
-                              crossAxisAlignment: WrapCrossAlignment.center,
-                              spacing: 8,
-                              runSpacing: 6,
-                              children: [
-                                // Company Name Link
-                                InkWell(
-                                  borderRadius: BorderRadius.circular(8),
-                                  onTap: widget.experience.companyUrl != null
-                                      ? () => _launchUrl(widget.experience.companyUrl)
-                                      : null,
-                                  child: Padding(
-                                    padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
-                                    child: Row(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        Text(
-                                          widget.experience.company,
-                                          style: TextStyle(
-                                            fontSize: 14.5,
-                                            fontWeight: FontWeight.w700,
-                                            color: primaryColor,
-                                            decoration: widget.experience.companyUrl != null
-                                                ? TextDecoration.underline
-                                                : TextDecoration.none,
+                            LayoutBuilder(
+                              builder: (context, companyConstraints) {
+                                return Wrap(
+                                  crossAxisAlignment: WrapCrossAlignment.center,
+                                  spacing: 8,
+                                  runSpacing: 6,
+                                  children: [
+                                    // Company Name Link (Text.rich wraps smoothly without overflowing)
+                                    ConstrainedBox(
+                                      constraints: BoxConstraints(maxWidth: companyConstraints.maxWidth),
+                                      child: InkWell(
+                                        borderRadius: BorderRadius.circular(6),
+                                        onTap: widget.experience.companyUrl != null
+                                            ? () => _launchUrl(widget.experience.companyUrl)
+                                            : null,
+                                        child: Padding(
+                                          padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 2),
+                                          child: Text.rich(
+                                            TextSpan(
+                                              children: [
+                                                TextSpan(
+                                                  text: widget.experience.company,
+                                                  style: TextStyle(
+                                                    fontSize: isMobile ? 13.5 : 14.5,
+                                                    fontWeight: FontWeight.w700,
+                                                    color: primaryColor,
+                                                    decoration: widget.experience.companyUrl != null
+                                                        ? TextDecoration.underline
+                                                        : TextDecoration.none,
+                                                  ),
+                                                ),
+                                                if (widget.experience.companyUrl != null)
+                                                  WidgetSpan(
+                                                    alignment: PlaceholderAlignment.middle,
+                                                    child: Padding(
+                                                      padding: const EdgeInsets.only(left: 4),
+                                                      child: Icon(
+                                                        Icons.open_in_new_rounded,
+                                                        size: 13,
+                                                        color: primaryColor,
+                                                      ),
+                                                    ),
+                                                  ),
+                                              ],
+                                            ),
+                                            softWrap: true,
                                           ),
                                         ),
-                                        if (widget.experience.companyUrl != null) ...[
-                                          const SizedBox(width: 4),
-                                          Icon(
-                                            Icons.open_in_new_rounded,
-                                            size: 13,
-                                            color: primaryColor,
-                                          ),
-                                        ],
-                                      ],
+                                      ),
                                     ),
-                                  ),
-                                ),
 
-                                // Parent Company Badge
-                                if (widget.experience.parentCompany != null &&
-                                    widget.experience.parentCompany!.isNotEmpty)
-                                  InkWell(
-                                    borderRadius: BorderRadius.circular(20),
-                                    onTap: widget.experience.parentCompanyUrl != null
-                                        ? () => _launchUrl(widget.experience.parentCompanyUrl)
-                                        : null,
-                                    child: Container(
-                                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
-                                      decoration: BoxDecoration(
-                                        color: (isDark ? AppTheme.secondaryColor : AppTheme.lightSecondaryColor).withAlpha(20),
-                                        borderRadius: BorderRadius.circular(20),
-                                        border: Border.all(
-                                          color: (isDark ? AppTheme.secondaryColor : AppTheme.lightSecondaryColor).withAlpha(50),
+                                    // Parent Company Badge
+                                    if (widget.experience.parentCompany != null &&
+                                        widget.experience.parentCompany!.isNotEmpty)
+                                      ConstrainedBox(
+                                        constraints: BoxConstraints(maxWidth: companyConstraints.maxWidth),
+                                        child: InkWell(
+                                          borderRadius: BorderRadius.circular(20),
+                                          onTap: widget.experience.parentCompanyUrl != null
+                                              ? () => _launchUrl(widget.experience.parentCompanyUrl)
+                                              : null,
+                                          child: Container(
+                                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
+                                            decoration: BoxDecoration(
+                                              color: (isDark ? AppTheme.secondaryColor : AppTheme.lightSecondaryColor).withAlpha(20),
+                                              borderRadius: BorderRadius.circular(20),
+                                              border: Border.all(
+                                                color: (isDark ? AppTheme.secondaryColor : AppTheme.lightSecondaryColor).withAlpha(50),
+                                              ),
+                                            ),
+                                            child: Row(
+                                              mainAxisSize: MainAxisSize.min,
+                                              children: [
+                                                Icon(
+                                                  Icons.corporate_fare_rounded,
+                                                  size: 13,
+                                                  color: isDark ? AppTheme.secondaryColor : AppTheme.lightSecondaryColor,
+                                                ),
+                                                const SizedBox(width: 5),
+                                                Flexible(
+                                                  child: Text(
+                                                    widget.experience.parentCompany!,
+                                                    style: TextStyle(
+                                                      fontSize: 12,
+                                                      fontWeight: FontWeight.w600,
+                                                      color: isDark ? AppTheme.secondaryColor : AppTheme.lightSecondaryColor,
+                                                    ),
+                                                    overflow: TextOverflow.ellipsis,
+                                                  ),
+                                                ),
+                                                if (widget.experience.parentCompanyUrl != null) ...[
+                                                  const SizedBox(width: 4),
+                                                  Icon(
+                                                    Icons.open_in_new_rounded,
+                                                    size: 11,
+                                                    color: isDark ? AppTheme.secondaryColor : AppTheme.lightSecondaryColor,
+                                                  ),
+                                                ],
+                                              ],
+                                            ),
+                                          ),
                                         ),
                                       ),
-                                      child: Row(
-                                        mainAxisSize: MainAxisSize.min,
-                                        children: [
-                                          Icon(
-                                            Icons.corporate_fare_rounded,
-                                            size: 13,
-                                            color: isDark ? AppTheme.secondaryColor : AppTheme.lightSecondaryColor,
-                                          ),
-                                          const SizedBox(width: 5),
-                                          Text(
-                                            widget.experience.parentCompany!,
-                                            style: TextStyle(
-                                              fontSize: 12.5,
-                                              fontWeight: FontWeight.w600,
-                                              color: isDark ? AppTheme.secondaryColor : AppTheme.lightSecondaryColor,
-                                            ),
-                                          ),
-                                          if (widget.experience.parentCompanyUrl != null) ...[
-                                            const SizedBox(width: 4),
-                                            Icon(
-                                              Icons.open_in_new_rounded,
-                                              size: 11,
-                                              color: isDark ? AppTheme.secondaryColor : AppTheme.lightSecondaryColor,
-                                            ),
-                                          ],
-                                        ],
-                                      ),
-                                    ),
-                                  ),
-                              ],
+                                  ],
+                                );
+                              },
                             ),
                             const SizedBox(height: 6),
 
@@ -532,7 +554,7 @@ class _ExperienceCardState extends State<_ExperienceCard> {
                                       Text(
                                         widget.experience.location,
                                         style: TextStyle(
-                                          fontSize: 13,
+                                          fontSize: 12.5,
                                           color: Theme.of(context).hintColor,
                                         ),
                                       ),
@@ -548,7 +570,7 @@ class _ExperienceCardState extends State<_ExperienceCard> {
                                           ? widget.experience.employmentType
                                           : 'Full-time • On-site',
                                       style: TextStyle(
-                                        fontSize: 13,
+                                        fontSize: 12.5,
                                         color: Theme.of(context).hintColor,
                                       ),
                                     ),
@@ -842,13 +864,16 @@ class _ExperienceCardState extends State<_ExperienceCard> {
                       children: [
                         Icon(Icons.checklist_rounded, size: 18, color: primaryColor),
                         const SizedBox(width: 8),
-                        Text(
-                          'Key Responsibilities & Production Contributions',
-                          style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 14.5,
-                                letterSpacing: 0.2,
-                              ),
+                        Expanded(
+                          child: Text(
+                            'Key Responsibilities & Production Contributions',
+                            style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: isMobile ? 13.5 : 14.5,
+                                  letterSpacing: 0.2,
+                                ),
+                            softWrap: true,
+                          ),
                         ),
                         const SizedBox(width: 8),
                         Container(
@@ -929,12 +954,15 @@ class _ExperienceCardState extends State<_ExperienceCard> {
                       children: [
                         Icon(Icons.bolt_rounded, size: 18, color: primaryColor),
                         const SizedBox(width: 8),
-                        Text(
-                          'Core Technologies & Skills Applied',
-                          style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 14.5,
-                              ),
+                        Expanded(
+                          child: Text(
+                            'Core Technologies & Skills Applied',
+                            style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: isMobile ? 13.5 : 14.5,
+                                ),
+                            softWrap: true,
+                          ),
                         ),
                       ],
                     ),
@@ -1013,9 +1041,13 @@ class _ExperienceCardState extends State<_ExperienceCard> {
                                 onPressed: () =>
                                     _launchUrl(widget.experience.companyUrl),
                                 icon: const Icon(Icons.language_rounded, size: 16),
-                                label: Text(compHost.isNotEmpty
-                                    ? 'Company Website ($compHost)'
-                                    : 'Company Website'),
+                                label: Text(
+                                  compHost.isNotEmpty
+                                      ? 'Company Website ($compHost)'
+                                      : 'Company Website',
+                                  overflow: TextOverflow.ellipsis,
+                                  maxLines: 1,
+                                ),
                                 style: OutlinedButton.styleFrom(
                                   foregroundColor: primaryColor,
                                   side: BorderSide(color: primaryColor.withAlpha(80)),
@@ -1031,9 +1063,13 @@ class _ExperienceCardState extends State<_ExperienceCard> {
                                 onPressed: () =>
                                     _launchUrl(widget.experience.parentCompanyUrl),
                                 icon: const Icon(Icons.business_rounded, size: 16),
-                                label: Text(parentHost.isNotEmpty
-                                    ? '$parentName ($parentHost)'
-                                    : parentName),
+                                label: Text(
+                                  parentHost.isNotEmpty
+                                      ? '$parentName ($parentHost)'
+                                      : parentName,
+                                  overflow: TextOverflow.ellipsis,
+                                  maxLines: 1,
+                                ),
                                 style: OutlinedButton.styleFrom(
                                   foregroundColor: isDark
                                       ? AppTheme.secondaryColor

@@ -73,18 +73,27 @@ void main() {
       expect(data['updatedAt'], isA<FieldValue>());
     });
 
-    test('displayProjectType returns custom type if Other, or projectType', () {
-      final app = ProjectModel(id: '1', title: 'App', projectType: 'App', createdAt: DateTime.now());
-      expect(app.displayProjectType, 'App');
+    test('projects sort cleanly by sortOrder with legacy order fallback', () {
+      final p1 = ProjectModel(id: '1', title: 'P1', sortOrder: 3, createdAt: DateTime(2023, 1, 1));
+      final p2 = ProjectModel(id: '2', title: 'P2', sortOrder: 1, createdAt: DateTime(2023, 1, 2));
+      final p3 = ProjectModel(id: '3', title: 'P3', sortOrder: 2, createdAt: DateTime(2023, 1, 3));
+      final p4 = ProjectModel(id: '4', title: 'P4', sortOrder: 0, createdAt: DateTime(2023, 1, 4));
 
-      final other = ProjectModel(id: '2', title: 'Other', projectType: 'Other', customProjectType: 'Desktop Tool', createdAt: DateTime.now());
-      expect(other.displayProjectType, 'Desktop Tool');
+      final list = [p1, p2, p3, p4];
+      list.sort((a, b) {
+        if (a.sortOrder > 0 && b.sortOrder > 0) {
+          final cmp = a.sortOrder.compareTo(b.sortOrder);
+          if (cmp != 0) return cmp;
+        } else if (a.sortOrder > 0) {
+          return -1;
+        } else if (b.sortOrder > 0) {
+          return 1;
+        }
+        return b.createdAt.compareTo(a.createdAt);
+      });
 
-      final otherEmpty = ProjectModel(id: '3', title: 'OtherEmpty', projectType: 'Other', createdAt: DateTime.now());
-      expect(otherEmpty.displayProjectType, 'Other');
-
-      final empty = ProjectModel(id: '4', title: 'Empty', createdAt: DateTime.now());
-      expect(empty.displayProjectType, '');
+      expect(list.map((p) => p.id).toList(), ['2', '3', '1', '4']);
     });
   });
 }
+

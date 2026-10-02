@@ -52,6 +52,19 @@ class _ProjectsManagementState extends State<ProjectsManagement> {
         break;
     }
 
+    // Sort primarily by sortOrder (1, 2, 3...) so order management is clear and consistent
+    filtered.sort((a, b) {
+      if (a.sortOrder > 0 && b.sortOrder > 0) {
+        final cmp = a.sortOrder.compareTo(b.sortOrder);
+        if (cmp != 0) return cmp;
+      } else if (a.sortOrder > 0) {
+        return -1;
+      } else if (b.sortOrder > 0) {
+        return 1;
+      }
+      return b.createdAt.compareTo(a.createdAt);
+    });
+
     return filtered;
   }
 
@@ -157,17 +170,35 @@ class _ProjectsManagementState extends State<ProjectsManagement> {
             ],
           ),
         ),
-        ElevatedButton.icon(
-          onPressed: () => _showAddProjectDialog(context),
-          icon: const Icon(Icons.add),
-          label: Text(
-            ResponsiveWrapper.isMobile(context) ? 'Add' : 'Add Project',
-          ),
-          style: ElevatedButton.styleFrom(
-            backgroundColor: AppTheme.primaryColor,
-            foregroundColor: Colors.white,
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-          ),
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: [
+            OutlinedButton.icon(
+              onPressed: () => _confirmResequenceOrders(context),
+              icon: const Icon(Icons.format_list_numbered_rounded, size: 18),
+              label: Text(
+                ResponsiveWrapper.isMobile(context) ? 'Re-index' : 'Re-index Orders',
+              ),
+              style: OutlinedButton.styleFrom(
+                foregroundColor: AppTheme.primaryColor,
+                side: BorderSide(color: AppTheme.primaryColor.withAlpha(100)),
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+              ),
+            ),
+            ElevatedButton.icon(
+              onPressed: () => _showAddProjectDialog(context),
+              icon: const Icon(Icons.add),
+              label: Text(
+                ResponsiveWrapper.isMobile(context) ? 'Add' : 'Add Project',
+              ),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppTheme.primaryColor,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+              ),
+            ),
+          ],
         ),
       ],
     );
@@ -353,8 +384,38 @@ class _ProjectsManagementState extends State<ProjectsManagement> {
           // Badges
           Padding(
             padding: const EdgeInsets.all(16),
-            child: Row(
+            child: Wrap(
+              spacing: 8,
+              runSpacing: 6,
+              crossAxisAlignment: WrapCrossAlignment.center,
               children: [
+                // Order Number Badge
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 4,
+                  ),
+                  decoration: BoxDecoration(
+                    color: AppTheme.primaryColor.withAlpha(25),
+                    borderRadius: BorderRadius.circular(6),
+                    border: Border.all(color: AppTheme.primaryColor.withAlpha(70)),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(Icons.tag_rounded, size: 11, color: AppTheme.primaryColor),
+                      const SizedBox(width: 2),
+                      Text(
+                        '#${project.sortOrder}',
+                        style: const TextStyle(
+                          fontSize: 10,
+                          color: AppTheme.primaryColor,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
                 if (project.isFeatured)
                   Container(
                     padding: const EdgeInsets.symmetric(
@@ -381,7 +442,6 @@ class _ProjectsManagementState extends State<ProjectsManagement> {
                       ],
                     ),
                   ),
-                const SizedBox(width: 8),
                 Container(
                   padding: const EdgeInsets.symmetric(
                     horizontal: 8,
@@ -402,8 +462,7 @@ class _ProjectsManagementState extends State<ProjectsManagement> {
                     ),
                   ),
                 ),
-                if (project.displayProjectType.isNotEmpty) ...[
-                  const SizedBox(width: 8),
+                if (project.displayProjectType.isNotEmpty)
                   Container(
                     padding: const EdgeInsets.symmetric(
                       horizontal: 8,
@@ -423,7 +482,6 @@ class _ProjectsManagementState extends State<ProjectsManagement> {
                       ),
                     ),
                   ),
-                ],
               ],
             ),
           ),
@@ -584,6 +642,63 @@ class _ProjectsManagementState extends State<ProjectsManagement> {
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  void _confirmResequenceOrders(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: AppTheme.getCardBackground(context),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: const Row(
+          children: [
+            Icon(Icons.format_list_numbered_rounded, color: AppTheme.primaryColor),
+            SizedBox(width: 12),
+            Text('Re-index Orders?'),
+          ],
+        ),
+        content: const Text(
+          'This will re-sequence all project order numbers sequentially from 1 to N without gaps. Continue?',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              Navigator.pop(context);
+              try {
+                final provider = Provider.of<PortfolioProvider>(context, listen: false);
+                await provider.resequenceProjects();
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Projects successfully re-indexed (1..N)!'),
+                      backgroundColor: Colors.green,
+                    ),
+                  );
+                }
+              } catch (e) {
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('Failed to re-index: $e'),
+                      backgroundColor: AppTheme.accentColor,
+                    ),
+                  );
+                }
+              }
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppTheme.primaryColor,
+              foregroundColor: Colors.white,
+            ),
+            child: const Text('Re-index Now'),
+          ),
+        ],
       ),
     );
   }
