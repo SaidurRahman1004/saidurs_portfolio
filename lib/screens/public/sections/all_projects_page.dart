@@ -424,13 +424,21 @@ class _AllProjectsPageState extends State<AllProjectsPage> {
                   borderRadius: const BorderRadius.vertical(
                     top: Radius.circular(20),
                   ),
-                  child: CachedNetworkImage(
-                    imageUrl: project.imageUrl!,
-                    height: 180,
-                    width: double.infinity,
-                    fit: BoxFit.cover,
-                    placeholder: (context, url) => _buildFallbackBanner(context, project),
-                    errorWidget: (context, url, error) => _buildFallbackBanner(context, project),
+                  child: Stack(
+                    children: [
+                      _buildFallbackBanner(context, project),
+                      CachedNetworkImage(
+                        imageUrl: project.imageUrl!,
+                        height: 180,
+                        width: double.infinity,
+                        fit: BoxFit.contain,
+                        placeholder: (context, url) => const SizedBox(
+                          height: 180,
+                          child: Center(child: CircularProgressIndicator(strokeWidth: 2)),
+                        ),
+                        errorWidget: (context, url, error) => const SizedBox(),
+                      ),
+                    ],
                   ),
                 )
               else

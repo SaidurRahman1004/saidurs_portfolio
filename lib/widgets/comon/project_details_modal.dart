@@ -374,18 +374,21 @@ class _ProjectDetailsModalState extends State<ProjectDetailsModal> {
       ),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(16),
-        child: CachedNetworkImage(
-          imageUrl: activeImage!,
-          width: double.infinity,
-          height: height,
-          fit: BoxFit.cover,
-          placeholder: (context, url) => Container(
-            height: height,
-            color: isDark ? const Color(0xFF1E2640) : const Color(0xFFE2E8F0),
-            child: const Center(child: CircularProgressIndicator(strokeWidth: 2)),
-          ),
-          errorWidget: (context, url, error) =>
-              _buildFallbackBanner(context, isDark, height: height),
+        child: Stack(
+          children: [
+            _buildFallbackBanner(context, isDark, height: height),
+            CachedNetworkImage(
+              imageUrl: activeImage!,
+              width: double.infinity,
+              height: height,
+              fit: BoxFit.contain,
+              placeholder: (context, url) => SizedBox(
+                height: height,
+                child: const Center(child: CircularProgressIndicator(strokeWidth: 2)),
+              ),
+              errorWidget: (context, url, error) => const SizedBox(),
+            ),
+          ],
         ),
       ),
     );

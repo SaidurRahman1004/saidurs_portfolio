@@ -291,17 +291,21 @@ class _ProjectsSectionState extends State<ProjectsSection> {
                   borderRadius: const BorderRadius.vertical(
                     top: Radius.circular(20),
                   ),
-                  child: CachedNetworkImage(
-                    imageUrl: project.imageUrl!,
-                    height: 150,
-                    width: double.infinity,
-                    fit: BoxFit.cover,
-                    placeholder: (context, url) => const SizedBox(
-                      height: 150,
-                      child: Center(child: CircularProgressIndicator()),
-                    ),
-                    errorWidget: (context, url, error) =>
-                        _buildFallbackBanner(context, project),
+                  child: Stack(
+                    children: [
+                      _buildFallbackBanner(context, project),
+                      CachedNetworkImage(
+                        imageUrl: project.imageUrl!,
+                        height: 150,
+                        width: double.infinity,
+                        fit: BoxFit.contain,
+                        placeholder: (context, url) => const SizedBox(
+                          height: 150,
+                          child: Center(child: CircularProgressIndicator(strokeWidth: 2)),
+                        ),
+                        errorWidget: (context, url, error) => const SizedBox(),
+                      ),
+                    ],
                   ),
                 )
               else
