@@ -1,0 +1,18 @@
+{
+  "default_branch": "main",
+  "branches": [
+    "main",
+    "origin",
+    "work-office"
+  ],
+  "parent": {
+    "main": null,
+    "origin": "main",
+    "work-office": "main"
+  },
+  "order": [
+    "main",
+    "origin",
+    "work-office"
+  ]
+}
